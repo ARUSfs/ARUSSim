@@ -8,11 +8,11 @@ Sensors::Sensors() : Node("sensors")
     // Declare and get noise parameter
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.imu_frequency", 0.01);
+    this->declare_parameter<double>("sensor.wheel_speed_frequency", 0.01);
+
     this->get_parameter("sensor.noise_sigma", kNoiseSensor);
     this->get_parameter("sensor.imu_frequency", kImuFrequency);
-
-    // Create IMU publisher
-    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("/sensors/imu", 10);
+    this->get_parameter("sensor.wheel_speed_frequency", kWheelSpeedFrequency);
 
     // Create State subscriber
     state_sub_ = this->create_subscription<custom_msgs::msg::State>(
@@ -20,9 +20,20 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::state_callback, this, std::placeholders::_1)
     );
 
+    // IMU
+    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("/sensors/imu", 10);
+
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
-        std::bind(&Sensors::imu, this)   // Callback function
+        std::bind(&Sensors::imu, this)
+    );
+
+    // Wheel speed
+    ws_pub_ = this->create_publisher<custom_msgs::msg::FourWheelDrive>("/sensors/wheel_speeds", 10);
+
+    ws_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
+        std::bind(&Sensors::wheel_speed, this)
     );
 }
 
@@ -75,4 +86,29 @@ void Sensors::imu()
 
     // Publish the IMU message
     imu_pub_->publish(message);
+}
+
+void Sensors::wheel_speed()
+{
+    // Random noise generation
+    std::random_device rd; 
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(0.0, kNoiseSensor);
+
+    // Apply noise to the state variables
+    vx_ += dist(gen);
+    vy_ += dist(gen);
+
+    double speed = std::sqrt(vx_ * vx_ + vy_ * vy_);
+
+    // Create the IMU message
+    auto message = custom_msgs::msg::FourWheelDrive();
+
+    message.front_right = speed;    // speed until physics is created
+    message.front_left = speed;     // speed until physics is created     
+    message.rear_right = speed;     // speed until physics is created
+    message.rear_left = speed;      // speed until physics is created
+
+    // Publish the IMU message
+    ws_pub_->publish(message);
 }
