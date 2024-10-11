@@ -9,15 +9,25 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.imu_frequency", 0.01);
     this->declare_parameter<double>("sensor.wheel_speed_frequency", 0.01);
+    this->declare_parameter<double>("sensor.extensometer_frequency", 0.01);
+
 
     this->get_parameter("sensor.noise_sigma", kNoiseSensor);
     this->get_parameter("sensor.imu_frequency", kImuFrequency);
     this->get_parameter("sensor.wheel_speed_frequency", kWheelSpeedFrequency);
+    this->get_parameter("sensor.extensometer_frequency", kExtensometerFrequency);
+
 
     // Create State subscriber
     state_sub_ = this->create_subscription<custom_msgs::msg::State>(
-        "/arussim/state", 10, 
+        "/arussim/state", 1, 
         std::bind(&Sensors::state_callback, this, std::placeholders::_1)
+    );
+
+    // Create Cmd subscriber
+    cmd_sub_ = this->create_subscription<custom_msgs::msg::Cmd>(
+        "/arussim/cmd", 1, 
+        std::bind(&Sensors::cmd_callback, this, std::placeholders::_1)
     );
 
     // IMU
@@ -35,6 +45,14 @@ Sensors::Sensors() : Node("sensors")
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
         std::bind(&Sensors::wheel_speed, this)
     );
+
+    // Extensometer
+    ext_pub_ = this->create_publisher<std_msgs::msg::Float32>("/sensors/extensometer", 10);
+
+    ext_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kExtensometerFrequency)),
+        std::bind(&Sensors::extensometer, this)
+    );
 }
 
 void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
@@ -46,6 +64,11 @@ void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
     vx_ = msg->vx;
     vy_ = msg->vy;
     r_ = msg->r;
+}
+
+void Sensors::cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg)
+{
+    delta_ = msg->delta;
 }
 
 void Sensors::imu()
@@ -101,7 +124,7 @@ void Sensors::wheel_speed()
 
     double speed = std::sqrt(vx_ * vx_ + vy_ * vy_);
 
-    // Create the IMU message
+    // Create the wheel speed message
     auto message = custom_msgs::msg::FourWheelDrive();
 
     message.front_right = speed;    // speed until physics is created
@@ -109,6 +132,26 @@ void Sensors::wheel_speed()
     message.rear_right = speed;     // speed until physics is created
     message.rear_left = speed;      // speed until physics is created
 
-    // Publish the IMU message
+    // Publish the wheel speed message
     ws_pub_->publish(message);
+}
+
+void Sensors::extensometer()
+{
+    // Random noise generation
+    std::random_device rd; 
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(0.0, kNoiseSensor);
+
+    // Apply noise to the state variables
+    delta_ += dist(gen);
+
+    // Create the extensometer message
+    auto message = std_msgs::msg::Float32();
+
+    // speed until physics is created
+    message.data = delta_;
+
+    // Publish the extensometer message
+    ext_pub_->publish(message);
 }

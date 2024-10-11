@@ -1,4 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
+#include "custom_msgs/msg/cmd.hpp"
 #include "custom_msgs/msg/state.hpp"
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -6,6 +7,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <sensor_msgs/msg/imu.hpp>
 #include "custom_msgs/msg/four_wheel_drive.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include <random>
 
 class Sensors : public rclcpp::Node
@@ -22,23 +24,32 @@ private:
     double vy_ = 0;
     double r_ = 0;
 
+    double delta_ = 0;
+
+    double kExtensometerFrequency;
     double kWheelSpeedFrequency;
     double kImuFrequency;
     double kNoiseSensor;
 
     // Functions
     void state_callback(const custom_msgs::msg::State::SharedPtr msg);
+    void cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg);
+    void extensometer();
     void wheel_speed();
     void imu();
     
     
     // ROS Communication
     rclcpp::Subscription<custom_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
-    
+    rclcpp::Subscription<custom_msgs::msg::Cmd>::SharedPtr cmd_sub_; // State subscriber
+
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_; // IMU publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
     rclcpp::Publisher<custom_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
     rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
+
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Wheel speed publisher
+    rclcpp::TimerBase::SharedPtr ext_timer_; // Wheel speed timer
 };
 
