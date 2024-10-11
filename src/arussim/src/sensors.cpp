@@ -7,7 +7,9 @@ Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameter
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
+    this->declare_parameter<double>("sensor.imu_frequency", 0.01);
     this->get_parameter("sensor.noise_sigma", kNoiseSensor);
+    this->get_parameter("sensor.imu_frequency", kImuFrequency);
 
     // Create IMU publisher
     imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("/sensors/imu", 10);
@@ -19,7 +21,7 @@ Sensors::Sensors() : Node("sensors")
     );
 
     imu_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100),  // Time interval in milliseconds (10 Hz)
+        std::chrono::milliseconds((int)(1000/kImuFrequency)),
         std::bind(&Sensors::imu, this)   // Callback function
     );
 }

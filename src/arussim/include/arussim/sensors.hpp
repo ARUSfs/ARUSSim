@@ -21,8 +21,8 @@ private:
     double vy_ = 0;
     double r_ = 0;
 
+    double kImuFrequency;
     double kNoiseSensor;
-    std::string kTrackName;
 
     // Functions
     void imu();

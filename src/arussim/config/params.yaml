@@ -13,3 +13,4 @@ arussim:
       pub_rate:           10.0    # Hz  Publish rate
       noise_sigma:        0.01    # m   Noise standard deviation
       cut_cones_below_x:  -1.0    # m   Cut cones that are further than this distance in x car axis
+      imu_frequency :     240.0   # Hz  Publish rate
