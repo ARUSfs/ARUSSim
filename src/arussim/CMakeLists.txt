@@ -24,7 +24,7 @@ include_directories(
 )
 
 # generate executables
-add_executable(arussim_exec src/arussim_node.cpp)
+add_executable(arussim_exec src/arussim_node.cpp src/sensors.cpp)
 ament_target_dependencies(arussim_exec rclcpp 
                             std_msgs 
                             geometry_msgs 

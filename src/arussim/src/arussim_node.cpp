@@ -1,5 +1,6 @@
 #include "arussim/arussim_node.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include "arussim/sensors.hpp"
 #include <random>
 
 
@@ -216,8 +217,20 @@ void Simulator::broadcast_transform()
 
 int main(int argc, char * argv[])
 {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Simulator>());
-  rclcpp::shutdown();
-  return 0;
+    rclcpp::init(argc, argv);
+
+    // Create instances of Simulator and Sensors
+    auto simulator_node = std::make_shared<Simulator>();
+    auto sensors_node = std::make_shared<Sensors>();
+
+    // Use MultiThreadedExecutor to handle both nodes
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(simulator_node);
+    executor.add_node(sensors_node);
+
+    // Run the lifecycle of both nodes in parallel
+    executor.spin();
+
+    rclcpp::shutdown();
+    return 0;
 }
