@@ -40,14 +40,10 @@ ament_target_dependencies(arussim_exec rclcpp
 add_executable(sensors_exec src/sensors.cpp)
 ament_target_dependencies(sensors_exec rclcpp 
                             std_msgs 
-                            geometry_msgs 
                             sensor_msgs 
-                            visualization_msgs 
                             custom_msgs 
                             tf2_ros
-                            tf2
-                            PCL
-                            pcl_conversions)
+                            tf2)
 
 # Install both executables
 install(TARGETS
