@@ -39,16 +39,10 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
 
-    // Create State subscriber
+    // State subscriber
     state_sub_ = this->create_subscription<custom_msgs::msg::State>(
         "/arussim/state", 1, 
         std::bind(&Sensors::state_callback, this, std::placeholders::_1)
-    );
-
-    // Create Cmd subscriber
-    cmd_sub_ = this->create_subscription<custom_msgs::msg::Cmd>(
-        "/arussim/cmd", 1, 
-        std::bind(&Sensors::cmd_callback, this, std::placeholders::_1)
     );
 
     // IMU
@@ -85,11 +79,6 @@ void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
     vx_ = msg->vx;
     vy_ = msg->vy;
     r_ = msg->r;
-}
-
-void Sensors::cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg)
-{
-    delta_ = msg->delta;
 }
 
 void Sensors::imu()

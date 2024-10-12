@@ -1,5 +1,4 @@
 #include <rclcpp/rclcpp.hpp>
-#include "custom_msgs/msg/cmd.hpp"
 #include "custom_msgs/msg/state.hpp"
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -42,7 +41,6 @@ private:
 
     // Functions
     void state_callback(const custom_msgs::msg::State::SharedPtr msg);
-    void cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg);
     void extensometer();
     void wheel_speed();
     void imu();
@@ -50,7 +48,6 @@ private:
     
     // ROS Communication
     rclcpp::Subscription<custom_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
-    rclcpp::Subscription<custom_msgs::msg::Cmd>::SharedPtr cmd_sub_; // State subscriber
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_; // IMU publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
