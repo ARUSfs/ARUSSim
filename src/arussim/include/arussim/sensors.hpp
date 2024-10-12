@@ -29,7 +29,10 @@ private:
     double kNoiseExtensometer;
 
     double kWheelSpeedFrequency;
-    double kNoiseWheelSpeed;
+    double kNoiseWheelSpeedFrontRight;
+    double kNoiseWheelSpeedFrontLeft;
+    double kNoiseWheelSpeedRearRight;
+    double kNoiseWheelSpeedRearLeft;
 
     double kImuFrequency;
     double kNoiseImuX;

@@ -47,15 +47,17 @@ def generate_launch_description():
             executable='arussim_exec',
             name='arussim',
             output='screen',
-            parameters=[simulator_config_file]
+            parameters=[simulator_config_file],
+            arguments=['--ros-args', '--params-file', simulator_config_file]
         ),
 
         # Launch the Sensors node
         Node(
             package='arussim',
             executable='sensors_exec',
-            name='sensors',
+            name='arussim',
             output='screen',
-            parameters=[sensor_config_file]
+            parameters=[sensor_config_file],
+            arguments=['--ros-args', '--params-file', sensor_config_file]
         )
     ])

@@ -15,8 +15,11 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("imu.imu_frequency", 10.0);
 
     // Declare wheel speed parameters
+    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_front_right", 0.01);
+    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_front_left", 0.01);
+    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_rear_right", 0.01);
+    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_rear_left", 0.01);
     this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 10.0);
-    this->declare_parameter<double>("wheel_speed.noise_wheel_speed", 0.01);
 
     // Declare extensometer parameters
     this->declare_parameter<double>("extensometer.extensometer_frequency", 10.0);
@@ -32,8 +35,11 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
     this->get_parameter("imu.imu_frequency", kImuFrequency);
 
+    this->get_parameter("wheel_speed.noise_wheel_speed_front_right", kNoiseWheelSpeedFrontRight);
+    this->get_parameter("wheel_speed.noise_wheel_speed_front_left", kNoiseWheelSpeedFrontLeft);
+    this->get_parameter("wheel_speed.noise_wheel_speed_rear_right", kNoiseWheelSpeedRearRight);
+    this->get_parameter("wheel_speed.noise_wheel_speed_rear_left", kNoiseWheelSpeedRearLeft);
     this->get_parameter("wheel_speed.wheel_speed_frequency", kWheelSpeedFrequency);
-    this->get_parameter("wheel_speed.noise_wheel_speed", kNoiseWheelSpeed);
 
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
@@ -129,24 +135,27 @@ void Sensors::imu_timer()
 
 void Sensors::wheel_speed_timer()
 {
-    // Random noise generation
+    // Random noise generation with different noise for each wheel speed
     std::random_device rd; 
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoiseWheelSpeed);
+    std::normal_distribution<> dist_front_right(0.0, kNoiseWheelSpeedFrontRight);
+    std::normal_distribution<> dist_front_left(0.0, kNoiseWheelSpeedFrontLeft);
+    std::normal_distribution<> dist_rear_right(0.0, kNoiseWheelSpeedRearRight);
+    std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    vx_ += dist(gen);
-    vy_ += dist(gen);
-
-    double speed = std::sqrt(vx_ * vx_ + vy_ * vy_);
+    double speed_front_right = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_right(gen);
+    double speed_front_left = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_left(gen);
+    double speed_rear_right = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_right(gen);
+    double speed_rear_left = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto message = custom_msgs::msg::FourWheelDrive();
 
-    message.front_right = speed;    // Speed until physics is created
-    message.front_left = speed;     // Speed until physics is created     
-    message.rear_right = speed;     // Speed until physics is created
-    message.rear_left = speed;      // Speed until physics is created
+    message.front_right = speed_front_right;    // Speed until physics is created
+    message.front_left = speed_front_left;      // Speed until physics is created
+    message.rear_right = speed_rear_right;      // Speed until physics is created   
+    message.rear_left = speed_rear_left;        // Speed until physics is created    
 
     // Publish the wheel speed message
     ws_pub_->publish(message);
@@ -165,7 +174,7 @@ void Sensors::extensometer_timer()
     // Create the extensometer message
     auto message = std_msgs::msg::Float32();
 
-    // speed until physics is created
+    // 0 until physics is created
     message.data = delta_;
 
     // Publish the extensometer message
