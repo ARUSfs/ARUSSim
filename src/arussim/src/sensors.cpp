@@ -6,8 +6,6 @@
 Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameters for each IMU variable
-    this->declare_parameter<double>("imu.noise_imu_x", 0.01);
-    this->declare_parameter<double>("imu.noise_imu_y", 0.01);
     this->declare_parameter<double>("imu.noise_imu_yaw", 0.01);
     this->declare_parameter<double>("imu.noise_imu_vx", 0.01);
     this->declare_parameter<double>("imu.noise_imu_vy", 0.01);
@@ -27,8 +25,6 @@ Sensors::Sensors() : Node("sensors")
 
 
     // Get parameters
-    this->get_parameter("imu.noise_imu_x", kNoiseImuX);
-    this->get_parameter("imu.noise_imu_y", kNoiseImuY);
     this->get_parameter("imu.noise_imu_yaw", kNoiseImuYaw);
     this->get_parameter("imu.noise_imu_vx", kNoiseImuVx);
     this->get_parameter("imu.noise_imu_vy", kNoiseImuVy);

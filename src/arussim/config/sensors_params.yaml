@@ -2,8 +2,6 @@ arussim:
   ros__parameters:
     imu:
       imu_frequency: 240.0         # Hz  Publish rate
-      noise_imu_x: 0.01          # m   Noise standard deviation
-      noise_imu_y: 0.01          # m   Noise standard deviation
       noise_imu_yaw: 0.01          # rad Noise standard deviation
       noise_imu_vx: 0.01          # m/s Noise standard deviation
       noise_imu_vy: 0.01          # m/s Noise standard deviation
