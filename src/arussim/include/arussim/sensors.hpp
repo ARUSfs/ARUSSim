@@ -22,12 +22,17 @@ private:
     double vy_ = 0;
     double r_ = 0;
 
-    double noisy_vx = 0;
-    double noisy_vy = 0;
-    double noisy_r = 0;
-    double noisy_yaw = 0;
+    double noisy_vx_ = 0;
+    double noisy_vy_ = 0;
+    double noisy_r_ = 0;
+    double noisy_yaw_ = 0;
+    double noisy_delta_ = 0;
 
     double delta_ = 0;
+    double speed_front_right_ = 0;
+    double speed_front_left_ = 0;
+    double speed_rear_right_ = 0;
+    double speed_rear_left_ = 0;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;

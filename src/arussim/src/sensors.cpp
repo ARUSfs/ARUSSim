@@ -95,17 +95,17 @@ void Sensors::imu_timer()
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
     // Apply noise to the state variables
-    double noisy_yaw = yaw_ + dist_yaw(gen);
-    double noisy_vx = vx_ + dist_vx(gen);
-    double noisy_vy = vy_ + dist_vy(gen);
-    double noisy_r = r_ + dist_r(gen);
+    noisy_yaw_ = yaw_ + dist_yaw(gen);
+    noisy_vx_ = vx_ + dist_vx(gen);
+    noisy_vy_ = vy_ + dist_vy(gen);
+    noisy_r_ = r_ + dist_r(gen);
 
     // Create the IMU message
     auto message = sensor_msgs::msg::Imu();
 
     // Convert yaw (Euler angle) to quaternion
     tf2::Quaternion q;
-    q.setRPY(0, 0, noisy_yaw); // Roll and pitch are 0 since you're only working with yaw
+    q.setRPY(0, 0, noisy_yaw_); // Roll and pitch are 0 since you're only working with yaw
     message.orientation.x = q.x();
     message.orientation.y = q.y();
     message.orientation.z = q.z();
@@ -114,11 +114,11 @@ void Sensors::imu_timer()
     // Fill in the angular velocity
     message.angular_velocity.x = 0.0;  // Roll is 0, no roll velocity
     message.angular_velocity.y = 0.0;  // Pitch is 0, no pitch velocity
-    message.angular_velocity.z = noisy_r;   // Yaw rate (r_) goes here
+    message.angular_velocity.z = noisy_r_;   // Yaw rate (r_) goes here
 
     // Fill in the linear acceleration
-    message.linear_acceleration.x = noisy_vx;  // Linear acceleration in X
-    message.linear_acceleration.y = noisy_vy;  // Linear acceleration in Y
+    message.linear_acceleration.x = noisy_vx_;  // Linear acceleration in X
+    message.linear_acceleration.y = noisy_vy_;  // Linear acceleration in Y
     message.linear_acceleration.z = 0.0;  // No acceleration in Z, so it's 0
 
     // Publish the IMU message
@@ -136,18 +136,18 @@ void Sensors::wheel_speed_timer()
     std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    double speed_front_right = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_right(gen);
-    double speed_front_left = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_left(gen);
-    double speed_rear_right = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_right(gen);
-    double speed_rear_left = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_left(gen);
+    speed_front_right_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_right(gen);
+    speed_front_left_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_left(gen);
+    speed_rear_right_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_right(gen);
+    speed_rear_left_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto message = custom_msgs::msg::FourWheelDrive();
 
-    message.front_right = speed_front_right;    // Speed until physics is created
-    message.front_left = speed_front_left;      // Speed until physics is created
-    message.rear_right = speed_rear_right;      // Speed until physics is created   
-    message.rear_left = speed_rear_left;        // Speed until physics is created    
+    message.front_right = speed_front_right_;    // Speed until physics is created
+    message.front_left = speed_front_left_;      // Speed until physics is created
+    message.rear_right = speed_rear_right_;      // Speed until physics is created   
+    message.rear_left = speed_rear_left_;        // Speed until physics is created    
 
     // Publish the wheel speed message
     ws_pub_->publish(message);
@@ -161,13 +161,13 @@ void Sensors::extensometer_timer()
     std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
     // Apply noise to the state variables
-    delta_ += dist(gen);
+    noisy_delta_ = delta_ + dist(gen);
 
     // Create the extensometer message
     auto message = std_msgs::msg::Float32();
 
     // 0 until physics is created
-    message.data = delta_;
+    message.data = noisy_delta_;
 
     // Publish the extensometer message
     ext_pub_->publish(message);
