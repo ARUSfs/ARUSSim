@@ -36,13 +36,21 @@ def generate_launch_description():
             arguments=['-d', rviz_config_file]
         ),
 
-        # Launch the ARUSSim
+        # Launch the ARUSSim node
         Node(
             package='arussim',
             executable='arussim_exec',
             name='arussim',
             output='screen',
             parameters=[config_file]
+        ),
+
+        # Launch the Sensors node
+        Node(
+            package='arussim',
+            executable='sensors_exec',
+            name='sensors',
+            output='screen',
+            parameters=[config_file]
         )
     ])
-

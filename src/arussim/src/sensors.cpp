@@ -127,10 +127,10 @@ void Sensors::wheel_speed()
     // Create the wheel speed message
     auto message = custom_msgs::msg::FourWheelDrive();
 
-    message.front_right = speed;    // speed until physics is created
-    message.front_left = speed;     // speed until physics is created     
-    message.rear_right = speed;     // speed until physics is created
-    message.rear_left = speed;      // speed until physics is created
+    message.front_right = speed;    // Speed until physics is created
+    message.front_left = speed;     // Speed until physics is created     
+    message.rear_right = speed;     // Speed until physics is created
+    message.rear_left = speed;      // Speed until physics is created
 
     // Publish the wheel speed message
     ws_pub_->publish(message);
@@ -154,4 +154,12 @@ void Sensors::extensometer()
 
     // Publish the extensometer message
     ext_pub_->publish(message);
+}
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<Sensors>());
+  rclcpp::shutdown();
+  return 0;
 }
