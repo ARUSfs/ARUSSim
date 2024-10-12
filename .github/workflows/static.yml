@@ -2,9 +2,13 @@ name: Deploy Sphinx documentation to Pages
 
 on:
   push:
-    branches: ["doc"]
+    branches: 
+      - main
+      - doc
   pull_request:
-    branches: ["doc"]
+    branches: 
+      - main
+      - doc
   workflow_dispatch:
 
 permissions:
