@@ -50,7 +50,7 @@ Sensors::Sensors() : Node("sensors")
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
-        std::bind(&Sensors::imu, this)
+        std::bind(&Sensors::imu_timer, this)
     );
 
     // Wheel speed
@@ -58,7 +58,7 @@ Sensors::Sensors() : Node("sensors")
 
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
-        std::bind(&Sensors::wheel_speed, this)
+        std::bind(&Sensors::wheel_speed_timer, this)
     );
 
     // Extensometer
@@ -66,7 +66,7 @@ Sensors::Sensors() : Node("sensors")
 
     ext_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kExtensometerFrequency)),
-        std::bind(&Sensors::extensometer, this)
+        std::bind(&Sensors::extensometer_timer, this)
     );
 }
 
@@ -81,7 +81,7 @@ void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
     r_ = msg->r;
 }
 
-void Sensors::imu()
+void Sensors::imu_timer()
 {
     // Random noise generation with different noise for each variable
     std::random_device rd;
@@ -127,7 +127,7 @@ void Sensors::imu()
     imu_pub_->publish(message);
 }
 
-void Sensors::wheel_speed()
+void Sensors::wheel_speed_timer()
 {
     // Random noise generation
     std::random_device rd; 
@@ -152,7 +152,7 @@ void Sensors::wheel_speed()
     ws_pub_->publish(message);
 }
 
-void Sensors::extensometer()
+void Sensors::extensometer_timer()
 {
     // Random noise generation
     std::random_device rd; 

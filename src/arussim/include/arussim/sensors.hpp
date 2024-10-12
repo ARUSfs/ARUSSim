@@ -41,9 +41,9 @@ private:
 
     // Functions
     void state_callback(const custom_msgs::msg::State::SharedPtr msg);
-    void extensometer();
-    void wheel_speed();
-    void imu();
+    void extensometer_timer();
+    void wheel_speed_timer();
+    void imu_timer();
     
     
     // ROS Communication
