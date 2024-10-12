@@ -93,27 +93,23 @@ void Sensors::imu_timer()
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::normal_distribution<> dist_x(0.0, kNoiseImuX);
-    std::normal_distribution<> dist_y(0.0, kNoiseImuY);
     std::normal_distribution<> dist_yaw(0.0, kNoiseImuYaw);
     std::normal_distribution<> dist_vx(0.0, kNoiseImuVx);
     std::normal_distribution<> dist_vy(0.0, kNoiseImuVy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
     // Apply noise to the state variables
-    x_ += dist_x(gen);
-    y_ += dist_y(gen);
-    yaw_ += dist_yaw(gen);
-    vx_ += dist_vx(gen);
-    vy_ += dist_vy(gen);
-    r_ += dist_r(gen);
+    double noisy_yaw = yaw_ + dist_yaw(gen);
+    double noisy_vx = vx_ + dist_vx(gen);
+    double noisy_vy = vy_ + dist_vy(gen);
+    double noisy_r = r_ + dist_r(gen);
 
     // Create the IMU message
     auto message = sensor_msgs::msg::Imu();
 
     // Convert yaw (Euler angle) to quaternion
     tf2::Quaternion q;
-    q.setRPY(0, 0, yaw_); // Roll and pitch are 0 since you're only working with yaw
+    q.setRPY(0, 0, noisy_yaw); // Roll and pitch are 0 since you're only working with yaw
     message.orientation.x = q.x();
     message.orientation.y = q.y();
     message.orientation.z = q.z();
@@ -122,11 +118,11 @@ void Sensors::imu_timer()
     // Fill in the angular velocity
     message.angular_velocity.x = 0.0;  // Roll is 0, no roll velocity
     message.angular_velocity.y = 0.0;  // Pitch is 0, no pitch velocity
-    message.angular_velocity.z = r_;   // Yaw rate (r_) goes here
+    message.angular_velocity.z = noisy_r;   // Yaw rate (r_) goes here
 
     // Fill in the linear acceleration
-    message.linear_acceleration.x = vx_;  // Linear acceleration in X
-    message.linear_acceleration.y = vy_;  // Linear acceleration in Y
+    message.linear_acceleration.x = noisy_vx;  // Linear acceleration in X
+    message.linear_acceleration.y = noisy_vy;  // Linear acceleration in Y
     message.linear_acceleration.z = 0.0;  // No acceleration in Z, so it's 0
 
     // Publish the IMU message

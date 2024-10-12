@@ -23,6 +23,11 @@ private:
     double vy_ = 0;
     double r_ = 0;
 
+    double noisy_vx = 0;
+    double noisy_vy = 0;
+    double noisy_r = 0;
+    double noisy_yaw = 0;
+
     double delta_ = 0;
 
     double kExtensometerFrequency;
