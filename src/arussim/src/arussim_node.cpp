@@ -23,7 +23,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("wheel_base", kWheelBase);
     this->get_parameter("sensor.fov_radius", kFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
-    this->get_parameter("sensor.noise_sigma", kNoise);
+    this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
 
 
@@ -95,7 +95,7 @@ void Simulator::on_slow_timer()
     // Random noise generation
     std::random_device rd; 
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoise);
+    std::normal_distribution<> dist(0.0, kNoisePerception);
 
     auto perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)

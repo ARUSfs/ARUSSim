@@ -5,17 +5,38 @@
 
 Sensors::Sensors() : Node("sensors")
 {
-    // Declare and get noise parameter
-    this->declare_parameter<double>("sensor.noise_sigma", 0.01);
-    this->declare_parameter<double>("sensor.imu_frequency", 0.01);
-    this->declare_parameter<double>("sensor.wheel_speed_frequency", 0.01);
-    this->declare_parameter<double>("sensor.extensometer_frequency", 0.01);
+    // Declare and get noise parameters for each IMU variable
+    this->declare_parameter<double>("imu.noise_imu_x", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_y", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_yaw", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_vx", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_vy", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_r", 0.01);
+    this->declare_parameter<double>("imu.imu_frequency", 50.0);
+
+    // Declare wheel speed parameters
+    this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 0.01);
+    this->declare_parameter<double>("wheel_speed.noise_wheel_speed", 0.01);
+
+    // Declare extensometer parameters
+    this->declare_parameter<double>("extensometer.extensometer_frequency", 10.0);
+    this->declare_parameter<double>("extensometer.noise_extensometer", 10.0);
 
 
-    this->get_parameter("sensor.noise_sigma", kNoiseSensor);
-    this->get_parameter("sensor.imu_frequency", kImuFrequency);
-    this->get_parameter("sensor.wheel_speed_frequency", kWheelSpeedFrequency);
-    this->get_parameter("sensor.extensometer_frequency", kExtensometerFrequency);
+    // Get parameters
+    this->get_parameter("imu.noise_imu_x", kNoiseImuX);
+    this->get_parameter("imu.noise_imu_y", kNoiseImuY);
+    this->get_parameter("imu.noise_imu_yaw", kNoiseImuYaw);
+    this->get_parameter("imu.noise_imu_vx", kNoiseImuVx);
+    this->get_parameter("imu.noise_imu_vy", kNoiseImuVy);
+    this->get_parameter("imu.noise_imu_r", kNoiseImuR);
+    this->get_parameter("imu.imu_frequency", kImuFrequency);
+
+    this->get_parameter("wheel_speed.wheel_speed_frequency", kWheelSpeedFrequency);
+    this->get_parameter("wheel_speed.noise_wheel_speed", kNoiseWheelSpeed);
+
+    this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
+    this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
 
     // Create State subscriber
@@ -73,18 +94,24 @@ void Sensors::cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg)
 
 void Sensors::imu()
 {
-    // Random noise generation
-    std::random_device rd; 
+    // Random noise generation with different noise for each variable
+    std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoiseSensor);
+
+    std::normal_distribution<> dist_x(0.0, kNoiseImuX);
+    std::normal_distribution<> dist_y(0.0, kNoiseImuY);
+    std::normal_distribution<> dist_yaw(0.0, kNoiseImuYaw);
+    std::normal_distribution<> dist_vx(0.0, kNoiseImuVx);
+    std::normal_distribution<> dist_vy(0.0, kNoiseImuVy);
+    std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
     // Apply noise to the state variables
-    x_ += dist(gen);   
-    y_ += dist(gen);   
-    yaw_ += dist(gen); 
-    vx_ += dist(gen);  
-    vy_ += dist(gen);  
-    r_ += dist(gen);
+    x_ += dist_x(gen);
+    y_ += dist_y(gen);
+    yaw_ += dist_yaw(gen);
+    vx_ += dist_vx(gen);
+    vy_ += dist_vy(gen);
+    r_ += dist_r(gen);
 
     // Create the IMU message
     auto message = sensor_msgs::msg::Imu();
@@ -116,7 +143,7 @@ void Sensors::wheel_speed()
     // Random noise generation
     std::random_device rd; 
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoiseSensor);
+    std::normal_distribution<> dist(0.0, kNoiseWheelSpeed);
 
     // Apply noise to the state variables
     vx_ += dist(gen);
@@ -141,7 +168,7 @@ void Sensors::extensometer()
     // Random noise generation
     std::random_device rd; 
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoiseSensor);
+    std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
     // Apply noise to the state variables
     delta_ += dist(gen);

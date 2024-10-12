@@ -37,7 +37,7 @@ class Simulator : public rclcpp::Node
     double kWheelBase;
     double kFOV;
     double kSensorRate;
-    double kNoise;
+    double kNoisePerception;
     double kMinPerceptionX;
 
     rclcpp::Clock::SharedPtr clock_;

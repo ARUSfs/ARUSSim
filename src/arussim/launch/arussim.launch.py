@@ -15,9 +15,14 @@ def generate_launch_description():
     # Launch configuration variables
     rviz_config_file = LaunchConfiguration('rviz_config_file', default=rviz_config_dir)
 
-    config_file = os.path.join(get_package_share_directory(package_name), 
+    simulator_config_file = os.path.join(get_package_share_directory(package_name), 
                                'config', 
-                               'params.yaml')
+                               'simulator_params.yaml')
+    
+    sensor_config_file = os.path.join(get_package_share_directory(package_name), 
+                               'config', 
+                               'sensors_params.yaml')
+
 
     return LaunchDescription([
         # Declare the launch argument for the RViz config file
@@ -42,7 +47,7 @@ def generate_launch_description():
             executable='arussim_exec',
             name='arussim',
             output='screen',
-            parameters=[config_file]
+            parameters=[simulator_config_file]
         ),
 
         # Launch the Sensors node
@@ -51,6 +56,6 @@ def generate_launch_description():
             executable='sensors_exec',
             name='sensors',
             output='screen',
-            parameters=[config_file]
+            parameters=[sensor_config_file]
         )
     ])

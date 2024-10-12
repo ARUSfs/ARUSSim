@@ -27,9 +27,18 @@ private:
     double delta_ = 0;
 
     double kExtensometerFrequency;
+    double kNoiseExtensometer;
+
     double kWheelSpeedFrequency;
+    double kNoiseWheelSpeed;
+
     double kImuFrequency;
-    double kNoiseSensor;
+    double kNoiseImuX;
+    double kNoiseImuY;
+    double kNoiseImuYaw;
+    double kNoiseImuVx;
+    double kNoiseImuVy;
+    double kNoiseImuR;
 
     // Functions
     void state_callback(const custom_msgs::msg::State::SharedPtr msg);
