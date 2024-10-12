@@ -12,15 +12,15 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("imu.noise_imu_vx", 0.01);
     this->declare_parameter<double>("imu.noise_imu_vy", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
-    this->declare_parameter<double>("imu.imu_frequency", 50.0);
+    this->declare_parameter<double>("imu.imu_frequency", 10.0);
 
     // Declare wheel speed parameters
-    this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 0.01);
+    this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 10.0);
     this->declare_parameter<double>("wheel_speed.noise_wheel_speed", 0.01);
 
     // Declare extensometer parameters
     this->declare_parameter<double>("extensometer.extensometer_frequency", 10.0);
-    this->declare_parameter<double>("extensometer.noise_extensometer", 10.0);
+    this->declare_parameter<double>("extensometer.noise_extensometer", 0.01);
 
 
     // Get parameters
