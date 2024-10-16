@@ -1,3 +1,10 @@
+/**
+ * @file sensors.hpp
+ * @author Rafael Guil (rafaguilvalero@gmail.com)
+ * @brief Header file for sensors.cpp.
+ * @version 0.1
+ * @date 2024-10-16 
+ */
 #include <rclcpp/rclcpp.hpp>
 #include "custom_msgs/msg/state.hpp"
 #include <tf2_ros/transform_broadcaster.h>
@@ -8,9 +15,17 @@
 #include "std_msgs/msg/float32.hpp"
 #include <random>
 
+/**
+ * @class Sensors
+ * @brief Sensors class that declares variables
+ */
 class Sensors : public rclcpp::Node
 {
 public:
+    /**
+     * @brief Construct a new Sensors object
+     * 
+     */
     Sensors(); // Constructor
 
 private:
@@ -51,10 +66,29 @@ private:
     double kNoiseImuVy;
     double kNoiseImuR;
 
-    // Functions
+    /**
+     * @brief Callback function for the state subscriber
+     * 
+     * @param msg 
+     */
     void state_callback(const custom_msgs::msg::State::SharedPtr msg);
+
+    /**
+     * @brief Timer function for the extensometer
+     * 
+     */
     void extensometer_timer();
+
+    /**
+     * @brief Timer function for the wheel speed sensors
+     * 
+     */
     void wheel_speed_timer();
+    
+    /**
+     * @brief Timer function for the IMU
+     * 
+     */
     void imu_timer();
     
     
