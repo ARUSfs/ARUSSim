@@ -26,11 +26,19 @@ def generate_launch_description():
     # @var rviz_config_file A LaunchConfiguration object for RViz config file, set by a launch argument.
     rviz_config_file = LaunchConfiguration('rviz_config_file', default=rviz_config_dir)
 
-    # Define the path to the parameters file (YAML)
-    # @var config_file Full path to the parameters file used to configure ARUSim.
-    config_file = os.path.join(get_package_share_directory(package_name), 
+
+    # Define the path to the simulator parameters file (YAML)
+    # @var config_file Full path to the parameters file used to configure ARUSim node.
+    simulator_config_file = os.path.join(get_package_share_directory(package_name), 
                                'config', 
-                               'params.yaml')
+                               'simulator_params.yaml')
+    
+    # Define the path to the sensors parameters file (YAML)
+    # @var config_file Full path to the parameters file used to configure ARUSim sensors.
+    sensor_config_file = os.path.join(get_package_share_directory(package_name), 
+                               'config', 
+                               'sensors_params.yaml')
+
 
     return LaunchDescription([
         # Declare the launch argument for the RViz config file
@@ -49,13 +57,23 @@ def generate_launch_description():
             arguments=['-d', rviz_config_file]
         ),
 
-        # Launch the ARUSSim
+        # Launch the ARUSSim node
         Node(
             package='arussim',
             executable='arussim_exec',
             name='arussim',
             output='screen',
-            parameters=[config_file]
+            parameters=[simulator_config_file],
+            arguments=['--ros-args', '--params-file', simulator_config_file]
+        ),
+
+        # Launch the Sensors node
+        Node(
+            package='arussim',
+            executable='sensors_exec',
+            name='arussim',
+            output='screen',
+            parameters=[sensor_config_file],
+            arguments=['--ros-args', '--params-file', sensor_config_file]
         )
     ])
-

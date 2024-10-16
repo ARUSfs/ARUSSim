@@ -23,7 +23,7 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-# generate executables
+# generate executable for arussim_node.cpp
 add_executable(arussim_exec src/arussim_node.cpp)
 ament_target_dependencies(arussim_exec rclcpp 
                             std_msgs 
@@ -36,9 +36,19 @@ ament_target_dependencies(arussim_exec rclcpp
                             PCL
                             pcl_conversions)
 
-  
+# generate executable for sensors.cpp
+add_executable(sensors_exec src/sensors.cpp)
+ament_target_dependencies(sensors_exec rclcpp 
+                            std_msgs 
+                            sensor_msgs 
+                            custom_msgs 
+                            tf2_ros
+                            tf2)
+
+# Install both executables
 install(TARGETS
   arussim_exec
+  sensors_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location
