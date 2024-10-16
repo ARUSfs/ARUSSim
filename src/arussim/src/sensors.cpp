@@ -20,8 +20,8 @@ Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameters for each IMU variable
     this->declare_parameter<double>("imu.noise_imu_yaw", 0.01);
-    this->declare_parameter<double>("imu.noise_imu_vx", 0.01);
-    this->declare_parameter<double>("imu.noise_imu_vy", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_ax", 0.01);
+    this->declare_parameter<double>("imu.noise_imu_ay", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
     this->declare_parameter<double>("imu.imu_frequency", 100.0);
 
@@ -39,8 +39,8 @@ Sensors::Sensors() : Node("sensors")
 
     // Get parameters
     this->get_parameter("imu.noise_imu_yaw", kNoiseImuYaw);
-    this->get_parameter("imu.noise_imu_vx", kNoiseImuVx);
-    this->get_parameter("imu.noise_imu_vy", kNoiseImuVy);
+    this->get_parameter("imu.noise_imu_ax", kNoiseImuAx);
+    this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
     this->get_parameter("imu.imu_frequency", kImuFrequency);
 
@@ -112,14 +112,14 @@ void Sensors::imu_timer()
     std::mt19937 gen(rd());
 
     std::normal_distribution<> dist_yaw(0.0, kNoiseImuYaw);
-    std::normal_distribution<> dist_vx(0.0, kNoiseImuVx);
-    std::normal_distribution<> dist_vy(0.0, kNoiseImuVy);
+    std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
+    std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
     // Apply noise to the state variables
     noisy_yaw_ = yaw_ + dist_yaw(gen);
-    noisy_vx_ = vx_ + dist_vx(gen);
-    noisy_vy_ = vy_ + dist_vy(gen);
+    noisy_ax_ = ax_ + dist_ax(gen);
+    noisy_ay_ = ay_ + dist_ay(gen);
     noisy_r_ = r_ + dist_r(gen);
 
     // Create the IMU message
@@ -139,8 +139,8 @@ void Sensors::imu_timer()
     message.angular_velocity.z = noisy_r_;   // Yaw rate (r_) goes here
 
     // Fill in the linear acceleration
-    message.linear_acceleration.x = noisy_vx_;  // Linear acceleration in X
-    message.linear_acceleration.y = noisy_vy_;  // Linear acceleration in Y
+    message.linear_acceleration.x = noisy_ax_;  // Linear acceleration in X
+    message.linear_acceleration.y = noisy_ay_;  // Linear acceleration in Y
     message.linear_acceleration.z = 0.0;  // No acceleration in Z, so it's 0
 
     // Publish the IMU message

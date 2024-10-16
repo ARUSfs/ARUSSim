@@ -35,10 +35,12 @@ private:
     double yaw_ = 0;
     double vx_ = 0;
     double vy_ = 0;
+    double ax_ = 0;
+    double ay_ = 0;
     double r_ = 0;
 
-    double noisy_vx_ = 0;
-    double noisy_vy_ = 0;
+    double noisy_ax_ = 0;
+    double noisy_ay_ = 0;
     double noisy_r_ = 0;
     double noisy_yaw_ = 0;
     double noisy_delta_ = 0;
@@ -62,8 +64,8 @@ private:
     double kNoiseImuX;
     double kNoiseImuY;
     double kNoiseImuYaw;
-    double kNoiseImuVx;
-    double kNoiseImuVy;
+    double kNoiseImuAx;
+    double kNoiseImuAy;
     double kNoiseImuR;
 
     /**
