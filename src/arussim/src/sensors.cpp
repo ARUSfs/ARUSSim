@@ -1,8 +1,21 @@
+/**
+ * @file sensors.cpp
+ * @author Rafael Guil (rafaguilvalero@gmail.com)
+ * @brief Sensors node for the ARUSSIM package. This node simulates the sensors of the vehicle.
+ * @version 0.1
+ * @date 2024-10-16
+ * 
+ */
 #include "arussim/sensors.hpp"
 #include <random>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 
+/**
+ * @class Sensors
+ * @brief Sensors class for ARUSsim
+ * This class simulates some sensors of the vehicle like the IMU, wheel speed sensors and extensometer.
+ */
 Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameters for each IMU variable
@@ -72,6 +85,11 @@ Sensors::Sensors() : Node("sensors")
     );
 }
 
+/**
+ * @brief Callback function for the state subscriber
+ * 
+ * @param msg 
+ */
 void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
 {
     // Update state variables with incoming data
@@ -83,6 +101,10 @@ void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
     r_ = msg->r;
 }
 
+/**
+ * @brief Timer function for the IMU
+ * 
+ */
 void Sensors::imu_timer()
 {
     // Random noise generation with different noise for each variable
@@ -125,6 +147,10 @@ void Sensors::imu_timer()
     imu_pub_->publish(message);
 }
 
+/**
+ * @brief Timer function for the wheel speed sensors
+ * 
+ */
 void Sensors::wheel_speed_timer()
 {
     // Random noise generation with different noise for each wheel speed
@@ -153,6 +179,10 @@ void Sensors::wheel_speed_timer()
     ws_pub_->publish(message);
 }
 
+/**
+ * @brief Timer function for the extensometer
+ * 
+ */
 void Sensors::extensometer_timer()
 {
     // Random noise generation
@@ -173,6 +203,15 @@ void Sensors::extensometer_timer()
     ext_pub_->publish(message);
 }
 
+/**
+ * @brief Main function
+ * 
+ * This initializes the ROS 2 system and starts spinning the Sensor node.
+ * 
+ * @param argc Number of command line arguments.
+ * @param argv Array of command line arguments.
+ * @return int Exit status of the application. 
+ */
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
