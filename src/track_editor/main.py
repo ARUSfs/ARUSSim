@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QMessageBox, QLineEdit, QFormLayout, QDialog, QPushButton
+from PyQt5.QtWidgets import QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QMessageBox, QLineEdit, QFormLayout, QDialog, QPushButton, QVBoxLayout
 from PyQt5.QtGui import QBrush, QPen, QPixmap, QImage, QResizeEvent, QTransform, QColor, QColorConstants, QPainter, QIcon, QDoubleValidator, QRegExpValidator
 from PyQt5.QtCore import Qt, QRect, QSize, Qt, QRegExp
 
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
         self.MainWindow.setObjectName("MainWindow")
         self.MainWindow.setWindowTitle("Track editor")
 
-        self.MainWindow.resize(800, 600)
+        self.MainWindow.showMaximized()
         self.MainWindow.setWindowIcon(QIcon('icons/icon.png'))
         self.centralwidget = QtWidgets.QWidget(self.MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -178,7 +178,9 @@ class Ui_MainWindow(object):
         self.saveFileAction.setStatusTip('Save File')
         self.saveFileAction.triggered.connect(self.save_file_dialog)
         self.controlsHelpAction = QAction("&Controls")
+        self.controlsHelpAction.triggered.connect(self.controlHelp)
         self.aboutAction = QAction("&About")
+        self.aboutAction.triggered.connect(self.aboutHelp)
 
     def changeLandmarkType(self, t, option):
         self.goBackToAdd()
@@ -233,6 +235,67 @@ class Ui_MainWindow(object):
       msgBox.setWindowIcon(QIcon('icons/icon.png'))
       msgBox.setWindowTitle("Rules check")
       msgBox.exec()
+
+    def controlHelp(self):
+        dialog = QDialog(self.MainWindow)
+        dialog.setWindowTitle("Controls")
+        dialog.setWindowIcon(QIcon('icons/icon.png'))
+
+        # Crear el contenido del diálogo
+        label = QLabel('Las reglas para hacer un circuito son:\n'
+                    '1. Hacer la forma del circuito con un cono cualquiera (los grises por ejemplo)\n'
+                    '2. Darle al icono de la bandera\n'
+                    '3. Introducir los datos que pide\n'
+                    '4. Añadir las señales de tiempo (lo que parece una camara), no más de 2\n'
+                    '\n'
+                    'Para hacer un circuito bien tiene que seguir esta normativa:\n'
+                    '- trackLength <= 500 and trackLength >= 200)\n'
+                    '- minTrackWidth >= 3\n'
+                    '- minOuterDiameter >= 9\n'
+                    '- maxLaneDistance <= 5')
+
+        # Crear un botón de OK
+        okButton = QPushButton("Ok")
+        okButton.clicked.connect(dialog.accept)
+
+        # Crear el layout y añadir los widgets
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(okButton)
+        dialog.setLayout(layout)
+
+        # Definir un tamaño predefinido para el diálogo
+        dialog.resize(400, 300)  # Puedes ajustar el tamaño según tus necesidades
+
+        # Mostrar el diálogo
+        dialog.exec()
+
+    def aboutHelp(self):
+        dialog = QDialog(self.MainWindow)
+        dialog.setWindowTitle("About")
+        dialog.setWindowIcon(QIcon('icons/icon.png'))
+
+        # Crear el contenido del diálogo
+        label = QLabel('Created by: Elbflorace Dresden\n'
+                       'Improved by: Arus Andalucia Racing Team\n'
+                       'Autor: Rafael Guil\n'
+                       'eMail: rafaguilvalero@gmail.com')
+
+        # Crear un botón de OK
+        okButton = QPushButton("Ok")
+        okButton.clicked.connect(dialog.accept)
+
+        # Crear el layout y añadir los widgets
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(okButton)
+        dialog.setLayout(layout)
+
+        # Definir un tamaño predefinido para el diálogo
+        dialog.resize(200, 100)  # Puedes ajustar el tamaño según tus necesidades
+
+        # Mostrar el diálogo
+        dialog.exec()
 
     def startPoseSettings(self):
       guiLogic.graphicsView.updateCompass()
