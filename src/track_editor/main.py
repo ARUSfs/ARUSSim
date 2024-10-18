@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QMessageBox, QLineEdit, QFormLayout, QDialog, QPushButton
+from PyQt5.QtWidgets import QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QMessageBox, QLineEdit, QFormLayout, QDialog, QPushButton, QVBoxLayout
 from PyQt5.QtGui import QBrush, QPen, QPixmap, QImage, QResizeEvent, QTransform, QColor, QColorConstants, QPainter, QIcon, QDoubleValidator, QRegExpValidator
 from PyQt5.QtCore import Qt, QRect, QSize, Qt, QRegExp
 
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
         self.MainWindow.setObjectName("MainWindow")
         self.MainWindow.setWindowTitle("Track editor")
 
-        self.MainWindow.resize(800, 600)
+        self.MainWindow.showMaximized()
         self.MainWindow.setWindowIcon(QIcon('icons/icon.png'))
         self.centralwidget = QtWidgets.QWidget(self.MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -178,7 +178,9 @@ class Ui_MainWindow(object):
         self.saveFileAction.setStatusTip('Save File')
         self.saveFileAction.triggered.connect(self.save_file_dialog)
         self.controlsHelpAction = QAction("&Controls")
+        self.controlsHelpAction.triggered.connect(self.controlHelp)
         self.aboutAction = QAction("&About")
+        self.aboutAction.triggered.connect(self.aboutHelp)
 
     def changeLandmarkType(self, t, option):
         self.goBackToAdd()
@@ -223,16 +225,68 @@ class Ui_MainWindow(object):
       maxLaneDistance = self.guiLogic.getMaxLaneDistance()
       isCompliant = (trackLength <= 500 and trackLength >= 200) and (minTrackWidth >= 3) and (abs(minOuterDiameter) >= 9) and (maxLaneDistance <= 5)
       statusString = "Rules complaint" if isCompliant else "Not rules complaint"
-      stringTrackLength = "Track length: " + str(round(trackLength,2)) + "m"
-      stringTrackWidth = "Minimum track width: " + str(round(minTrackWidth,2)) + "m"
-      stringOuterDiameter = "Minimum outer track diameter: " + str(round(minOuterDiameter,2)) + "m"
-      stringMaxLaneDistance = "Max cone distance in lane: " + str(round(maxLaneDistance,2)) + "m"
+      stringTrackLength = "Track length: " + str(round(trackLength,2)) + "m " + "(trackLength <= 500 and trackLength >= 200)"
+      stringTrackWidth = "Minimum track width: " + str(round(minTrackWidth,2)) + "m " + "(minTrackWidth >= 3)"
+      stringOuterDiameter = "Minimum outer track diameter: " + str(round(minOuterDiameter,2)) + "m " +'(minOuterDiameter >= 9)'
+      stringMaxLaneDistance = "Max cone distance in lane: " + str(round(maxLaneDistance,2)) + "m " + '(maxLaneDistance <= 5)'
       msgBox = QMessageBox(parent=self.MainWindow)
       msgBox.setText(statusString + "\n" + stringTrackLength + "\n" + stringTrackWidth + "\n" + stringOuterDiameter + "\n" + stringMaxLaneDistance)
       msgBox.setStandardButtons(QMessageBox.Ok)
       msgBox.setWindowIcon(QIcon('icons/icon.png'))
       msgBox.setWindowTitle("Rules check")
       msgBox.exec()
+
+    def controlHelp(self):
+        dialog = QDialog(self.MainWindow)
+        dialog.setWindowTitle("Controls")
+        dialog.setWindowIcon(QIcon('icons/icon.png'))
+        # Create the content of the dialog
+        label = QLabel('The rules for creating a circuit are:\n'
+                '0. It must be clockwise and the main straight must be 6 meters long\n'
+                '1. Create the shape of the circuit with any cone (e.g., the gray ones)\n'
+                '2. Click on the flag icon\n'
+                '3. Enter the requested data\n'
+                '4. Add the time signals (the ones that look like a camera), no more than 2\n'
+                '\n'
+                'To create a proper circuit, it must follow these regulations:\n'
+                '- trackLength <= 500 and trackLength >= 200\n'
+                '- minTrackWidth >= 3\n'
+                '- minOuterDiameter >= 9\n'
+                '- maxLaneDistance <= 5')
+
+        okButton = QPushButton("Ok")
+        okButton.clicked.connect(dialog.accept)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(okButton)
+        dialog.setLayout(layout)
+
+        dialog.resize(400, 300)
+
+        dialog.exec()
+
+    def aboutHelp(self):
+        dialog = QDialog(self.MainWindow)
+        dialog.setWindowTitle("About")
+        dialog.setWindowIcon(QIcon('icons/icon.png'))
+
+        label = QLabel('Created by: Elbflorace Dresden\n'
+                       'Improved by: Arus Andalucia Racing Team\n'
+                       'Autor: Rafael Guil\n'
+                       'eMail: rafaguilvalero@gmail.com')
+
+        okButton = QPushButton("Ok")
+        okButton.clicked.connect(dialog.accept)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(okButton)
+        dialog.setLayout(layout)
+
+        dialog.resize(200, 100)
+
+        dialog.exec()
 
     def startPoseSettings(self):
       guiLogic.graphicsView.updateCompass()
@@ -403,7 +457,7 @@ class Ui_MainWindow(object):
             cones = self.conesOnMap()
             self.graphicsView.removeAllCones()
 
-            outer_cones, inner_cones = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*10, float(self.guiLogic.dist_cones))
+            outer_cones, inner_cones = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*1000, float(self.guiLogic.dist_cones))
 
             for x, y in outer_cones:
                 cone = ((x, y, 0), guiLogic.landmarkType.BLUE)

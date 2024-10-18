@@ -79,65 +79,82 @@ class guiLogic():
     return bestInd
 
   def getMinTrackWidth(self):
-    if(len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0):
-      return 0
-    minDistance = 999
-    offsetLane = 0
-    toBeckCheckedConesLeft = self.lanesConnectionLeft[:-1]
-    toBeckCheckedConesRight = self.lanesConnectionRight[:-1]
-    for i in range(-offsetLane,len(toBeckCheckedConesLeft)-1):
-      p1 = toBeckCheckedConesLeft[i-2][0]
-      p2 = toBeckCheckedConesLeft[i-1][0]
-      p3 = toBeckCheckedConesLeft[i][0]
-      tangential = p3-p1
-      tangential = (1/np.linalg.norm(tangential)) * tangential
-      projectionDistance = 4
-      normal = np.array([-tangential[1], tangential[0], 0])
-      normal = projectionDistance * normal
-      closestInd = self.getClosestInd(p2 + normal, toBeckCheckedConesRight)
-      indicesToCheck = np.linspace(closestInd-5, closestInd+5, num = 11, dtype=int)
-      a = []
-      b = []
-      for j in indicesToCheck:
-        a.append(toBeckCheckedConesRight[j  % len(toBeckCheckedConesRight)][0][0:2])
-        b.append(toBeckCheckedConesRight[(j+1) % len(toBeckCheckedConesRight)][0][0:2])
-      minDistance = min(minDistance, min(self.lineseg_dists(p2[0:2], np.array(a), np.array(b))))
-    return minDistance
+      if len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0:
+          return 0
+
+      minDistance = 999
+      offsetLane = 0
+      toBeCheckedConesLeft = self.lanesConnectionLeft[:-1]
+      toBeCheckedConesRight = self.lanesConnectionRight[:-1]
+
+      for i in range(-offsetLane, len(toBeCheckedConesLeft) - 1):
+          p1 = np.array(toBeCheckedConesLeft[i-2][0])  # Convert to numpy array
+          p2 = np.array(toBeCheckedConesLeft[i-1][0])  # Convert to numpy array
+          p3 = np.array(toBeCheckedConesLeft[i][0])    # Convert to numpy array
+
+          tangential = p3 - p1  # Now the subtraction can be done between numpy arrays
+          tangential = (1 / np.linalg.norm(tangential)) * tangential
+
+          projectionDistance = 4
+          normal = np.array([-tangential[1], tangential[0], 0])
+          normal = projectionDistance * normal
+
+          closestInd = self.getClosestInd(p2 + normal, toBeCheckedConesRight)
+          indicesToCheck = np.linspace(closestInd - 5, closestInd + 5, num=11, dtype=int)
+          
+          a = []
+          b = []
+          for j in indicesToCheck:
+              a.append(toBeCheckedConesRight[j % len(toBeCheckedConesRight)][0][0:2])
+              b.append(toBeCheckedConesRight[(j+1) % len(toBeCheckedConesRight)][0][0:2])
+
+          minDistance = min(minDistance, min(self.lineseg_dists(p2[0:2], np.array(a), np.array(b))))
+
+      return minDistance  
   
   def getTrackLength(self):
-    if(len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0):
-      return 0
-    leftLength = 0
-    rightLength = 0
-    offsetLane = 0
-    for i in range(-offsetLane,len(self.lanesConnectionLeft)):
-      p1 = self.lanesConnectionLeft[i-1][0]
-      p2 = self.lanesConnectionLeft[i][0]
-      dist = np.linalg.norm(p1-p2)
-      leftLength += dist
-    for i in range(-offsetLane,len(self.lanesConnectionRight)):
-      p1 = self.lanesConnectionRight[i-1][0]
-      p2 = self.lanesConnectionRight[i][0]
-      dist = np.linalg.norm(p1-p2)
-      rightLength += dist
-    return 0.5*(leftLength + rightLength)
+      if len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0:
+          return 0
+      leftLength = 0
+      rightLength = 0
+      offsetLane = 0
+
+      for i in range(-offsetLane, len(self.lanesConnectionLeft)):
+          p1 = np.array(self.lanesConnectionLeft[i-1][0])
+          p2 = np.array(self.lanesConnectionLeft[i][0])
+          dist = np.linalg.norm(p1 - p2)
+          leftLength += dist
+
+      for i in range(-offsetLane, len(self.lanesConnectionRight)):
+          p1 = np.array(self.lanesConnectionRight[i-1][0])
+          p2 = np.array(self.lanesConnectionRight[i][0])
+          dist = np.linalg.norm(p1 - p2)
+          rightLength += dist
+
+      return 0.5 * (leftLength + rightLength)
 
   def getMaxLaneDistance(self):
-    if(len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0):
-      return 0
-    maxDist = 0
-    offsetLane = -1
-    for i in range(-offsetLane,len(self.lanesConnectionLeft)):
-      p1 = self.lanesConnectionLeft[i-1][0]
-      p2 = self.lanesConnectionLeft[i][0]
-      dist = np.linalg.norm(p1-p2)
-      maxDist = max(maxDist, dist)
-    for i in range(-offsetLane,len(self.lanesConnectionRight)):
-      p1 = self.lanesConnectionRight[i-1][0]
-      p2 = self.lanesConnectionRight[i][0]
-      dist = np.linalg.norm(p1-p2)
-      maxDist = max(maxDist, dist)
-    return maxDist
+      if len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0:
+          return 0
+
+      maxDist = 0
+      offsetLane = -1
+
+      # For the left side
+      for i in range(-offsetLane, len(self.lanesConnectionLeft)):
+          p1 = np.array(self.lanesConnectionLeft[i-1][0])  # Convert to numpy array
+          p2 = np.array(self.lanesConnectionLeft[i][0])    # Convert to numpy array
+          dist = np.linalg.norm(p1 - p2)
+          maxDist = max(maxDist, dist)
+
+      # For the right side
+      for i in range(-offsetLane, len(self.lanesConnectionRight)):
+          p1 = np.array(self.lanesConnectionRight[i-1][0])  # Convert to numpy array
+          p2 = np.array(self.lanesConnectionRight[i][0])    # Convert to numpy array
+          dist = np.linalg.norm(p1 - p2)
+          maxDist = max(maxDist, dist)
+
+      return maxDist
 
   # https://stackoverflow.com/questions/41144224/calculate-curvature-for-3-points-x-y
   def getCurvature(self, point1, point2, point3):
@@ -158,28 +175,37 @@ class guiLogic():
     return curvature
 
   def getMinOuterRadius(self):
-    if(len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0):
-      return 0
-    minRadius = 999
-    offsetLane = 0
-    toBeckCheckedConesLeft = self.lanesConnectionLeft[:-1]
-    toBeckCheckedConesRight = self.lanesConnectionRight[:-1]
-    for i in range(-offsetLane,len(toBeckCheckedConesLeft)-2):
-      p1 = toBeckCheckedConesLeft[i-2][0]
-      p2 = toBeckCheckedConesLeft[i-1][0]
-      p3 = toBeckCheckedConesLeft[i][0]
-      tangential = p3-p1
-      tangential = (1/np.linalg.norm(tangential)) * tangential
-      projectionDistance = 4
-      normal = np.array([-tangential[1], tangential[0], 0])
-      normal = projectionDistance * normal
-      closestInd = self.getClosestInd(p2 + normal, self.lanesConnectionRight)
-      p4 = toBeckCheckedConesLeft[(closestInd-1) % len(toBeckCheckedConesLeft)][0]
-      p5 = toBeckCheckedConesLeft[(closestInd) % len(toBeckCheckedConesLeft)][0]
-      p6 = toBeckCheckedConesLeft[(closestInd+1) % len(toBeckCheckedConesLeft)][0]
-      minRadius = min(minRadius, max(1/self.getCurvature(p1[0:2],p2[0:2],p3[0:2]), 1/self.getCurvature(p4[0:2],p5[0:2],p6[0:2])))
-    return minRadius
+      if len(self.lanesConnectionLeft) == 0 or len(self.lanesConnectionRight) == 0:
+          return 0
 
+      minRadius = 999
+      offsetLane = 0
+      toBeCheckedConesLeft = self.lanesConnectionLeft[:-1]
+      toBeCheckedConesRight = self.lanesConnectionRight[:-1]
+
+      for i in range(-offsetLane, len(toBeCheckedConesLeft) - 2):
+          # Convert the tuples to numpy arrays for mathematical operations
+          p1 = np.array(toBeCheckedConesLeft[i-2][0])
+          p2 = np.array(toBeCheckedConesLeft[i-1][0])
+          p3 = np.array(toBeCheckedConesLeft[i][0])
+
+          # Calculate the tangential vector by subtracting the positions
+          tangential = p3 - p1
+          tangential = (1 / np.linalg.norm(tangential)) * tangential
+
+          projectionDistance = 4
+          normal = np.array([-tangential[1], tangential[0], 0])
+          normal = projectionDistance * normal
+
+          curvature = self.getCurvature(p1,p2,p3)
+
+          if(curvature < 0.05):
+            continue
+          closestInd = self.getClosestInd(p2 + normal, toBeCheckedConesRight)
+          minRadius = min(minRadius, 1.0/curvature)
+
+      return minRadius
+  
   def readMapFile(self, path):
     self.cones = []
     self.coneColorMap = {}
