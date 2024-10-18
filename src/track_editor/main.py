@@ -240,35 +240,30 @@ class Ui_MainWindow(object):
         dialog = QDialog(self.MainWindow)
         dialog.setWindowTitle("Controls")
         dialog.setWindowIcon(QIcon('icons/icon.png'))
+        # Create the content of the dialog
+        label = QLabel('The rules for creating a circuit are:\n'
+                '0. It must be clockwise and the main straight must be 6 meters long\n'
+                '1. Create the shape of the circuit with any cone (e.g., the gray ones)\n'
+                '2. Click on the flag icon\n'
+                '3. Enter the requested data\n'
+                '4. Add the time signals (the ones that look like a camera), no more than 2\n'
+                '\n'
+                'To create a proper circuit, it must follow these regulations:\n'
+                '- trackLength <= 500 and trackLength >= 200\n'
+                '- minTrackWidth >= 3\n'
+                '- minOuterDiameter >= 9\n'
+                '- maxLaneDistance <= 5')
 
-        # Crear el contenido del diálogo
-        label = QLabel('Las reglas para hacer un circuito son:\n'
-                    '0. Que sea en sentido horario y la recta principal mida 6 metros\n'
-                    '1. Hacer la forma del circuito con un cono cualquiera (los grises por ejemplo)\n'
-                    '2. Darle al icono de la bandera\n'
-                    '3. Introducir los datos que pide\n'
-                    '4. Añadir las señales de tiempo (lo que parece una camara), no más de 2\n'
-                    '\n'
-                    'Para hacer un circuito bien tiene que seguir esta normativa:\n'
-                    '- trackLength <= 500 and trackLength >= 200)\n'
-                    '- minTrackWidth >= 3\n'
-                    '- minOuterDiameter >= 9\n'
-                    '- maxLaneDistance <= 5')
-
-        # Crear un botón de OK
         okButton = QPushButton("Ok")
         okButton.clicked.connect(dialog.accept)
 
-        # Crear el layout y añadir los widgets
         layout = QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(okButton)
         dialog.setLayout(layout)
 
-        # Definir un tamaño predefinido para el diálogo
-        dialog.resize(400, 300)  # Puedes ajustar el tamaño según tus necesidades
+        dialog.resize(400, 300)
 
-        # Mostrar el diálogo
         dialog.exec()
 
     def aboutHelp(self):
@@ -276,26 +271,21 @@ class Ui_MainWindow(object):
         dialog.setWindowTitle("About")
         dialog.setWindowIcon(QIcon('icons/icon.png'))
 
-        # Crear el contenido del diálogo
         label = QLabel('Created by: Elbflorace Dresden\n'
                        'Improved by: Arus Andalucia Racing Team\n'
                        'Autor: Rafael Guil\n'
                        'eMail: rafaguilvalero@gmail.com')
 
-        # Crear un botón de OK
         okButton = QPushButton("Ok")
         okButton.clicked.connect(dialog.accept)
 
-        # Crear el layout y añadir los widgets
         layout = QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(okButton)
         dialog.setLayout(layout)
 
-        # Definir un tamaño predefinido para el diálogo
-        dialog.resize(200, 100)  # Puedes ajustar el tamaño según tus necesidades
+        dialog.resize(200, 100)
 
-        # Mostrar el diálogo
         dialog.exec()
 
     def startPoseSettings(self):
