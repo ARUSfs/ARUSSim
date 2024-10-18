@@ -65,7 +65,7 @@ def intToLandmarkType(int):
 def writeYaml(fileName, cones, leftLane, rightLane, timeKeeping, startPose, earthToTrack):
     path = Path(fileName)
 
-    all_cones = cones + leftLane + rightLane  + timeKeeping
+    all_cones = cones + leftLane + rightLane  + timeKeeping[:2]
 
     header = f"""# .PCD v0.7 - Point Cloud Data file format
 VERSION 0.7
