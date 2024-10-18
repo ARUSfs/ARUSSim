@@ -217,23 +217,34 @@ class drawView(QGraphicsView):
         return result
 
     def updateLaneLines(self):
-      for i in self.leftLines:
-          self.scene().removeItem(i)
-      for i in self.rightLines:
-          self.scene().removeItem(i)
-      # this is pretty hacky, the line also update visualization when called on mouseMoveEvent (only press or release)
-      for i in range(len(self.guiLogic.lanesConnectionLeft)-1):
-          start = self.worldToPosition(self.guiLogic.lanesConnectionLeft[i][0])
-          end = self.worldToPosition(self.guiLogic.lanesConnectionLeft[i+1][0])
-          l = QLineF(start, end)
-          self.leftLines[i].setLine(l)
-          self.scene().addItem(self.leftLines[i])
-      for i in range(len(self.guiLogic.lanesConnectionRight)-1):
-          start = self.worldToPosition(self.guiLogic.lanesConnectionRight[i][0])
-          end = self.worldToPosition(self.guiLogic.lanesConnectionRight[i+1][0])
-          l = QLineF(start, end)
-          self.rightLines[i].setLine(l)
-          self.scene().addItem(self.rightLines[i])
+        # Ensure leftLines has enough elements
+        while len(self.leftLines) < len(self.guiLogic.lanesConnectionLeft) - 1:
+            self.leftLines.append(QGraphicsLineItem())
+
+        # Ensure rightLines has enough elements
+        while len(self.rightLines) < len(self.guiLogic.lanesConnectionRight) - 1:
+            self.rightLines.append(QGraphicsLineItem())
+
+        for i in self.leftLines:
+            self.scene().removeItem(i)
+        for i in self.rightLines:
+            self.scene().removeItem(i)
+
+        # Update left lines
+        for i in range(len(self.guiLogic.lanesConnectionLeft) - 1):
+            start = self.worldToPosition(self.guiLogic.lanesConnectionLeft[i][0])
+            end = self.worldToPosition(self.guiLogic.lanesConnectionLeft[i + 1][0])
+            l = QLineF(start, end)
+            self.leftLines[i].setLine(l)
+            self.scene().addItem(self.leftLines[i])
+
+        # Update right lines
+        for i in range(len(self.guiLogic.lanesConnectionRight) - 1):
+            start = self.worldToPosition(self.guiLogic.lanesConnectionRight[i][0])
+            end = self.worldToPosition(self.guiLogic.lanesConnectionRight[i + 1][0])
+            l = QLineF(start, end)
+            self.rightLines[i].setLine(l)
+            self.scene().addItem(self.rightLines[i])
 
     def updateTimeKeepingLines(self):
       for i in self.timeKeepingLines:

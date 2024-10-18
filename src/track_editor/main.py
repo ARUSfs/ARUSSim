@@ -225,10 +225,10 @@ class Ui_MainWindow(object):
       maxLaneDistance = self.guiLogic.getMaxLaneDistance()
       isCompliant = (trackLength <= 500 and trackLength >= 200) and (minTrackWidth >= 3) and (abs(minOuterDiameter) >= 9) and (maxLaneDistance <= 5)
       statusString = "Rules complaint" if isCompliant else "Not rules complaint"
-      stringTrackLength = "Track length: " + str(round(trackLength,2)) + "m"
-      stringTrackWidth = "Minimum track width: " + str(round(minTrackWidth,2)) + "m"
-      stringOuterDiameter = "Minimum outer track diameter: " + str(round(minOuterDiameter,2)) + "m"
-      stringMaxLaneDistance = "Max cone distance in lane: " + str(round(maxLaneDistance,2)) + "m"
+      stringTrackLength = "Track length: " + str(round(trackLength,2)) + "m " + "(trackLength <= 500 and trackLength >= 200)"
+      stringTrackWidth = "Minimum track width: " + str(round(minTrackWidth,2)) + "m " + "(minTrackWidth >= 3)"
+      stringOuterDiameter = "Minimum outer track diameter: " + str(round(minOuterDiameter,2)) + "m " +'(minOuterDiameter >= 9)'
+      stringMaxLaneDistance = "Max cone distance in lane: " + str(round(maxLaneDistance,2)) + "m " + '(maxLaneDistance <= 5)'
       msgBox = QMessageBox(parent=self.MainWindow)
       msgBox.setText(statusString + "\n" + stringTrackLength + "\n" + stringTrackWidth + "\n" + stringOuterDiameter + "\n" + stringMaxLaneDistance)
       msgBox.setStandardButtons(QMessageBox.Ok)
@@ -243,6 +243,7 @@ class Ui_MainWindow(object):
 
         # Crear el contenido del diálogo
         label = QLabel('Las reglas para hacer un circuito son:\n'
+                    '0. Que sea en sentido horario y la recta principal mida 6 metros\n'
                     '1. Hacer la forma del circuito con un cono cualquiera (los grises por ejemplo)\n'
                     '2. Darle al icono de la bandera\n'
                     '3. Introducir los datos que pide\n'
@@ -466,7 +467,7 @@ class Ui_MainWindow(object):
             cones = self.conesOnMap()
             self.graphicsView.removeAllCones()
 
-            outer_cones, inner_cones = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*10, float(self.guiLogic.dist_cones))
+            outer_cones, inner_cones = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*1000, float(self.guiLogic.dist_cones))
 
             for x, y in outer_cones:
                 cone = ((x, y, 0), guiLogic.landmarkType.BLUE)
