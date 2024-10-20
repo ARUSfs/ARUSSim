@@ -96,6 +96,45 @@ Simulator::Simulator() : Node("simulator")
 }
 
 /**
+ * @brief Filters the track point cloud to extract the TPLs.
+ * 
+ * @param track 
+ */
+void Simulator::filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track)
+{
+    for (const auto& point : track.points)
+    {
+        if (point.color == 4)
+        {
+            tpl_cones_.push_back(std::make_pair(point.x, point.y));
+        }
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
+}
+
+/**
+ * @brief Checks if the vehicle is between the TPLs.
+ * 
+ * @param tpl_cones_ 
+ */
+void Simulator::between_TPLs(const std::vector<std::pair<float, float>>& tpl_cones_){
+    if (tpl_cones_.size() != 2) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
+        return;
+    }
+
+    float mid_x = (tpl_cones_[0].first + tpl_cones_[1].first) / 2.0;
+    float mid_y = (tpl_cones_[0].second + tpl_cones_[1].second) / 2.0;
+
+    RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Midpoint: (%f, %f)", mid_x, mid_y);
+
+    if (std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2)) < 4) {
+        between_TPLs_ = true;
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Between TPLs.");
+    }
+}   
+
+/**
  * @brief Slow timer callback for sensor data updates.
  * 
  * This method updates the sensor data by publishing the track and generating 
@@ -109,6 +148,13 @@ void Simulator::on_slow_timer()
     track_msg.header.stamp = clock_->now();
     track_msg.header.frame_id="arussim/world";
     track_pub_->publish(track_msg);
+
+    // Verificar si la lista está vacía
+    if (tpl_cones_.empty())
+    {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "filterCones executed.");
+        filter_cones(track_);
+    }
 
     // Random noise generation
     std::random_device rd; 
@@ -150,6 +196,8 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     update_state();
+
+    between_TPLs(tpl_cones_);
     
     auto message = custom_msgs::msg::State();
     message.x = x_;
