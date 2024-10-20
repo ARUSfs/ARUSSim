@@ -48,6 +48,7 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
+    between_tpl_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/between_tpl", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -132,6 +133,13 @@ void Simulator::between_TPLs(const std::vector<std::pair<float, float>>& tpl_con
         between_TPLs_ = true;
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Between TPLs.");
     }
+    else {
+        between_TPLs_ = false;
+    }
+    std_msgs::msg::Bool msg;
+    msg.data = between_TPLs_;
+
+    between_tpl_pub_->publish(msg);
 }   
 
 /**
@@ -149,7 +157,6 @@ void Simulator::on_slow_timer()
     track_msg.header.frame_id="arussim/world";
     track_pub_->publish(track_msg);
 
-    // Verificar si la lista está vacía
     if (tpl_cones_.empty())
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "filterCones executed.");
