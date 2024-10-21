@@ -25,7 +25,7 @@ Supervisor::Supervisor() : Node("Supervisor")
 }
 
 /**
- * @brief Callback to check if the car is between two TPLs
+ * @brief Callback to check if the car is between two TPLs and calculate lap time.
  * 
  * @param msg 
  */

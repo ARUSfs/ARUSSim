@@ -1,22 +1,38 @@
+/**
+ * @file supervisor.hpp
+ * @author Rafael Guil (rafaguilvalero@gmail.com)
+ * @brief Time per lap header file.
+ * @date 2024-10-21
+ * 
+ */
 #include <rclcpp/rclcpp.hpp>
-#include "custom_msgs/msg/state.hpp"
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include "std_msgs/msg/bool.hpp"
-#include <vector>
-#include <ctime>
-#include <numeric>
-#include <cmath> 
 #include <random>
 
+/**
+ * @class Supervisor
+ * @brief Time per lap class for the ARUSSIM package.
+ * 
+ * This class simulates the Time per lap of the vehicle on the track.
+ */
 class Supervisor : public rclcpp::Node
 {
 public:
+    /**
+     * @brief Construct a new Supervisor object
+     * 
+     */
     Supervisor();
 
 private:
+    /**
+     * @brief Callback to check if the car is between two TPLs
+     * 
+     * @param msg 
+     */
     void between_tpl_callback(const std_msgs::msg::Bool::SharedPtr msg);
 
+    //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
 
     bool between_tpl_;
