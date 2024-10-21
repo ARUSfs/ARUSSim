@@ -86,13 +86,10 @@ class Simulator : public rclcpp::Node
     double b = 0;
     double y_on_line = 0;
 
-    bool passed_tpl_;
-
     double mid_x = 0;
     double mid_y = 0;
 
-    double prev_x_ = 0;
-    double prev_y_ = 0;
+    std::pair<double, double> prev_pxy_ = {0, 0};
 
     double distance_to_midpoint = 0;
     
@@ -152,14 +149,14 @@ class Simulator : public rclcpp::Node
      * 
      * @param track 
      */
-    void filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track);
+    void extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track);
 
     /**
      * @brief Detects if the vehicle is between two TPLs.
      * 
      * @param tpl_cones_
      */
-    void between_TPLs();
+    void check_lap();
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;

@@ -77,10 +77,10 @@ def generate_launch_description():
             arguments=['--ros-args', '--params-file', sensor_config_file]
         ),
 
-        # Launch the Tpl node
+        # Launch the supervisor node
         Node(
             package='arussim',
-            executable='tpl_exec',
+            executable='supervisor_exec',
             name='arussim',
             output='screen'
         )

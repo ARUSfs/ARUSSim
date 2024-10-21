@@ -9,29 +9,20 @@
 #include <cmath> 
 #include <random>
 
-class Tpl : public rclcpp::Node
+class Supervisor : public rclcpp::Node
 {
 public:
-    Tpl();
+    Supervisor();
 
 private:
     void between_tpl_callback(const std_msgs::msg::Bool::SharedPtr msg);
-    void state_callback(const custom_msgs::msg::State::SharedPtr msg);
-    void tpl_timer();
 
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
-    rclcpp::Subscription<custom_msgs::msg::State>::SharedPtr state_sub_;
-    rclcpp::TimerBase::SharedPtr tpl_timer_;
-    rclcpp::TimerBase::SharedPtr tpl_timer_acc_;
 
-    std::string kTrackName;
     bool between_tpl_;
-    double x_, y_, yaw_, vx_, vy_, r_ = 0;
-    double total_time_list = 0;
-    double diff_time_ = 0;
+    bool started_;
 
-    rclcpp::Time current_time_;
-    rclcpp::Time start_time_;
+    double prev_time;
 
     std::vector<double> time_list_;
 

@@ -95,23 +95,7 @@ Simulator::Simulator() : Node("simulator")
                 track_.points.size(), filename.c_str());
 
     // Filter the TPL cones
-    filter_cones(track_);
-
-    // Check that tpl_cones_ contains exactly two points
-    if (tpl_cones_.size() != 2) {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
-        return;
-    }
-
-    // Calculate the slope (a) and y-intercept (b)
-    a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-    b = y1 - a * x1;
-
-    // Calculate the midpoint between the two cones
-    mid_x = (x1 + x2) / 2.0;
-    mid_y = (y1 + y2) / 2.0;
-
-
+    extract_tpl(track_);
 }
 
 /**
@@ -119,7 +103,7 @@ Simulator::Simulator() : Node("simulator")
  * 
  * @param track 
  */
-void Simulator::filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track)
+void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
 {
     for (const auto& point : track.points)
     {
@@ -141,6 +125,21 @@ void Simulator::filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track)
     x2 = tpl_cones_[1].first;
     y2 = tpl_cones_[1].second;
 
+    // Check that tpl_cones_ contains exactly two points
+    if (tpl_cones_.size() != 2) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
+        return;
+    }
+
+    // Calculate the slope (a) and y-intercept (b)
+    a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+    b = y1 - a * x1;
+
+    // Calculate the midpoint between the two cones
+    mid_x = (x1 + x2) / 2.0;
+    mid_y = (y1 + y2) / 2.0;
+
+
 }
 
 /**
@@ -148,37 +147,29 @@ void Simulator::filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track)
  * 
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
-void Simulator::between_TPLs() {
+void Simulator::check_lap() {
     // Calculate y_on_line for the current x_ position of the vehicle
     y_on_line = a * x_ + b;
 
     // Calculate the current value of the line equation
     double current_position = y_ - a * x_ - b;
-    double prev_position = prev_y_ - a * prev_x_ - b;
-
-    // Check if the sign has changed between the previous and current iteration
-    if (current_position * prev_position < 0) {
-        passed_tpl_ = !passed_tpl_;  // Changed sides of the line
-    }
+    double prev_position = prev_pxy_.second - a * prev_pxy_.first - b;
 
     // Save the current values as the previous ones for the next iteration
-    prev_x_ = x_;
-    prev_y_ = y_;
+    prev_pxy_ = {x_, y_};
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
     distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
 
-    if (passed_tpl_ && distance_to_midpoint < 5.0) {
-        between_TPLs_ = true;
-        RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Between TPLs.");
+    if (current_position * prev_position < 0 and distance_to_midpoint<5) {
+        // Publish the result
+        std_msgs::msg::Bool msg;
+        msg.data = true;
+        between_tpl_pub_->publish(msg);
+        //RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Between TPLs.");
     } else {
-        between_TPLs_ = false;
+        return;
     }
-
-    // Publish the result
-    std_msgs::msg::Bool msg;
-    msg.data = between_TPLs_;
-    between_tpl_pub_->publish(msg);
 }
 
 /**
@@ -237,7 +228,7 @@ void Simulator::on_fast_timer()
     // Update state and broadcast transform
     update_state();
 
-    between_TPLs();
+    check_lap();
     
     auto message = custom_msgs::msg::State();
     message.x = x_;
