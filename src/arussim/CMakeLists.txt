@@ -45,10 +45,19 @@ ament_target_dependencies(sensors_exec rclcpp
                             tf2_ros
                             tf2)
 
+add_executable(tpl_exec src/tpl.cpp)
+ament_target_dependencies(tpl_exec rclcpp 
+                            std_msgs 
+                            sensor_msgs 
+                            custom_msgs 
+                            tf2_ros
+                            tf2)
+
 # Install both executables
 install(TARGETS
   arussim_exec
   sensors_exec
+  tpl_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location

@@ -73,8 +73,28 @@ class Simulator : public rclcpp::Node
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
 
-    std::vector<std::pair<float, float>> tpl_cones_;
+
+    std::vector<std::pair<double, double>> tpl_cones_;
     bool between_TPLs_;
+
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+
+    double a = 0;
+    double b = 0;
+    double y_on_line = 0;
+
+    bool passed_tpl_;
+
+    double mid_x = 0;
+    double mid_y = 0;
+
+    double prev_x_ = 0;
+    double prev_y_ = 0;
+
+    double distance_to_midpoint = 0;
     
     /**
      * @brief Callback function for the slow timer.
@@ -139,7 +159,7 @@ class Simulator : public rclcpp::Node
      * 
      * @param tpl_cones_
      */
-    void between_TPLs(const std::vector<std::pair<float, float>>& tpl_cones_);
+    void between_TPLs();
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;

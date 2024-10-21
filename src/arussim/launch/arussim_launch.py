@@ -75,5 +75,13 @@ def generate_launch_description():
             output='screen',
             parameters=[sensor_config_file],
             arguments=['--ros-args', '--params-file', sensor_config_file]
+        ),
+
+        # Launch the Tpl node
+        Node(
+            package='arussim',
+            executable='tpl_exec',
+            name='arussim',
+            output='screen'
         )
     ])

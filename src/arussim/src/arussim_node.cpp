@@ -94,6 +94,24 @@ Simulator::Simulator() : Node("simulator")
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
                 track_.points.size(), filename.c_str());
 
+    // Filter the TPL cones
+    filter_cones(track_);
+
+    // Check that tpl_cones_ contains exactly two points
+    if (tpl_cones_.size() != 2) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
+        return;
+    }
+
+    // Calculate the slope (a) and y-intercept (b)
+    a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+    b = y1 - a * x1;
+
+    // Calculate the midpoint between the two cones
+    mid_x = (x1 + x2) / 2.0;
+    mid_y = (y1 + y2) / 2.0;
+
+
 }
 
 /**
@@ -111,36 +129,57 @@ void Simulator::filter_cones(const pcl::PointCloud<ConeXYZColorScore>& track)
         }
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
-}
 
-/**
- * @brief Checks if the vehicle is between the TPLs.
- * 
- * @param tpl_cones_ 
- */
-void Simulator::between_TPLs(const std::vector<std::pair<float, float>>& tpl_cones_){
     if (tpl_cones_.size() != 2) {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
         return;
     }
 
-    float mid_x = (tpl_cones_[0].first + tpl_cones_[1].first) / 2.0;
-    float mid_y = (tpl_cones_[0].second + tpl_cones_[1].second) / 2.0;
+    // Coordinates of the two cones (tpl_cones)
+    x1 = tpl_cones_[0].first;
+    y1 = tpl_cones_[0].second;
+    x2 = tpl_cones_[1].first;
+    y2 = tpl_cones_[1].second;
 
-    RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Midpoint: (%f, %f)", mid_x, mid_y);
+}
 
-    if (std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2)) < 4) {
-        between_TPLs_ = true;
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Between TPLs.");
+/**
+ * @brief Determines if the vehicle is above, below, or on the line formed by the two cones.
+ * 
+ * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
+ */
+void Simulator::between_TPLs() {
+    // Calculate y_on_line for the current x_ position of the vehicle
+    y_on_line = a * x_ + b;
+
+    // Calculate the current value of the line equation
+    double current_position = y_ - a * x_ - b;
+    double prev_position = prev_y_ - a * prev_x_ - b;
+
+    // Check if the sign has changed between the previous and current iteration
+    if (current_position * prev_position < 0) {
+        passed_tpl_ = !passed_tpl_;  // Changed sides of the line
     }
-    else {
+
+    // Save the current values as the previous ones for the next iteration
+    prev_x_ = x_;
+    prev_y_ = y_;
+
+    // Calculate the distance from the vehicle to the midpoint between the TPLs
+    distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
+
+    if (passed_tpl_ && distance_to_midpoint < 5.0) {
+        between_TPLs_ = true;
+        RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Between TPLs.");
+    } else {
         between_TPLs_ = false;
     }
+
+    // Publish the result
     std_msgs::msg::Bool msg;
     msg.data = between_TPLs_;
-
     between_tpl_pub_->publish(msg);
-}   
+}
 
 /**
  * @brief Slow timer callback for sensor data updates.
@@ -156,12 +195,6 @@ void Simulator::on_slow_timer()
     track_msg.header.stamp = clock_->now();
     track_msg.header.frame_id="arussim/world";
     track_pub_->publish(track_msg);
-
-    if (tpl_cones_.empty())
-    {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "filterCones executed.");
-        filter_cones(track_);
-    }
 
     // Random noise generation
     std::random_device rd; 
@@ -204,7 +237,7 @@ void Simulator::on_fast_timer()
     // Update state and broadcast transform
     update_state();
 
-    between_TPLs(tpl_cones_);
+    between_TPLs();
     
     auto message = custom_msgs::msg::State();
     message.x = x_;
