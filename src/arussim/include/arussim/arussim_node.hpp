@@ -84,7 +84,9 @@ class Simulator : public rclcpp::Node
 
     double a = 0;
     double b = 0;
-    double y_on_line = 0;
+
+    double current_position = 0;
+    double prev_position = 0;
 
     double mid_x = 0;
     double mid_y = 0;

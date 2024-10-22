@@ -1,14 +1,12 @@
 /**
  * @file supervisor.cpp
  * @author Rafael Guil (rafaguilvalero@gmail.com)
- * @brief Time per lap node for the ARUSSIM package. This node simulates the Time per lap of the vehicle on the track.
  * @version 0.1
  * @date 2024-10-19
  * 
  * 
  */
 #include "arussim/supervisor.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <random>
 
 
@@ -19,8 +17,8 @@
 Supervisor::Supervisor() : Node("Supervisor")
 {
     between_tpl_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/arussim/between_tpl", 10, 
-        std::bind(&Supervisor::between_tpl_callback, this, std::placeholders::_1)
+        "/arussim/tpl_signal", 10, 
+        std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );    
 }
 
@@ -29,9 +27,8 @@ Supervisor::Supervisor() : Node("Supervisor")
  * 
  * @param msg 
  */
-void Supervisor::between_tpl_callback(const std_msgs::msg::Bool::SharedPtr msg)
+void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    between_tpl_ = msg->data;
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap started");
         started_ = true;

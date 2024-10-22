@@ -30,7 +30,7 @@ private:
      * 
      * @param msg 
      */
-    void between_tpl_callback(const std_msgs::msg::Bool::SharedPtr msg);
+    void tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;

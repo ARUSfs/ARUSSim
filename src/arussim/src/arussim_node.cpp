@@ -48,7 +48,7 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
-    between_tpl_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/between_tpl", 10);
+    between_tpl_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -125,12 +125,6 @@ void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
     x2 = tpl_cones_[1].first;
     y2 = tpl_cones_[1].second;
 
-    // Check that tpl_cones_ contains exactly two points
-    if (tpl_cones_.size() != 2) {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
-        return;
-    }
-
     // Calculate the slope (a) and y-intercept (b)
     a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
     b = y1 - a * x1;
@@ -148,12 +142,9 @@ void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
 void Simulator::check_lap() {
-    // Calculate y_on_line for the current x_ position of the vehicle
-    y_on_line = a * x_ + b;
-
     // Calculate the current value of the line equation
-    double current_position = y_ - a * x_ - b;
-    double prev_position = prev_pxy_.second - a * prev_pxy_.first - b;
+    current_position = y_ - a * x_ - b;
+    prev_position = prev_pxy_.second - a * prev_pxy_.first - b;
 
     // Save the current values as the previous ones for the next iteration
     prev_pxy_ = {x_, y_};
@@ -166,7 +157,6 @@ void Simulator::check_lap() {
         std_msgs::msg::Bool msg;
         msg.data = true;
         between_tpl_pub_->publish(msg);
-        //RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "Between TPLs.");
     } else {
         return;
     }
