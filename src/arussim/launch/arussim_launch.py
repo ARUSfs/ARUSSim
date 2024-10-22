@@ -71,9 +71,17 @@ def generate_launch_description():
         Node(
             package='arussim',
             executable='sensors_exec',
-            name='arussim',
+            name='arussim_sensors',
             output='screen',
             parameters=[sensor_config_file],
             arguments=['--ros-args', '--params-file', sensor_config_file]
+        ),
+
+        # Launch the supervisor node
+        Node(
+            package='arussim',
+            executable='supervisor_exec',
+            name='arussim_supervisor',
+            output='screen'
         )
     ])

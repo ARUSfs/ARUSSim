@@ -45,10 +45,19 @@ ament_target_dependencies(sensors_exec rclcpp
                             tf2_ros
                             tf2)
 
+add_executable(supervisor_exec src/supervisor.cpp)
+ament_target_dependencies(supervisor_exec rclcpp 
+                            std_msgs 
+                            sensor_msgs 
+                            custom_msgs 
+                            tf2_ros
+                            tf2)
+
 # Install both executables
 install(TARGETS
   arussim_exec
   sensors_exec
+  supervisor_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location

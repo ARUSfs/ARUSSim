@@ -19,6 +19,7 @@
 #include <tf2/LinearMath/Matrix3x3.h> 
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include "std_msgs/msg/bool.hpp"
 #include <pcl/io/pcd_io.h>
 #include <iostream>
 #include "ConeXYZColorScore.h"
@@ -72,6 +73,28 @@ class Simulator : public rclcpp::Node
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
 
+
+    std::vector<std::pair<double, double>> tpl_cones_;
+    bool between_TPLs_;
+
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+
+    double a = 0;
+    double b = 0;
+
+    double current_position = 0;
+    double prev_position = 0;
+
+    double mid_x = 0;
+    double mid_y = 0;
+
+    std::pair<double, double> prev_pxy_ = {0, 0};
+
+    double distance_to_midpoint = 0;
+    
     /**
      * @brief Callback function for the slow timer.
      * 
@@ -123,6 +146,19 @@ class Simulator : public rclcpp::Node
      */
     void broadcast_transform();
 
+    /**
+     * @brief Filters the track point cloud to extract the TPLs.
+     * 
+     * @param track 
+     */
+    void extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track);
+
+    /**
+     * @brief Detects if the vehicle is between two TPLs.
+     * 
+     * @param tpl_cones_
+     */
+    void check_lap();
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
@@ -132,5 +168,6 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr between_tpl_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

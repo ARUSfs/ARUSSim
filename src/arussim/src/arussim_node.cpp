@@ -48,6 +48,7 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
+    between_tpl_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -93,6 +94,72 @@ Simulator::Simulator() : Node("simulator")
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
                 track_.points.size(), filename.c_str());
 
+    // Filter the TPL cones
+    extract_tpl(track_);
+}
+
+/**
+ * @brief Filters the track point cloud to extract the TPLs.
+ * 
+ * @param track 
+ */
+void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
+{
+    for (const auto& point : track.points)
+    {
+        if (point.color == 4)
+        {
+            tpl_cones_.push_back(std::make_pair(point.x, point.y));
+        }
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
+
+    if (tpl_cones_.size() != 2) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
+        return;
+    }
+
+    // Coordinates of the two cones (tpl_cones)
+    x1 = tpl_cones_[0].first;
+    y1 = tpl_cones_[0].second;
+    x2 = tpl_cones_[1].first;
+    y2 = tpl_cones_[1].second;
+
+    // Calculate the slope (a) and y-intercept (b)
+    a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+    b = y1 - a * x1;
+
+    // Calculate the midpoint between the two cones
+    mid_x = (x1 + x2) / 2.0;
+    mid_y = (y1 + y2) / 2.0;
+
+
+}
+
+/**
+ * @brief Determines if the vehicle is above, below, or on the line formed by the two cones.
+ * 
+ * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
+ */
+void Simulator::check_lap() {
+    // Calculate the current value of the line equation
+    current_position = y_ - a * x_ - b;
+    prev_position = prev_pxy_.second - a * prev_pxy_.first - b;
+
+    // Save the current values as the previous ones for the next iteration
+    prev_pxy_ = {x_, y_};
+
+    // Calculate the distance from the vehicle to the midpoint between the TPLs
+    distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
+
+    if (current_position * prev_position < 0 and distance_to_midpoint<5) {
+        // Publish the result
+        std_msgs::msg::Bool msg;
+        msg.data = true;
+        between_tpl_pub_->publish(msg);
+    } else {
+        return;
+    }
 }
 
 /**
@@ -150,6 +217,8 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     update_state();
+
+    check_lap();
     
     auto message = custom_msgs::msg::State();
     message.x = x_;
