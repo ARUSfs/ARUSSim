@@ -7,6 +7,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include "arussim/sensors.hpp"
 #include <random>
+#include <nlohmann/json.hpp>
 
 /**
  * @class Simulator
@@ -85,7 +86,7 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the track pointcloud
     std::string package_path = ament_index_cpp::get_package_share_directory("arussim");
-    std::string filename = package_path+"/resources/tracks/"+kTrackName;
+    std::string filename = package_path+"/resources/tracks/"+kTrackName+".pcd";
     if (pcl::io::loadPCDFile<ConeXYZColorScore>(filename, track_) == -1)
     {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't read file %s", filename.c_str());
@@ -96,6 +97,28 @@ Simulator::Simulator() : Node("simulator")
 
     // Filter the TPL cones
     extract_tpl(track_);
+
+
+    std::string json_filename = package_path+"/resources/tracks/"+kTrackName+".json";
+    std::ifstream tray_json(json_filename);
+    if (!tray_json.is_open()) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trayectory file %s", json_filename.c_str());
+        return;
+    }
+
+    nlohmann::json tray_data;
+    tray_json >> tray_data;
+
+    // Cerrar el archivo
+    tray_json.close();
+
+    // Extraer las listas de floats
+    std::vector<float> tray_x = tray_data["x"].get<std::vector<float>>();
+    std::vector<float> tray_y = tray_data["y"].get<std::vector<float>>();
+    std::vector<float> tray_s = tray_data["s"].get<std::vector<float>>();
+    std::vector<float> tray_k = tray_data["k"].get<std::vector<float>>();
+    std::vector<float> tray_speed_profile = tray_data["speed_profile"].get<std::vector<float>>();
+    std::vector<float> tray_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
 }
 
 /**

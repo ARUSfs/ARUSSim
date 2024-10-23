@@ -17,6 +17,7 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 include_directories(
   include
@@ -34,7 +35,8 @@ ament_target_dependencies(arussim_exec rclcpp
                             tf2_ros
                             tf2
                             PCL
-                            pcl_conversions)
+                            pcl_conversions
+                            nlohmann_json)
 
 # generate executable for sensors.cpp
 add_executable(sensors_exec src/sensors.cpp)
