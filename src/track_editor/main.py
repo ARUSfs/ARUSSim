@@ -457,7 +457,8 @@ class Ui_MainWindow(object):
             cones = self.conesOnMap()
             self.graphicsView.removeAllCones()
 
-            outer_cones, inner_cones = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*1000, float(self.guiLogic.dist_cones))
+            outer_cones, inner_cones, trajectory_json_data = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*100, float(self.guiLogic.dist_cones))
+            self.guiLogic.trajectory_json_data = trajectory_json_data
 
             for x, y in outer_cones:
                 cone = ((x, y, 0), guiLogic.landmarkType.BLUE)
@@ -468,6 +469,7 @@ class Ui_MainWindow(object):
                 cone = ((x, y, 0), guiLogic.landmarkType.YELLOW)
                 self.graphicsView.addCone(cone)
                 self.guiLogic.lanesConnectionRight.append(cone)
+
 
     def conesOnMap(self):
         self.cones = []

@@ -2,6 +2,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap as OrderedDict
 from pathlib import Path
 import numpy as np
+import json
 
 from guiLogic import landmarkType
 
@@ -62,8 +63,9 @@ def intToLandmarkType(int):
     return "timekeeping"
   return "unknown"
 
-def writeYaml(fileName, cones, leftLane, rightLane, timeKeeping, startPose, earthToTrack):
+def writeYaml(fileName, cones, leftLane, rightLane, timeKeeping, startPose, earthToTrack, trajectory_json_data):
     path = Path(fileName)
+    json_path = path.with_suffix('.json')
 
     all_cones = cones + leftLane + rightLane  + timeKeeping[:2]
 
@@ -91,6 +93,10 @@ DATA ascii
     with open(path, 'w') as f:
         f.write(header)
         f.write("\n".join(points))
+
+    
+    with open(json_path, "w") as json_file:
+        json.dump(trajectory_json_data, json_file, indent=4)  
 
 def readYaml(fileName):
     path = Path(fileName)
