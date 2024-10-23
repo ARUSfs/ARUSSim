@@ -42,7 +42,7 @@ Simulator::Simulator() : Node("simulator")
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-    state_pub_ = this->create_publisher<custom_msgs::msg::State>("/arussim/state", 10);
+    state_pub_ = this->create_publisher<arussim_msgs::msg::State>("/arussim/state", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/perception", 10);
@@ -57,7 +57,7 @@ Simulator::Simulator() : Node("simulator")
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
 
-    cmd_sub_ = this->create_subscription<custom_msgs::msg::Cmd>("/arussim/cmd", 1, 
+    cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
@@ -220,7 +220,7 @@ void Simulator::on_fast_timer()
 
     check_lap();
     
-    auto message = custom_msgs::msg::State();
+    auto message = arussim_msgs::msg::State();
     message.x = x_;
     message.y = y_;
     message.yaw = yaw_;
@@ -244,7 +244,7 @@ void Simulator::on_fast_timer()
  * 
  * @param msg Incoming control command message.
  */
-void Simulator::cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg)
+void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 {
     input_acc_ = msg->acc;
     input_delta_ = msg->delta;

@@ -55,7 +55,7 @@ Sensors::Sensors() : Node("sensors")
 
 
     // State subscriber
-    state_sub_ = this->create_subscription<custom_msgs::msg::State>(
+    state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
         "/arussim/state", 1, 
         std::bind(&Sensors::state_callback, this, std::placeholders::_1)
     );
@@ -69,7 +69,7 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Wheel speed
-    ws_pub_ = this->create_publisher<custom_msgs::msg::FourWheelDrive>("/sensors/wheel_speeds", 10);
+    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/sensors/wheel_speeds", 10);
 
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
@@ -90,7 +90,7 @@ Sensors::Sensors() : Node("sensors")
  * 
  * @param msg 
  */
-void Sensors::state_callback(const custom_msgs::msg::State::SharedPtr msg)
+void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
 {
     // Update state variables with incoming data
     x_ = msg->x;
@@ -168,7 +168,7 @@ void Sensors::wheel_speed_timer()
     speed_rear_left_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_left(gen);
 
     // Create the wheel speed message
-    auto message = custom_msgs::msg::FourWheelDrive();
+    auto message = arussim_msgs::msg::FourWheelDrive();
 
     message.front_right = speed_front_right_;    // Speed until physics is created
     message.front_left = speed_front_left_;      // Speed until physics is created
