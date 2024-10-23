@@ -9,8 +9,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "custom_msgs/msg/state.hpp"
-#include "custom_msgs/msg/cmd.hpp"
+#include "arussim_msgs/msg/state.hpp"
+#include "arussim_msgs/msg/cmd.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -119,7 +119,7 @@ class Simulator : public rclcpp::Node
      * 
      * @param msg The control command message.
      */
-    void cmd_callback(const custom_msgs::msg::Cmd::SharedPtr msg);
+    void cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg);
     
     /**
      * @brief Callback for receiving teleportation commands from RViz.
@@ -162,9 +162,9 @@ class Simulator : public rclcpp::Node
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
-    rclcpp::Subscription<custom_msgs::msg::Cmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
-    rclcpp::Publisher<custom_msgs::msg::State>::SharedPtr state_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;

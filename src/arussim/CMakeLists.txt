@@ -12,7 +12,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
-find_package(custom_msgs REQUIRED)
+find_package(arussim_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(PCL REQUIRED)
@@ -30,7 +30,7 @@ ament_target_dependencies(arussim_exec rclcpp
                             geometry_msgs 
                             sensor_msgs 
                             visualization_msgs 
-                            custom_msgs 
+                            arussim_msgs 
                             tf2_ros
                             tf2
                             PCL
@@ -41,7 +41,7 @@ add_executable(sensors_exec src/sensors.cpp)
 ament_target_dependencies(sensors_exec rclcpp 
                             std_msgs 
                             sensor_msgs 
-                            custom_msgs 
+                            arussim_msgs 
                             tf2_ros
                             tf2)
 
@@ -49,7 +49,7 @@ add_executable(supervisor_exec src/supervisor.cpp)
 ament_target_dependencies(supervisor_exec rclcpp 
                             std_msgs 
                             sensor_msgs 
-                            custom_msgs 
+                            arussim_msgs 
                             tf2_ros
                             tf2)
 

@@ -6,12 +6,12 @@
  * @date 2024-10-16 
  */
 #include <rclcpp/rclcpp.hpp>
-#include "custom_msgs/msg/state.hpp"
+#include "arussim_msgs/msg/state.hpp"
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <sensor_msgs/msg/imu.hpp>
-#include "custom_msgs/msg/four_wheel_drive.hpp"
+#include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include <random>
 
@@ -73,7 +73,7 @@ private:
      * 
      * @param msg 
      */
-    void state_callback(const custom_msgs::msg::State::SharedPtr msg);
+    void state_callback(const arussim_msgs::msg::State::SharedPtr msg);
 
     /**
      * @brief Timer function for the extensometer
@@ -95,12 +95,12 @@ private:
     
     
     // ROS Communication
-    rclcpp::Subscription<custom_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
+    rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_; // IMU publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
-    rclcpp::Publisher<custom_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
     rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Wheel speed publisher
