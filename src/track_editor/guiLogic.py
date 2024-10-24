@@ -21,6 +21,7 @@ class landmarkType(Enum):
 
 class guiLogic():
   def __init__(self, *args, **kwargs):
+    self.trajectory_json_data = None
     self.editorMode = editorMode.ADD
     self.landmarkType = landmarkType.UNDEFINED
     self.graphicsView = None
@@ -265,4 +266,4 @@ class guiLogic():
       timeKeeping.append(i[0])
       timeKeeping.append(i[1])
 
-    mapFile.writeYaml(path, conesUnknown, self.lanesConnectionLeft, self.lanesConnectionRight, timeKeeping, [self.startPosition, self.startOrientation], [self.originGeodeticCoordinates, self.originENURotation])
+    mapFile.writeYaml(path, conesUnknown, self.lanesConnectionLeft, self.lanesConnectionRight, timeKeeping, [self.startPosition, self.startOrientation], [self.originGeodeticCoordinates, self.originENURotation], self.trajectory_json_data)

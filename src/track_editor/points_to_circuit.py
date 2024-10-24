@@ -1,5 +1,6 @@
 from scipy.interpolate import splprep, splev
 import numpy as np
+import json
 
 
 def distance(point1, point2):
@@ -56,6 +57,17 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5):
     u_new = np.linspace(0, 1, num_points)
     x_smooth, y_smooth = splev(u_new, tck)
 
+
+    trajectory_json_data = {
+        "x": [x for x in x_smooth],
+        "y": [y for y in y_smooth],
+        "s": [],
+        "k": [],
+        "speed_profile": [],
+        "acc_profile": []
+    }
+
+
     # Calculate the tangents (derivatives) for each point of the smooth line
     dx, dy = splev(u_new, tck, der=1)
     
@@ -79,4 +91,4 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5):
         if i == 0 or distance(inner_cones[-1], inner_point) >= min_distance:
             inner_cones.append(inner_point)
 
-    return outer_cones, inner_cones
+    return outer_cones, inner_cones, trajectory_json_data
