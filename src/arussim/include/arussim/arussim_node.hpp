@@ -11,6 +11,8 @@
 
 #include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
+#include "arussim_msgs/msg/trajectory.hpp"
+#include "arussim_msgs/msg/point_xy.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -72,10 +74,12 @@ class Simulator : public rclcpp::Node
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
+    arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
 
 
     std::vector<std::pair<double, double>> tpl_cones_;
-    bool between_TPLs_;
+
+    bool use_tpl_ = false;
 
     double x1 = 0;
     double y1 = 0;
@@ -90,8 +94,6 @@ class Simulator : public rclcpp::Node
 
     double mid_x = 0;
     double mid_y = 0;
-
-    std::pair<double, double> prev_pxy_ = {0, 0};
 
     double distance_to_midpoint = 0;
     
@@ -147,16 +149,14 @@ class Simulator : public rclcpp::Node
     void broadcast_transform();
 
     /**
-     * @brief Filters the track point cloud to extract the TPLs.
+     * @brief Loads the track and the fixed path from resources.
      * 
      * @param track 
      */
-    void extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track);
+    void load_track(const pcl::PointCloud<ConeXYZColorScore>& track);
 
     /**
      * @brief Detects if the vehicle is between two TPLs.
-     * 
-     * @param tpl_cones_
      */
     void check_lap();
 
@@ -168,6 +168,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr between_tpl_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr lap_signal_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

@@ -49,7 +49,9 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
-    between_tpl_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
+    lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
+    fixed_trajectory_pub_ = this->create_publisher<arussim_msgs::msg::Trajectory>(
+        "/arussim/fixed_trajectory", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -85,79 +87,9 @@ Simulator::Simulator() : Node("simulator")
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
     // Load the track pointcloud
-    std::string package_path = ament_index_cpp::get_package_share_directory("arussim");
-    std::string filename = package_path+"/resources/tracks/"+kTrackName+".pcd";
-    if (pcl::io::loadPCDFile<ConeXYZColorScore>(filename, track_) == -1)
-    {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't read file %s", filename.c_str());
-        return;
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
-                track_.points.size(), filename.c_str());
-
-    // Filter the TPL cones
-    extract_tpl(track_);
-
-
-    std::string json_filename = package_path+"/resources/tracks/"+kTrackName+".json";
-    std::ifstream tray_json(json_filename);
-    if (!tray_json.is_open()) {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trayectory file %s", json_filename.c_str());
-        return;
-    }
-
-    nlohmann::json tray_data;
-    tray_json >> tray_data;
-
-    // Cerrar el archivo
-    tray_json.close();
-
-    // Extraer las listas de floats
-    std::vector<float> tray_x = tray_data["x"].get<std::vector<float>>();
-    std::vector<float> tray_y = tray_data["y"].get<std::vector<float>>();
-    std::vector<float> tray_s = tray_data["s"].get<std::vector<float>>();
-    std::vector<float> tray_k = tray_data["k"].get<std::vector<float>>();
-    std::vector<float> tray_speed_profile = tray_data["speed_profile"].get<std::vector<float>>();
-    std::vector<float> tray_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
+    load_track(track_);
 }
 
-/**
- * @brief Filters the track point cloud to extract the TPLs.
- * 
- * @param track 
- */
-void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
-{
-    for (const auto& point : track.points)
-    {
-        if (point.color == 4)
-        {
-            tpl_cones_.push_back(std::make_pair(point.x, point.y));
-        }
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
-
-    if (tpl_cones_.size() != 2) {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
-        return;
-    }
-
-    // Coordinates of the two cones (tpl_cones)
-    x1 = tpl_cones_[0].first;
-    y1 = tpl_cones_[0].second;
-    x2 = tpl_cones_[1].first;
-    y2 = tpl_cones_[1].second;
-
-    // Calculate the slope (a) and y-intercept (b)
-    a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-    b = y1 - a * x1;
-
-    // Calculate the midpoint between the two cones
-    mid_x = (x1 + x2) / 2.0;
-    mid_y = (y1 + y2) / 2.0;
-
-
-}
 
 /**
  * @brief Determines if the vehicle is above, below, or on the line formed by the two cones.
@@ -167,10 +99,6 @@ void Simulator::extract_tpl(const pcl::PointCloud<ConeXYZColorScore>& track)
 void Simulator::check_lap() {
     // Calculate the current value of the line equation
     current_position = y_ - a * x_ - b;
-    prev_position = prev_pxy_.second - a * prev_pxy_.first - b;
-
-    // Save the current values as the previous ones for the next iteration
-    prev_pxy_ = {x_, y_};
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
     distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
@@ -179,10 +107,9 @@ void Simulator::check_lap() {
         // Publish the result
         std_msgs::msg::Bool msg;
         msg.data = true;
-        between_tpl_pub_->publish(msg);
-    } else {
-        return;
-    }
+        lap_signal_pub_->publish(msg);
+    } 
+    prev_position = current_position;
 }
 
 /**
@@ -199,6 +126,8 @@ void Simulator::on_slow_timer()
     track_msg.header.stamp = clock_->now();
     track_msg.header.frame_id="arussim/world";
     track_pub_->publish(track_msg);
+
+    fixed_trajectory_pub_->publish(fixed_trajectory_msg_);
 
     // Random noise generation
     std::random_device rd; 
@@ -241,7 +170,9 @@ void Simulator::on_fast_timer()
     // Update state and broadcast transform
     update_state();
 
-    check_lap();
+    if(use_tpl_){
+        check_lap();
+    }
     
     auto message = arussim_msgs::msg::State();
     message.x = x_;
@@ -331,7 +262,7 @@ void Simulator::update_state()
  * to be visualized in RViz or used in other nodes.
  */
 void Simulator::broadcast_transform()
-  {
+{
     // Create a TransformStamped message
     geometry_msgs::msg::TransformStamped transform_stamped;
 
@@ -355,7 +286,109 @@ void Simulator::broadcast_transform()
 
     // Broadcast the transform
     tf_broadcaster_->sendTransform(transform_stamped);
-  }
+}
+
+/**
+ * @brief Filters the track point cloud to extract the TPLs.
+ * 
+ * @param track 
+ */
+void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
+{   
+    std::string package_path = ament_index_cpp::get_package_share_directory("arussim");
+    std::string filename = package_path+"/resources/tracks/"+kTrackName+".pcd";
+    if (pcl::io::loadPCDFile<ConeXYZColorScore>(filename, track_) == -1)
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't read file %s", filename.c_str());
+        return;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
+                track_.points.size(), filename.c_str());
+
+    // Extract the TPLs
+    for (const auto& point : track.points)
+    {
+        if (point.color == 4)
+        {
+            tpl_cones_.push_back(std::make_pair(point.x, point.y));
+        }
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
+
+    if (tpl_cones_.size() != 2) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
+        use_tpl_ = false;
+    } else {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPL1: (%f, %f), TPL2: (%f, %f)", 
+                    tpl_cones_[0].first, tpl_cones_[0].second, tpl_cones_[1].first, tpl_cones_[1].second);
+        use_tpl_ = true;
+
+        // Coordinates of the two cones (tpl_cones)
+        x1 = tpl_cones_[0].first;
+        y1 = tpl_cones_[0].second;
+        x2 = tpl_cones_[1].first;
+        y2 = tpl_cones_[1].second;
+
+        // Calculate the slope (a) and y-intercept (b)
+        a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        b = y1 - a * x1;
+
+        // Calculate the midpoint between the two cones
+        mid_x = (x1 + x2) / 2.0;
+        mid_y = (y1 + y2) / 2.0;
+    }
+
+
+    // Extract the fixed trajectory
+    std::string json_filename = package_path+"/resources/tracks/"+kTrackName+".json";
+    std::ifstream tray_json(json_filename);
+    if (!tray_json.is_open()) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trayectory file %s", json_filename.c_str());
+        return;
+    }
+
+    nlohmann::json tray_data;
+    tray_json >> tray_data;
+    tray_json.close();
+
+    std::vector<float> traj_x = tray_data["x"].get<std::vector<float>>();
+    std::vector<float> traj_y = tray_data["y"].get<std::vector<float>>();
+    std::vector<float> traj_s = tray_data["s"].get<std::vector<float>>();
+    std::vector<float> traj_k = tray_data["k"].get<std::vector<float>>();
+    std::vector<float> traj_speed_profile = tray_data["speed_profile"].get<std::vector<float>>();
+    std::vector<float> traj_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
+
+    if(traj_x.size() == traj_y.size() && traj_x.size() > 0) {
+        for (int i = 0; i < traj_x.size(); i++) {
+            arussim_msgs::msg::PointXY point;
+            point.x = traj_x[i];
+            point.y = traj_y[i];
+            fixed_trajectory_msg_.points.push_back(point);
+        }
+    }
+
+    if(traj_s.size() == traj_k.size() && traj_s.size() > 0) {
+        for (int i = 0; i < traj_s.size(); i++) {
+            fixed_trajectory_msg_.s.push_back(traj_s[i]);
+            fixed_trajectory_msg_.k.push_back(traj_k[i]);
+        }
+    }
+
+    if(traj_speed_profile.size() > 0) {
+        for (int i = 0; i < traj_speed_profile.size(); i++) {
+            fixed_trajectory_msg_.speed_profile.push_back(traj_speed_profile[i]);
+        }
+    }
+
+    if(traj_acc_profile.size() > 0) {
+        for (int i = 0; i < traj_acc_profile.size(); i++) {
+            fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
+        }
+    }
+
+}
+
+
 
 /**
  * @brief Main entry point for the simulator node.
