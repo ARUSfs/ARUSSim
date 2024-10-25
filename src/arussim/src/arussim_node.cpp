@@ -168,7 +168,15 @@ void Simulator::on_slow_timer()
 void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
-    update_state();
+    rclcpp::Time current_time = clock_->now();
+    if((current_time - time_last_cmd_).seconds() > 0.2 && vx_ != 0)
+    {
+        input_acc_ = vx_ > 0 ? -kFrictionCoef*9.8 : kFrictionCoef*9.8;
+    }
+
+    double dt = 0.01;
+
+    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt);
 
     if(use_tpl_){
         check_lap();
@@ -226,33 +234,6 @@ void Simulator::rviz_telep_callback(const geometry_msgs::msg::PoseWithCovariance
     vx_ = 0;
     vy_ = 0;
     r_ = 0;
-}
-
-/**
- * @brief Updates the vehicle state based on the current input and model equations.
- * 
- * This method updates the position, velocity, and orientation of the vehicle.
- */
-void Simulator::update_state()
-{
-    rclcpp::Time current_time = clock_->now();
-    if((current_time - time_last_cmd_).seconds() > 0.2 && vx_ != 0)
-    {
-        input_acc_ = vx_ > 0 ? -kFrictionCoef*9.8 : kFrictionCoef*9.8;
-    }
-
-    double dt = 0.01;
-
-    // Model equations
-    double x_dot = vx_ * std::cos(yaw_);
-    double y_dot = vx_ * std::sin(yaw_);
-    double yaw_dot = vx_ / kWheelBase * std::tan(input_delta_);
-    
-    // Update state
-    x_ += x_dot * dt;
-    y_ += y_dot * dt;
-    yaw_ += yaw_dot * dt;
-    vx_ += input_acc_ * dt;
 }
 
 /**

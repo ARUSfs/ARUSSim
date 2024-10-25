@@ -14,6 +14,8 @@
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
 
+#include "arussim/vehicle_dynamics.hpp"
+
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -56,6 +58,8 @@ class Simulator : public rclcpp::Node
     double vx_ = 0;
     double vy_ = 0;
     double r_ = 0;
+
+    VehicleDynamics vehicle_dynamics_;
 
     std::string kTrackName;
     double kFrictionCoef;
