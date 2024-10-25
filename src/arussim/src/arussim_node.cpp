@@ -68,9 +68,9 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
-    marker_.header.stamp = clock_->now();
-    marker_.ns = "arussim";
-    marker_.id = 0;
+    // marker_.header.stamp = clock_->now();
+    // marker_.ns = "arussim";
+    // marker_.id = 0;
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
     marker_.mesh_resource = "package://arussim/resources/meshes/whole_car.stl";
     marker_.action = visualization_msgs::msg::Marker::ADD;
