@@ -174,7 +174,7 @@ void Simulator::on_fast_timer()
         input_acc_ = vx_ > 0 ? -kFrictionCoef*9.8 : kFrictionCoef*9.8;
     }
 
-    double dt = 0.01;
+    double dt = 1000/kStateUpdateRate;
 
     vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt);
 

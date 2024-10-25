@@ -2,7 +2,13 @@
 
 VehicleDynamics::VehicleDynamics(){}
 
-void VehicleDynamics::update_simulation(double& x, double& y, double& yaw, double& vx, double input_delta, double input_acc, double dt){
+void VehicleDynamics::update_simulation(double& x, 
+                                        double& y, 
+                                        double& yaw, 
+                                        double& vx, 
+                                        double input_delta, 
+                                        double input_acc, 
+                                        double dt){
     calculate_dynamics(vx, input_delta);
     integrate_dynamics(x, y, yaw, vx, input_acc, dt);
 }
@@ -14,7 +20,8 @@ void VehicleDynamics::calculate_dynamics(double vx, double input_delta){
  
 }
 
-void VehicleDynamics::integrate_dynamics(double& x, double& y, double& yaw, double& vx, double input_acc, double dt){
+void VehicleDynamics::integrate_dynamics(double& x, double& y, double& yaw, double& vx, 
+                                            double input_acc, double dt){
     x += x_dot_ * dt;
     y += y_dot_ * dt;
     yaw += yaw_dot_ * dt;
