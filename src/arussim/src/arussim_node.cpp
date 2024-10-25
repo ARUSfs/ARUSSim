@@ -171,10 +171,10 @@ void Simulator::on_fast_timer()
     rclcpp::Time current_time = clock_->now();
     if((current_time - time_last_cmd_).seconds() > 0.2 && vx_ != 0)
     {
-        input_acc_ = vx_ > 0 ? -kFrictionCoef*9.8 : kFrictionCoef*9.8;
+        input_acc_ = 0;
     }
 
-    double dt = 1000/kStateUpdateRate;
+    double dt = 1/kStateUpdateRate;
 
     vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt);
 
