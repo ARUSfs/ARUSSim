@@ -1,15 +1,6 @@
 name: Deploy Sphinx documentation to Pages
 
-on:
-  push:
-    branches: 
-      - main
-      - doc
-  pull_request:
-    branches: 
-      - main
-      - doc
-  workflow_dispatch:
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -25,7 +16,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
