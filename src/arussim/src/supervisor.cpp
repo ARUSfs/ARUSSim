@@ -21,7 +21,7 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );
 
-    hitted_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
+    hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
         "/arussim/hit_cones", 10,
         std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
     );
@@ -52,12 +52,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
  */
 void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
 {
-    hitted_cones.insert(std::make_pair(msg->x, msg->y));
+    hit_cones.insert(std::make_pair(msg->x, msg->y));
 
     static size_t previous_size = 0;
-    if (hitted_cones.size() != previous_size) {
-        RCLCPP_INFO(this->get_logger(), "Hitted cones: %ld", hitted_cones.size());
-        previous_size = hitted_cones.size();
+    if (hit_cones.size() != previous_size) {
+        RCLCPP_INFO(this->get_logger(), "Hit cones: %ld", hit_cones.size());
+        previous_size = hit_cones.size();
     }
 
 }

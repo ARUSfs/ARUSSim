@@ -43,7 +43,7 @@ private:
 
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
-    rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hitted_cones_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
 
     bool between_tpl_;
     bool started_;
@@ -51,5 +51,5 @@ private:
     double prev_time;
 
     std::vector<double> time_list_;
-    std::set<std::pair<double, double>> hitted_cones;
+    std::set<std::pair<double, double>> hit_cones;
 };
