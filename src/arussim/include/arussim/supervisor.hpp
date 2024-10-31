@@ -47,9 +47,9 @@ private:
 
     bool between_tpl_;
     bool started_;
-
-    double prev_time;
+    
+    double prev_time_;
 
     std::vector<double> time_list_;
-    std::set<std::pair<double, double>> hit_cones;
+    std::set<std::pair<double, double>> hit_cones_;
 };

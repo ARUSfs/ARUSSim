@@ -39,10 +39,10 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         started_ = true;
     }
     else{
-        time_list_.push_back(this->get_clock()->now().seconds() - prev_time);
+        time_list_.push_back(this->get_clock()->now().seconds() - prev_time_);
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap %zu: %f", time_list_.size(), time_list_.back());
     }
-    prev_time = this->get_clock()->now().seconds();
+    prev_time_ = this->get_clock()->now().seconds();
 }
 
 /**
@@ -52,12 +52,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
  */
 void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
 {
-    hit_cones.insert(std::make_pair(msg->x, msg->y));
+    hit_cones_.insert(std::make_pair(msg->x, msg->y));
 
-    static size_t previous_size = 0;
-    if (hit_cones.size() != previous_size) {
-        RCLCPP_INFO(this->get_logger(), "Hit cones: %ld", hit_cones.size());
-        previous_size = hit_cones.size();
+    static size_t previous_size_ = 0;
+    if (hit_cones_.size() != previous_size_) {
+        RCLCPP_INFO(this->get_logger(), "Hit cones: %ld", hit_cones_.size());
+        previous_size_ = hit_cones_.size();
     }
 
 }

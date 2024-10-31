@@ -101,18 +101,18 @@ Simulator::Simulator() : Node("simulator")
  */
 void Simulator::check_lap() {
     // Calculate the current value of the line equation
-    current_position = y_ - a * x_ - b;
+    current_position_ = y_ - a_ * x_ - b_;
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
-    distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
+    distance_to_midpoint_ = std::sqrt(std::pow(x_ - mid_x_, 2) + std::pow(y_ - mid_y_, 2));
 
-    if (current_position * prev_position < 0 and distance_to_midpoint<5) {
+    if (current_position_ * prev_position_ < 0 and distance_to_midpoint_<5) {
         // Publish the result
         std_msgs::msg::Bool msg;
         msg.data = true;
         lap_signal_pub_->publish(msg);
     } 
-    prev_position = current_position;
+    prev_position_ = current_position_;
 }
 
 /**
@@ -155,13 +155,13 @@ void Simulator::on_slow_timer()
         }
 
         // Define the boundaries of the car
-        x_min = x_ - 0.8;
-        x_max = x_ + 2.0;
-        y_min = y_ - 0.9;
-        y_max = y_ + 0.9;
+        x_min_ = x_ - 0.8;
+        x_max_ = x_ + 2.0;
+        y_min_ = y_ - 0.9;
+        y_max_ = y_ + 0.9;
 
         // Check if the car hits a cone
-        if (point.x >= x_min && point.x <= x_max && point.y >= y_min && point.y <= y_max)
+        if (point.x >= x_min_ && point.x <= x_max_ && point.y >= y_min_ && point.y <= y_max_)
         {
             arussim_msgs::msg::PointXY msg;
             msg.x = point.x;
@@ -323,18 +323,18 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
         use_tpl_ = true;
 
         // Coordinates of the two cones (tpl_cones)
-        x1 = tpl_cones_[0].first;
-        y1 = tpl_cones_[0].second;
-        x2 = tpl_cones_[1].first;
-        y2 = tpl_cones_[1].second;
+        x1_ = tpl_cones_[0].first;
+        y1_ = tpl_cones_[0].second;
+        x2_ = tpl_cones_[1].first;
+        y2_ = tpl_cones_[1].second;
 
         // Calculate the slope (a) and y-intercept (b)
-        a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-        b = y1 - a * x1;
+        a_ = (y2_ - y1_) / (x2_ - x1_ + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        b_ = y1_ - a_ * x1_;
 
         // Calculate the midpoint between the two cones
-        mid_x = (x1 + x2) / 2.0;
-        mid_y = (y1 + y2) / 2.0;
+        mid_x_ = (x1_ + x2_) / 2.0;
+        mid_y_ = (y1_ + y2_) / 2.0;
     }
 
 

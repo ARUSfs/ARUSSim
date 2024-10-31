@@ -87,26 +87,26 @@ class Simulator : public rclcpp::Node
 
     bool use_tpl_ = false;
 
-    double x1 = 0;
-    double y1 = 0;
-    double x2 = 0;
-    double y2 = 0;
+    double x1_ = 0;
+    double y1_ = 0;
+    double x2_ = 0;
+    double y2_ = 0;
 
-    double x_min = 0; 
-    double x_max = 0; 
-    double y_min = 0; 
-    double y_max = 0; 
+    double x_min_ = 0; 
+    double x_max_ = 0; 
+    double y_min_ = 0; 
+    double y_max_ = 0; 
 
-    double a = 0;
-    double b = 0;
+    double a_ = 0;
+    double b_ = 0;
 
-    double current_position = 0;
-    double prev_position = 0;
+    double current_position_ = 0;
+    double prev_position_ = 0;
 
-    double mid_x = 0;
-    double mid_y = 0;
+    double mid_x_ = 0;
+    double mid_y_ = 0;
 
-    double distance_to_midpoint = 0;
+    double distance_to_midpoint_ = 0;
     
     /**
      * @brief Callback function for the slow timer.
