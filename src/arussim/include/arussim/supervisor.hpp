@@ -35,11 +35,11 @@ private:
     void tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
-     * @brief Callback to check if the car has hitted a cone
+     * @brief Callback to check if the car has hit a cone
      * 
      * @param msg 
      */
-    void hitted_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg);
+    void hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg);
 
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;

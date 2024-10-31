@@ -23,7 +23,7 @@ Supervisor::Supervisor() : Node("Supervisor")
 
     hitted_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
         "/arussim/hit_cones", 10,
-        std::bind(&Supervisor::hitted_cones_callback, this, std::placeholders::_1)
+        std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
     );
 }
 
@@ -46,11 +46,11 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
 }
 
 /**
- * @brief Callback to check if the car has hitted a cone.
+ * @brief Callback to check if the car has hit a cone.
  * 
  * @param msg 
  */
-void Supervisor::hitted_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
+void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
 {
     hitted_cones.insert(std::make_pair(msg->x, msg->y));
 
