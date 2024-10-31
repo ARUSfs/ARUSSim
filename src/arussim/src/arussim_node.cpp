@@ -49,7 +49,10 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
-    lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
+    lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/arussim/tpl_signal", 10);
+    hit_cones_pub_ = this->create_publisher<arussim_msgs::msg::PointXY>(
+        "/arussim/hit_cones", 10);
     fixed_trajectory_pub_ = this->create_publisher<arussim_msgs::msg::Trajectory>(
         "/arussim/fixed_trajectory", 10);
 
@@ -72,7 +75,7 @@ Simulator::Simulator() : Node("simulator")
     // marker_.ns = "arussim";
     // marker_.id = 0;
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-    marker_.mesh_resource = "package://arussim/resources/meshes/whole_car.stl";
+    marker_.mesh_resource = "package://arussim/resources/meshes/ART24D.stl";
     marker_.action = visualization_msgs::msg::Marker::ADD;
     marker_.pose.position.x = 1.0;
     marker_.pose.position.y = 0;
@@ -149,6 +152,21 @@ void Simulator::on_slow_timer()
             if (p.x > kMinPerceptionX) {
                 perception_cloud.push_back(p);
             }
+        }
+
+        // Define the boundaries of the car
+        x_min = x_ - 0.8;
+        x_max = x_ + 2.0;
+        y_min = y_ - 0.9;
+        y_max = y_ + 0.9;
+
+        // Check if the car hits a cone
+        if (point.x >= x_min && point.x <= x_max && point.y >= y_min && point.y <= y_max)
+        {
+            arussim_msgs::msg::PointXY msg;
+            msg.x = point.x;
+            msg.y = point.y;
+            hit_cones_pub_->publish(msg);
         }
     }
 

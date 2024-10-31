@@ -24,6 +24,8 @@
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include "std_msgs/msg/bool.hpp"
+#include <set>
+#include <utility>
 #include <pcl/io/pcd_io.h>
 #include <iostream>
 #include "ConeXYZColorScore.h"
@@ -89,6 +91,11 @@ class Simulator : public rclcpp::Node
     double y1 = 0;
     double x2 = 0;
     double y2 = 0;
+
+    double x_min = 0; 
+    double x_max = 0; 
+    double y_min = 0; 
+    double y_max = 0; 
 
     double a = 0;
     double b = 0;
@@ -173,6 +180,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr lap_signal_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
