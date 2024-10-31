@@ -19,7 +19,12 @@ Supervisor::Supervisor() : Node("Supervisor")
     between_tpl_sub_ = this->create_subscription<std_msgs::msg::Bool>(
         "/arussim/tpl_signal", 10, 
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
-    );    
+    );
+
+    hitted_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
+        "/arussim/hit_cones", 10,
+        std::bind(&Supervisor::hitted_cones_callback, this, std::placeholders::_1)
+    );
 }
 
 /**
@@ -38,6 +43,23 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap %zu: %f", time_list_.size(), time_list_.back());
     }
     prev_time = this->get_clock()->now().seconds();
+}
+
+/**
+ * @brief Callback to check if the car has hitted a cone.
+ * 
+ * @param msg 
+ */
+void Supervisor::hitted_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
+{
+    hitted_cones.insert(std::make_pair(msg->x, msg->y));
+
+    static size_t previous_size = 0;
+    if (hitted_cones.size() != previous_size) {
+        RCLCPP_INFO(this->get_logger(), "Hitted cones: %ld", hitted_cones.size());
+        previous_size = hitted_cones.size();
+    }
+
 }
 
 /**

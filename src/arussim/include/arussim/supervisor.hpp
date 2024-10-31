@@ -7,6 +7,8 @@
  */
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/bool.hpp"
+#include "arussim_msgs/msg/point_xy.hpp"
+#include <set>
 #include <random>
 
 /**
@@ -32,8 +34,16 @@ private:
      */
     void tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
+    /**
+     * @brief Callback to check if the car has hitted a cone
+     * 
+     * @param msg 
+     */
+    void hitted_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg);
+
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hitted_cones_sub_;
 
     bool between_tpl_;
     bool started_;
@@ -41,5 +51,5 @@ private:
     double prev_time;
 
     std::vector<double> time_list_;
-
+    std::set<std::pair<double, double>> hitted_cones;
 };
