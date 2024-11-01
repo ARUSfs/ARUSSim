@@ -91,11 +91,12 @@ class Simulator : public rclcpp::Node
     double y1_ = 0;
     double x2_ = 0;
     double y2_ = 0;
-
-    double x_min_ = 0; 
-    double x_max_ = 0; 
-    double y_min_ = 0; 
-    double y_max_ = 0; 
+    
+    //Car boundaries
+    double x_min_ = -1.0;
+    double x_max_ = 1.9;
+    double y_min_ = -0.8;
+    double y_max_ = 0.8;
 
     double a_ = 0;
     double b_ = 0;

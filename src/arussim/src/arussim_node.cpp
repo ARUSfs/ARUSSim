@@ -154,14 +154,17 @@ void Simulator::on_slow_timer()
             }
         }
 
-        // Define the boundaries of the car
-        x_min_ = x_ - 0.8;
-        x_max_ = x_ + 2.0;
-        y_min_ = y_ - 0.9;
-        y_max_ = y_ + 0.9;
+        //Calculate car boundaries rotation
+        float cos_yaw_ = std::cos(yaw_);
+        float sin_yaw_ = std::sin(yaw_);        
 
-        // Check if the car hits a cone
-        if (point.x >= x_min_ && point.x <= x_max_ && point.y >= y_min_ && point.y <= y_max_)
+        float dx_ = point.x - x_;
+        float dy_ = point.y - y_;
+
+        float x_rot_ = dx_ * cos_yaw_ + dy_ * sin_yaw_;
+        float y_rot_ = -dx_ * sin_yaw_ + dy_ * cos_yaw_;
+
+        if (x_rot_ >= x_min_ && x_rot_ <= x_max_ && y_rot_ >= y_min_ && y_rot_ <= y_max_)
         {
             arussim_msgs::msg::PointXY msg;
             msg.x = point.x;
