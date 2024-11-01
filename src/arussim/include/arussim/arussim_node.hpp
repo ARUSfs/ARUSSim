@@ -143,13 +143,6 @@ class Simulator : public rclcpp::Node
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
     
-    /**
-     * @brief Updates the vehicle's state based on the current input and model equations.
-     * 
-     * This method computes the vehicle's new position, orientation, and velocity using 
-     * basic kinematic equations and the received control inputs.
-     */
-    void update_state();
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
