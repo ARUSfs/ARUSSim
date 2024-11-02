@@ -56,7 +56,7 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
 
     static size_t previous_size_ = 0;
     if (hit_cones_.size() != previous_size_) {
-        RCLCPP_INFO(this->get_logger(), "Hit cones: %ld", hit_cones_.size());
+        RCLCPP_WARN(this->get_logger(), "Hit cones: %ld", hit_cones_.size());
         previous_size_ = hit_cones_.size();
     }
 
