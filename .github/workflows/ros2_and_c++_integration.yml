@@ -101,3 +101,26 @@ jobs:
           # Install flake8 and run PEP8 linter for Python
           sudo apt install -y flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # Replace any tabs with 4 spaces in all Python files in the src directory
+          find ./src ./docs/_source -name "*.py" -exec sed -i 's/\t/    /g' {} +
+          
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82,E101,E112 --show-source --statistics
+          
+          # Exit-zero treats all errors as warnings.
+          flake8 . --count --exit-zero --max-complexity=10 --statistics
+        
