@@ -158,24 +158,13 @@ void Simulator::on_slow_timer()
             if (p.x > kMinPerceptionX) {
                 perception_cloud.push_back(p);
             }
-        }
-
-        //Calculate car boundaries rotation
-        float cos_yaw_ = std::cos(yaw_);
-        float sin_yaw_ = std::sin(yaw_);        
-
-        float dx_ = point.x - x_;
-        float dy_ = point.y - y_;
-
-        float x_rot_ = dx_ * cos_yaw_ + dy_ * sin_yaw_;
-        float y_rot_ = -dx_ * sin_yaw_ + dy_ * cos_yaw_;
-
-        if (x_rot_ >= kCOGBackDist && x_rot_ <= kCOGFrontDist && y_rot_ >= -kCarWidth && y_rot_ <= kCarWidth)
-        {
-            arussim_msgs::msg::PointXY msg;
-            msg.x = point.x;
-            msg.y = point.y;
-            hit_cones_pub_->publish(msg);
+            if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
+            {
+                arussim_msgs::msg::PointXY msg;
+                msg.x = point.x;
+                msg.y = point.y;
+                hit_cones_pub_->publish(msg);
+            }
         }
     }
 
