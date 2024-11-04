@@ -22,8 +22,11 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("track", "FSG.pcd");
     this->declare_parameter<double>("friction_coef", 0.5);
     this->declare_parameter<double>("state_update_rate", 100);
-    this->declare_parameter<double>("mass", 200);
-    this->declare_parameter<double>("wheel_base", 1.5);
+    this->declare_parameter<double>("vehicle.mass", 200);
+    this->declare_parameter<double>("vehicle.wheel_base", 1.5);
+    this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
+    this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
+    this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("sensor.fov_radius", 20);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
@@ -32,8 +35,11 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("mass", kMass);
-    this->get_parameter("wheel_base", kWheelBase);
+    this->get_parameter("vehicle.mass", kMass);
+    this->get_parameter("vehicle.wheel_base", kWheelBase);
+    this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
+    this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
+    this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.fov_radius", kFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
@@ -101,10 +107,10 @@ Simulator::Simulator() : Node("simulator")
  */
 void Simulator::check_lap() {
     // Calculate the current value of the line equation
-    current_position_ = y_ - a_ * x_ - b_;
+    current_position_ = y_ - tpl_coef_a_ * x_ -tpl_coef_b_;
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
-    distance_to_midpoint_ = std::sqrt(std::pow(x_ - mid_x_, 2) + std::pow(y_ - mid_y_, 2));
+    distance_to_midpoint_ = std::sqrt(std::pow(x_ - mid_tpl_x_, 2) + std::pow(y_ - mid_tpl_y_, 2));
 
     if (current_position_ * prev_position_ < 0 and distance_to_midpoint_<5) {
         // Publish the result
@@ -164,7 +170,7 @@ void Simulator::on_slow_timer()
         float x_rot_ = dx_ * cos_yaw_ + dy_ * sin_yaw_;
         float y_rot_ = -dx_ * sin_yaw_ + dy_ * cos_yaw_;
 
-        if (x_rot_ >= x_min_ && x_rot_ <= x_max_ && y_rot_ >= y_min_ && y_rot_ <= y_max_)
+        if (x_rot_ >= kCOGBackDist && x_rot_ <= kCOGFrontDist && y_rot_ >= -kCarWidth && y_rot_ <= kCarWidth)
         {
             arussim_msgs::msg::PointXY msg;
             msg.x = point.x;
@@ -326,18 +332,18 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
         use_tpl_ = true;
 
         // Coordinates of the two cones (tpl_cones)
-        x1_ = tpl_cones_[0].first;
-        y1_ = tpl_cones_[0].second;
-        x2_ = tpl_cones_[1].first;
-        y2_ = tpl_cones_[1].second;
+        double x1_ = tpl_cones_[0].first;
+        double y1_ = tpl_cones_[0].second;
+        double x2_ = tpl_cones_[1].first;
+        double y2_ = tpl_cones_[1].second;
 
         // Calculate the slope (a) and y-intercept (b)
-        a_ = (y2_ - y1_) / (x2_ - x1_ + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-        b_ = y1_ - a_ * x1_;
+        tpl_coef_a_ = (y2_ - y1_) / (x2_ - x1_ + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        tpl_coef_b_ = y1_ - tpl_coef_a_ * x1_;
 
         // Calculate the midpoint between the two cones
-        mid_x_ = (x1_ + x2_) / 2.0;
-        mid_y_ = (y1_ + y2_) / 2.0;
+        mid_tpl_x_ = (x1_ + x2_) / 2.0;
+        mid_tpl_y_ = (y1_ + y2_) / 2.0;
     }
 
 

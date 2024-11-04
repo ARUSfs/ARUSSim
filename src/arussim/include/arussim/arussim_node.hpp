@@ -73,6 +73,11 @@ class Simulator : public rclcpp::Node
     double kNoisePerception;
     double kMinPerceptionX;
 
+    //Car boundaries
+    double kCOGFrontDist;
+    double kCOGBackDist;
+    double kCarWidth;
+
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
     double input_acc_;
@@ -87,25 +92,14 @@ class Simulator : public rclcpp::Node
 
     bool use_tpl_ = false;
 
-    double x1_ = 0;
-    double y1_ = 0;
-    double x2_ = 0;
-    double y2_ = 0;
-    
-    //Car boundaries
-    double x_min_ = -1.0;
-    double x_max_ = 1.9;
-    double y_min_ = -0.8;
-    double y_max_ = 0.8;
-
-    double a_ = 0;
-    double b_ = 0;
+    double tpl_coef_a_ = 0;
+    double tpl_coef_b_ = 0;
 
     double current_position_ = 0;
     double prev_position_ = 0;
 
-    double mid_x_ = 0;
-    double mid_y_ = 0;
+    double mid_tpl_x_ = 0;
+    double mid_tpl_y_ = 0;
 
     double distance_to_midpoint_ = 0;
     

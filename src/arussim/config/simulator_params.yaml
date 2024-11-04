@@ -6,7 +6,10 @@ arussim:
 
     vehicle:
       mass:               270.0   # kg
-      wheel_base:         1.535     # m
+      wheel_base:         1.535   # m
+      COG_front_dist:     1.9     # m
+      COG_back_dist:      -1.0    # m
+      car_width:          0.8     # m
 
     sensor:
       fov_radius:         20.0    # m   Perception circular range
