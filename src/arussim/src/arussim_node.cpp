@@ -250,7 +250,7 @@ void Simulator::on_fast_timer()
 
     double dt = 1/kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt);
+    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt, kMass, kWheelBase);
 
     if(use_tpl_){
         check_lap();
