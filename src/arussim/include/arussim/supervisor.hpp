@@ -8,8 +8,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
-#include <set>
-#include <random>
+#include <algorithm>
+#include <vector>
+#include <utility>
 
 /**
  * @class Supervisor
@@ -49,7 +50,9 @@ private:
     bool started_;
     
     double prev_time_;
+    size_t n_total_cones_hit_ = 0;
 
     std::vector<double> time_list_;
-    std::set<std::pair<double, double>> hit_cones_;
+    std::vector<std::pair<double, double>> hit_cones_lap_;
+    std::vector<std::vector<std::pair<double, double>>> list_total_hit_cones_;
 };

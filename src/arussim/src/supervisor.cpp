@@ -28,7 +28,7 @@ Supervisor::Supervisor() : Node("Supervisor")
 }
 
 /**
- * @brief Callback to check if the car is between two TPLs and calculate lap time.
+ * @brief Callback to check if the car is between two TPLs.
  * 
  * @param msg 
  */
@@ -40,7 +40,15 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     }
     else{
         time_list_.push_back(this->get_clock()->now().seconds() - prev_time_);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap %zu: %f", time_list_.size(), time_list_.back());
+
+        // Detect hit cones in this lap and add to total
+        list_total_hit_cones_.push_back(hit_cones_lap_);
+        hit_cones_lap_.clear();
+
+        for (const auto& i : list_total_hit_cones_) {
+            n_total_cones_hit_ += i.size();
+        }
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "LAP %zu: %f. TOTAL HIT CONES: %zu", time_list_.size(), time_list_.back(), n_total_cones_hit_);
     }
     prev_time_ = this->get_clock()->now().seconds();
 }
@@ -52,14 +60,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
  */
 void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
 {
-    hit_cones_.insert(std::make_pair(msg->x, msg->y));
+    auto cone_position = std::make_pair(static_cast<double>(msg->x), static_cast<double>(msg->y));
 
-    static size_t previous_size_ = 0;
-    if (hit_cones_.size() != previous_size_) {
-        RCLCPP_WARN(this->get_logger(), "Hit cones: %ld", hit_cones_.size());
-        previous_size_ = hit_cones_.size();
+    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end()) {
+        hit_cones_lap_.push_back(cone_position);
+        RCLCPP_WARN(this->get_logger(), "Hit cones: %zu", hit_cones_lap_.size());
     }
-
 }
 
 /**
