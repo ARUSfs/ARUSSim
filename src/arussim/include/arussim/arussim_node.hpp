@@ -18,6 +18,7 @@
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h> 
@@ -159,6 +160,12 @@ class Simulator : public rclcpp::Node
      */
     void check_lap();
 
+    /**
+     * @brief Make a MarkerArray of all cones of the track
+     * 
+     */
+    void cone_visualization();
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
@@ -167,6 +174,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr cone_marker_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr lap_signal_pub_;
     rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;

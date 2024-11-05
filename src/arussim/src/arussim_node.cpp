@@ -55,6 +55,8 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
+    cone_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+        "/arussim/cone_visualization", 1);
     lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>(
         "/arussim/tpl_signal", 10);
     hit_cones_pub_ = this->create_publisher<arussim_msgs::msg::PointXY>(
@@ -173,6 +175,62 @@ void Simulator::on_slow_timer()
     perception_msg.header.stamp = clock_->now();
     perception_msg.header.frame_id="arussim/vehicle_cog";
     perception_pub_->publish(perception_msg);
+
+    cone_visualization();
+}
+
+/**
+ * @brief Make a MarkerArray of all cones of the track
+ * 
+ */
+void Simulator::cone_visualization(){
+    visualization_msgs::msg::MarkerArray cone_markers;
+    int id_counter = 0; // Contador para IDs únicos de cada cono
+
+    for (const auto& point : track_.points) {
+        visualization_msgs::msg::Marker cone_marker;
+        cone_marker.header.frame_id = "arussim/world";
+        cone_marker.header.stamp = clock_->now();
+        cone_marker.ns = "arussim/cones";
+        cone_marker.id = id_counter++;  // ID único para cada cono
+        cone_marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+        cone_marker.mesh_resource = "package://arussim/resources/meshes/cone.stl";
+        cone_marker.action = visualization_msgs::msg::Marker::ADD;
+        cone_marker.pose.position.x = point.x;
+        cone_marker.pose.position.y = point.y;
+        cone_marker.pose.position.z = 0.0;
+        cone_marker.scale.x = 0.001;
+        cone_marker.scale.y = 0.001;
+        cone_marker.scale.z = 0.001;
+        if (point.color == 0) {
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.0;
+            cone_marker.color.b = 1.0;
+        } else if (point.color == 1){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 1.0;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 2){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 3){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 4){
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.5;
+            cone_marker.color.b = 0.0;
+        }
+        cone_marker.color.a = 1.0;
+        cone_marker.lifetime = rclcpp::Duration::from_seconds(0.0); // Visible indefinidamente
+
+        cone_markers.markers.push_back(cone_marker); // Agrega el marcador al array
+    }
+
+    // Publica todos los conos de una vez
+    cone_marker_pub_->publish(cone_markers);
 }
 
 /**
