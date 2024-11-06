@@ -18,12 +18,15 @@
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h> 
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include "std_msgs/msg/bool.hpp"
+#include <set>
+#include <utility>
 #include <pcl/io/pcd_io.h>
 #include <iostream>
 #include "ConeXYZColorScore.h"
@@ -67,9 +70,15 @@ class Simulator : public rclcpp::Node
     double kMass;
     double kWheelBase;
     double kFOV;
+    double kPosLidarX;
     double kSensorRate;
     double kNoisePerception;
     double kMinPerceptionX;
+
+    //Car boundaries
+    double kCOGFrontDist;
+    double kCOGBackDist;
+    double kCarWidth;
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
@@ -85,21 +94,13 @@ class Simulator : public rclcpp::Node
 
     bool use_tpl_ = false;
 
-    double x1 = 0;
-    double y1 = 0;
-    double x2 = 0;
-    double y2 = 0;
+    double tpl_coef_a_ = 0;
+    double tpl_coef_b_ = 0;
 
-    double a = 0;
-    double b = 0;
+    double prev_dist_to_tpl_ = 0;
 
-    double current_position = 0;
-    double prev_position = 0;
-
-    double mid_x = 0;
-    double mid_y = 0;
-
-    double distance_to_midpoint = 0;
+    double mid_tpl_x_ = 0;
+    double mid_tpl_y_ = 0;
     
     /**
      * @brief Callback function for the slow timer.
@@ -136,13 +137,6 @@ class Simulator : public rclcpp::Node
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
     
-    /**
-     * @brief Updates the vehicle's state based on the current input and model equations.
-     * 
-     * This method computes the vehicle's new position, orientation, and velocity using 
-     * basic kinematic equations and the received control inputs.
-     */
-    void update_state();
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
@@ -164,6 +158,12 @@ class Simulator : public rclcpp::Node
      */
     void check_lap();
 
+    /**
+     * @brief Make a MarkerArray of all cones of the track
+     * 
+     */
+    void cone_visualization();
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
@@ -172,7 +172,9 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr cone_marker_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr lap_signal_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

@@ -19,25 +19,59 @@ Supervisor::Supervisor() : Node("Supervisor")
     between_tpl_sub_ = this->create_subscription<std_msgs::msg::Bool>(
         "/arussim/tpl_signal", 10, 
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
-    );    
+    );
+
+    hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
+        "/arussim/hit_cones", 10,
+        std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
+    );
 }
 
 /**
- * @brief Callback to check if the car is between two TPLs and calculate lap time.
+ * @brief Callback to check if the car is between two TPLs.
  * 
  * @param msg 
  */
 void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     if (!started_){
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap started");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         started_ = true;
     }
     else{
-        time_list_.push_back(this->get_clock()->now().seconds() - prev_time);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap %zu: %f", time_list_.size(), time_list_.back());
+        time_list_.push_back(this->get_clock()->now().seconds() - prev_time_);
+
+        // Detect hit cones in this lap and add to total
+        list_total_hit_cones_.push_back(hit_cones_lap_);
+        hit_cones_lap_.clear();
+
+        size_t n_total_cones_hit_ = 0;
+        for (const auto& i : list_total_hit_cones_) {
+            n_total_cones_hit_ += i.size();
+        }
+        if(n_total_cones_hit_ == 0){
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. TOTAL HIT CONES: %zu%s", green.c_str(), time_list_.size(), time_list_.back(), n_total_cones_hit_, reset.c_str());
+        }
+        else{
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. %sTOTAL HIT CONES: %zu%s", green.c_str(), time_list_.size(), time_list_.back(), yellow.c_str(), n_total_cones_hit_, reset.c_str());
+        }
     }
-    prev_time = this->get_clock()->now().seconds();
+    prev_time_ = this->get_clock()->now().seconds();
+}
+
+/**
+ * @brief Callback to check if the car has hit a cone.
+ * 
+ * @param msg 
+ */
+void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg)
+{
+    auto cone_position = std::make_pair(static_cast<double>(msg->x), static_cast<double>(msg->y));
+
+    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end()) {
+        hit_cones_lap_.push_back(cone_position);
+        RCLCPP_INFO(this->get_logger(), "%sHit cones: %zu%s", yellow.c_str(), hit_cones_lap_.size(), reset.c_str());
+    }
 }
 
 /**

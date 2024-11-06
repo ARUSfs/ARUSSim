@@ -22,9 +22,13 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("track", "FSG.pcd");
     this->declare_parameter<double>("friction_coef", 0.5);
     this->declare_parameter<double>("state_update_rate", 100);
-    this->declare_parameter<double>("mass", 200);
-    this->declare_parameter<double>("wheel_base", 1.5);
+    this->declare_parameter<double>("vehicle.mass", 200);
+    this->declare_parameter<double>("vehicle.wheel_base", 1.5);
+    this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
+    this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
+    this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("sensor.fov_radius", 20);
+    this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
@@ -32,9 +36,13 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("mass", kMass);
-    this->get_parameter("wheel_base", kWheelBase);
+    this->get_parameter("vehicle.mass", kMass);
+    this->get_parameter("vehicle.wheel_base", kWheelBase);
+    this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
+    this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
+    this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.fov_radius", kFOV);
+    this->get_parameter("sensor.position_lidar_x", kPosLidarX);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
@@ -49,7 +57,12 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
-    lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/tpl_signal", 10);
+    cone_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+        "/arussim/cone_visualization", 1);
+    lap_signal_pub_ = this->create_publisher<std_msgs::msg::Bool>(
+        "/arussim/tpl_signal", 10);
+    hit_cones_pub_ = this->create_publisher<arussim_msgs::msg::PointXY>(
+        "/arussim/hit_cones", 10);
     fixed_trajectory_pub_ = this->create_publisher<arussim_msgs::msg::Trajectory>(
         "/arussim/fixed_trajectory", 10);
 
@@ -68,11 +81,8 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
-    // marker_.header.stamp = clock_->now();
-    // marker_.ns = "arussim";
-    // marker_.id = 0;
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-    marker_.mesh_resource = "package://arussim/resources/meshes/whole_car.stl";
+    marker_.mesh_resource = "package://arussim/resources/meshes/ART24D.stl";
     marker_.action = visualization_msgs::msg::Marker::ADD;
     marker_.pose.position.x = 1.0;
     marker_.pose.position.y = 0;
@@ -97,19 +107,19 @@ Simulator::Simulator() : Node("simulator")
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
 void Simulator::check_lap() {
-    // Calculate the current value of the line equation
-    current_position = y_ - a * x_ - b;
+    // Calculate the signed distance from the vehicle to the line equation through the TPLs
+    double dist_to_tpl = y_ - tpl_coef_a_ * x_ - tpl_coef_b_;
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
-    distance_to_midpoint = std::sqrt(std::pow(x_ - mid_x, 2) + std::pow(y_ - mid_y, 2));
+    double d = std::sqrt(std::pow(x_ - mid_tpl_x_, 2) + std::pow(y_ - mid_tpl_y_, 2));
 
-    if (current_position * prev_position < 0 and distance_to_midpoint<5) {
+    if (dist_to_tpl * prev_dist_to_tpl_ < 0 and d < 5) {
         // Publish the result
         std_msgs::msg::Bool msg;
         msg.data = true;
         lap_signal_pub_->publish(msg);
     } 
-    prev_position = current_position;
+    prev_dist_to_tpl_ = dist_to_tpl;
 }
 
 /**
@@ -137,7 +147,7 @@ void Simulator::on_slow_timer()
     auto perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)
     {
-        double d = std::sqrt(std::pow(point.x - x_, 2) + std::pow(point.y - y_, 2));
+        double d = std::sqrt(std::pow(point.x - (x_ + kPosLidarX*std::cos(yaw_)), 2) + std::pow(point.y - (y_ + kPosLidarX*std::sin(yaw_)), 2));
         if (d < kFOV)
         {
             ConeXYZColorScore p;
@@ -149,6 +159,13 @@ void Simulator::on_slow_timer()
             if (p.x > kMinPerceptionX) {
                 perception_cloud.push_back(p);
             }
+            if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
+            {
+                arussim_msgs::msg::PointXY msg;
+                msg.x = point.x;
+                msg.y = point.y;
+                hit_cones_pub_->publish(msg);
+            }
         }
     }
 
@@ -157,7 +174,10 @@ void Simulator::on_slow_timer()
     perception_msg.header.stamp = clock_->now();
     perception_msg.header.frame_id="arussim/vehicle_cog";
     perception_pub_->publish(perception_msg);
+
+    cone_visualization();
 }
+
 
 /**
  * @brief Fast timer callback for state updates.
@@ -176,7 +196,7 @@ void Simulator::on_fast_timer()
 
     double dt = 1/kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt);
+    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt, kMass, kWheelBase);
 
     if(use_tpl_){
         check_lap();
@@ -305,18 +325,18 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
         use_tpl_ = true;
 
         // Coordinates of the two cones (tpl_cones)
-        x1 = tpl_cones_[0].first;
-        y1 = tpl_cones_[0].second;
-        x2 = tpl_cones_[1].first;
-        y2 = tpl_cones_[1].second;
+        double x1_ = tpl_cones_[0].first;
+        double y1_ = tpl_cones_[0].second;
+        double x2_ = tpl_cones_[1].first;
+        double y2_ = tpl_cones_[1].second;
 
         // Calculate the slope (a) and y-intercept (b)
-        a = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-        b = y1 - a * x1;
+        tpl_coef_a_ = (y2_ - y1_) / (x2_ - x1_ + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        tpl_coef_b_ = y1_ - tpl_coef_a_ * x1_;
 
         // Calculate the midpoint between the two cones
-        mid_x = (x1 + x2) / 2.0;
-        mid_y = (y1 + y2) / 2.0;
+        mid_tpl_x_ = (x1_ + x2_) / 2.0;
+        mid_tpl_y_ = (y1_ + y2_) / 2.0;
     }
 
 
@@ -340,7 +360,7 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     std::vector<float> traj_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
 
     if(traj_x.size() == traj_y.size() && traj_x.size() > 0) {
-        for (int i = 0; i < traj_x.size(); i++) {
+        for (size_t i = 0; i < traj_x.size(); i++) {
             arussim_msgs::msg::PointXY point;
             point.x = traj_x[i];
             point.y = traj_y[i];
@@ -349,26 +369,78 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     }
 
     if(traj_s.size() == traj_k.size() && traj_s.size() > 0) {
-        for (int i = 0; i < traj_s.size(); i++) {
+        for (size_t i = 0; i < traj_s.size(); i++) {
             fixed_trajectory_msg_.s.push_back(traj_s[i]);
             fixed_trajectory_msg_.k.push_back(traj_k[i]);
         }
     }
 
     if(traj_speed_profile.size() > 0) {
-        for (int i = 0; i < traj_speed_profile.size(); i++) {
+        for (size_t i = 0; i < traj_speed_profile.size(); i++) {
             fixed_trajectory_msg_.speed_profile.push_back(traj_speed_profile[i]);
         }
     }
 
     if(traj_acc_profile.size() > 0) {
-        for (int i = 0; i < traj_acc_profile.size(); i++) {
+        for (size_t i = 0; i < traj_acc_profile.size(); i++) {
             fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
         }
     }
 
 }
 
+
+/**
+ * @brief Make a MarkerArray of all cones of the track
+ * 
+ */
+void Simulator::cone_visualization(){
+    visualization_msgs::msg::MarkerArray cone_markers;
+    int id_counter = 0;
+
+    for (const auto& point : track_.points) {
+        visualization_msgs::msg::Marker cone_marker;
+        cone_marker.header.frame_id = "arussim/world";
+        cone_marker.ns = "arussim/cones";
+        cone_marker.id = id_counter++;  // unique ID for each cone
+        cone_marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+        cone_marker.mesh_resource = "package://arussim/resources/meshes/cone.stl";
+        cone_marker.action = visualization_msgs::msg::Marker::ADD;
+        cone_marker.pose.position.x = point.x;
+        cone_marker.pose.position.y = point.y;
+        cone_marker.pose.position.z = 0.0;
+        cone_marker.scale.x = 0.001;
+        cone_marker.scale.y = 0.001;
+        cone_marker.scale.z = 0.001;
+        if (point.color == 0) {
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.0;
+            cone_marker.color.b = 1.0;
+        } else if (point.color == 1){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 1.0;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 2){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 3){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 4){
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.5;
+            cone_marker.color.b = 0.0;
+        }
+        cone_marker.color.a = 1.0;
+        cone_marker.lifetime = rclcpp::Duration::from_seconds(0.0); // Infinite lifetime
+
+        cone_markers.markers.push_back(cone_marker);
+    }
+
+    cone_marker_pub_->publish(cone_markers);
+}
 
 
 /**

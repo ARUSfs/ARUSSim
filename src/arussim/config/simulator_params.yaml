@@ -6,10 +6,14 @@ arussim:
 
     vehicle:
       mass:               270.0   # kg
-      wheel_base:         1.535     # m
+      wheel_base:         1.535   # m
+      COG_front_dist:     1.9     # m
+      COG_back_dist:      -1.0    # m
+      car_width:          0.8     # m
 
     sensor:
       fov_radius:         20.0    # m   Perception circular range
       pub_rate:           10.0    # Hz  Publish rate
       noise_perception:   0.01    # m   Noise standard deviation
       cut_cones_below_x:  -1.0    # m   Cut cones that are further than this distance in x car axis
+      position_lidar_x:   1.8     # m   Position of the lidar in x car axis
