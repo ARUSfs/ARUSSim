@@ -96,13 +96,10 @@ class Simulator : public rclcpp::Node
     double tpl_coef_a_ = 0;
     double tpl_coef_b_ = 0;
 
-    double current_position_ = 0;
-    double prev_position_ = 0;
+    double prev_dist_to_tpl_ = 0;
 
     double mid_tpl_x_ = 0;
     double mid_tpl_y_ = 0;
-
-    double distance_to_midpoint_ = 0;
     
     /**
      * @brief Callback function for the slow timer.

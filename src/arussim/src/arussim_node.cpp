@@ -79,9 +79,6 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
-    // marker_.header.stamp = clock_->now();
-    // marker_.ns = "arussim";
-    // marker_.id = 0;
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
     marker_.mesh_resource = "package://arussim/resources/meshes/ART24D.stl";
     marker_.action = visualization_msgs::msg::Marker::ADD;
@@ -108,19 +105,19 @@ Simulator::Simulator() : Node("simulator")
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
 void Simulator::check_lap() {
-    // Calculate the current value of the line equation
-    current_position_ = y_ - tpl_coef_a_ * x_ -tpl_coef_b_;
+    // Calculate the signed distance from the vehicle to the line equation through the TPLs
+    double dist_to_tpl = y_ - tpl_coef_a_ * x_ - tpl_coef_b_;
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
-    distance_to_midpoint_ = std::sqrt(std::pow(x_ - mid_tpl_x_, 2) + std::pow(y_ - mid_tpl_y_, 2));
+    double d = std::sqrt(std::pow(x_ - mid_tpl_x_, 2) + std::pow(y_ - mid_tpl_y_, 2));
 
-    if (current_position_ * prev_position_ < 0 and distance_to_midpoint_<5) {
+    if (dist_to_tpl * prev_dist_to_tpl_ < 0 and d < 5) {
         // Publish the result
         std_msgs::msg::Bool msg;
         msg.data = true;
         lap_signal_pub_->publish(msg);
     } 
-    prev_position_ = current_position_;
+    prev_dist_to_tpl_ = dist_to_tpl;
 }
 
 /**
@@ -179,59 +176,6 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 
-/**
- * @brief Make a MarkerArray of all cones of the track
- * 
- */
-void Simulator::cone_visualization(){
-    visualization_msgs::msg::MarkerArray cone_markers;
-    int id_counter = 0; // Contador para IDs únicos de cada cono
-
-    for (const auto& point : track_.points) {
-        visualization_msgs::msg::Marker cone_marker;
-        cone_marker.header.frame_id = "arussim/world";
-        cone_marker.header.stamp = clock_->now();
-        cone_marker.ns = "arussim/cones";
-        cone_marker.id = id_counter++;  // ID único para cada cono
-        cone_marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-        cone_marker.mesh_resource = "package://arussim/resources/meshes/cone.stl";
-        cone_marker.action = visualization_msgs::msg::Marker::ADD;
-        cone_marker.pose.position.x = point.x;
-        cone_marker.pose.position.y = point.y;
-        cone_marker.pose.position.z = 0.0;
-        cone_marker.scale.x = 0.001;
-        cone_marker.scale.y = 0.001;
-        cone_marker.scale.z = 0.001;
-        if (point.color == 0) {
-            cone_marker.color.r = 0.0;
-            cone_marker.color.g = 0.0;
-            cone_marker.color.b = 1.0;
-        } else if (point.color == 1){
-            cone_marker.color.r = 1.0;
-            cone_marker.color.g = 1.0;
-            cone_marker.color.b = 0.0;
-        } else if (point.color == 2){
-            cone_marker.color.r = 1.0;
-            cone_marker.color.g = 0.65;
-            cone_marker.color.b = 0.0;
-        } else if (point.color == 3){
-            cone_marker.color.r = 1.0;
-            cone_marker.color.g = 0.65;
-            cone_marker.color.b = 0.0;
-        } else if (point.color == 4){
-            cone_marker.color.r = 0.0;
-            cone_marker.color.g = 0.5;
-            cone_marker.color.b = 0.0;
-        }
-        cone_marker.color.a = 1.0;
-        cone_marker.lifetime = rclcpp::Duration::from_seconds(0.0); // Visible indefinidamente
-
-        cone_markers.markers.push_back(cone_marker); // Agrega el marcador al array
-    }
-
-    // Publica todos los conos de una vez
-    cone_marker_pub_->publish(cone_markers);
-}
 
 /**
  * @brief Fast timer callback for state updates.
@@ -443,6 +387,58 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
 
 }
 
+
+/**
+ * @brief Make a MarkerArray of all cones of the track
+ * 
+ */
+void Simulator::cone_visualization(){
+    visualization_msgs::msg::MarkerArray cone_markers;
+    int id_counter = 0;
+
+    for (const auto& point : track_.points) {
+        visualization_msgs::msg::Marker cone_marker;
+        cone_marker.header.frame_id = "arussim/world";
+        cone_marker.ns = "arussim/cones";
+        cone_marker.id = id_counter++;  // unique ID for each cone
+        cone_marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+        cone_marker.mesh_resource = "package://arussim/resources/meshes/cone.stl";
+        cone_marker.action = visualization_msgs::msg::Marker::ADD;
+        cone_marker.pose.position.x = point.x;
+        cone_marker.pose.position.y = point.y;
+        cone_marker.pose.position.z = 0.0;
+        cone_marker.scale.x = 0.001;
+        cone_marker.scale.y = 0.001;
+        cone_marker.scale.z = 0.001;
+        if (point.color == 0) {
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.0;
+            cone_marker.color.b = 1.0;
+        } else if (point.color == 1){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 1.0;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 2){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 3){
+            cone_marker.color.r = 1.0;
+            cone_marker.color.g = 0.65;
+            cone_marker.color.b = 0.0;
+        } else if (point.color == 4){
+            cone_marker.color.r = 0.0;
+            cone_marker.color.g = 0.5;
+            cone_marker.color.b = 0.0;
+        }
+        cone_marker.color.a = 1.0;
+        cone_marker.lifetime = rclcpp::Duration::from_seconds(0.0); // Infinite lifetime
+
+        cone_markers.markers.push_back(cone_marker);
+    }
+
+    cone_marker_pub_->publish(cone_markers);
+}
 
 
 /**
