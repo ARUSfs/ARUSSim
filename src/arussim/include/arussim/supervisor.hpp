@@ -50,7 +50,6 @@ private:
     bool started_;
     
     double prev_time_;
-    size_t n_total_cones_hit_ = 0;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

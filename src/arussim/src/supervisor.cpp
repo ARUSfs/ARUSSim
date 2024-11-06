@@ -45,6 +45,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         list_total_hit_cones_.push_back(hit_cones_lap_);
         hit_cones_lap_.clear();
 
+        size_t n_total_cones_hit_ = 0;
         for (const auto& i : list_total_hit_cones_) {
             n_total_cones_hit_ += i.size();
         }
