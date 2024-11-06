@@ -28,7 +28,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("sensor.fov_radius", 20);
-    this->declare_parameter<double>("sensor.posicion_lidar_x", 1.8);
+    this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
@@ -42,7 +42,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.fov_radius", kFOV);
-    this->get_parameter("sensor.posicion_lidar_x", kPosLidarX);
+    this->get_parameter("sensor.position_lidar_x", kPosLidarX);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);

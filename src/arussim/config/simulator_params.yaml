@@ -16,4 +16,4 @@ arussim:
       pub_rate:           10.0    # Hz  Publish rate
       noise_perception:   0.01    # m   Noise standard deviation
       cut_cones_below_x:  -1.0    # m   Cut cones that are further than this distance in x car axis
-      posicion_lidar_x:   1.8     # m   Position of the lidar in x car axis
+      position_lidar_x:   1.8     # m   Position of the lidar in x car axis
