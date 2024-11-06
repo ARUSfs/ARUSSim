@@ -28,6 +28,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("sensor.fov_radius", 20);
+    this->declare_parameter<double>("sensor.posicion_lidar_x", 1.8);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
@@ -41,6 +42,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.fov_radius", kFOV);
+    this->get_parameter("sensor.posicion_lidar_x", kPosLidarX);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
@@ -145,7 +147,7 @@ void Simulator::on_slow_timer()
     auto perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)
     {
-        double d = std::sqrt(std::pow(point.x - x_, 2) + std::pow(point.y - y_, 2));
+        double d = std::sqrt(std::pow(point.x - (x_ + kPosLidarX*std::cos(yaw_)), 2) + std::pow(point.y - (y_ + kPosLidarX*std::sin(yaw_)), 2));
         if (d < kFOV)
         {
             ConeXYZColorScore p;
@@ -358,7 +360,7 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     std::vector<float> traj_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
 
     if(traj_x.size() == traj_y.size() && traj_x.size() > 0) {
-        for (int i = 0; i < traj_x.size(); i++) {
+        for (size_t i = 0; i < traj_x.size(); i++) {
             arussim_msgs::msg::PointXY point;
             point.x = traj_x[i];
             point.y = traj_y[i];
@@ -367,20 +369,20 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     }
 
     if(traj_s.size() == traj_k.size() && traj_s.size() > 0) {
-        for (int i = 0; i < traj_s.size(); i++) {
+        for (size_t i = 0; i < traj_s.size(); i++) {
             fixed_trajectory_msg_.s.push_back(traj_s[i]);
             fixed_trajectory_msg_.k.push_back(traj_k[i]);
         }
     }
 
     if(traj_speed_profile.size() > 0) {
-        for (int i = 0; i < traj_speed_profile.size(); i++) {
+        for (size_t i = 0; i < traj_speed_profile.size(); i++) {
             fixed_trajectory_msg_.speed_profile.push_back(traj_speed_profile[i]);
         }
     }
 
     if(traj_acc_profile.size() > 0) {
-        for (int i = 0; i < traj_acc_profile.size(); i++) {
+        for (size_t i = 0; i < traj_acc_profile.size(); i++) {
             fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
         }
     }

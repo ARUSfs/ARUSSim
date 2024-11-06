@@ -70,6 +70,7 @@ class Simulator : public rclcpp::Node
     double kMass;
     double kWheelBase;
     double kFOV;
+    double kPosLidarX;
     double kSensorRate;
     double kNoisePerception;
     double kMinPerceptionX;

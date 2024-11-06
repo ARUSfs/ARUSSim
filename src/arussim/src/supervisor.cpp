@@ -35,7 +35,7 @@ Supervisor::Supervisor() : Node("Supervisor")
 void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     if (!started_){
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Lap started");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         started_ = true;
     }
     else{
@@ -48,7 +48,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         for (const auto& i : list_total_hit_cones_) {
             n_total_cones_hit_ += i.size();
         }
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "LAP %zu: %f. TOTAL HIT CONES: %zu", time_list_.size(), time_list_.back(), n_total_cones_hit_);
+        if(n_total_cones_hit_ == 0){
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. TOTAL HIT CONES: %zu%s", green.c_str(), time_list_.size(), time_list_.back(), n_total_cones_hit_, reset.c_str());
+        }
+        else{
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. %sTOTAL HIT CONES: %zu%s", green.c_str(), time_list_.size(), time_list_.back(), yellow.c_str(), n_total_cones_hit_, reset.c_str());
+        }
     }
     prev_time_ = this->get_clock()->now().seconds();
 }
@@ -64,7 +69,7 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
 
     if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end()) {
         hit_cones_lap_.push_back(cone_position);
-        RCLCPP_WARN(this->get_logger(), "Hit cones: %zu", hit_cones_lap_.size());
+        RCLCPP_INFO(this->get_logger(), "%sHit cones: %zu%s", yellow.c_str(), hit_cones_lap_.size(), reset.c_str());
     }
 }
 
