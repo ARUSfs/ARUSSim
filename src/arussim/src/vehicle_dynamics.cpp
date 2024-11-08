@@ -29,7 +29,7 @@ void VehicleDynamics::calculate_dynamics(){
 
     r_ = yaw_dot_;
     ax_ = vx_dot_;
-    ay_ = 0;
+    ay_ = vx_*r_;
     delta_ = input_delta_;
 }
 
