@@ -212,6 +212,9 @@ void Simulator::on_fast_timer()
     message.vx = vehicle_dynamics_.vx_;
     message.vy = vehicle_dynamics_.vy_;
     message.r = vehicle_dynamics_.r_;
+    message.ax = vehicle_dynamics_.ax_;
+    message.ay = vehicle_dynamics_.ay_;
+    message.delta = vehicle_dynamics_.delta_;
     state_pub_->publish(message);
 
     broadcast_transform();

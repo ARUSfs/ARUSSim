@@ -13,6 +13,10 @@ class VehicleDynamics
         double vx_;
         double vy_;
         double r_;
+        double ax_;
+        double ay_;
+        double delta_;
+        
         double input_delta_;
         double input_acc_;
         double dt_;

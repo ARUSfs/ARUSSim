@@ -26,6 +26,11 @@ void VehicleDynamics::calculate_dynamics(){
     y_dot_ = vx_ * std::sin(yaw_);
     yaw_dot_ = vx_ / kWheelBase * std::atan(input_delta_);
     vx_dot_ = calculate_fx() / kMass;
+
+    r_ = yaw_dot_;
+    ax_ = vx_dot_;
+    ay_ = 0;
+    delta_ = input_delta_;
 }
 
 void VehicleDynamics::integrate_dynamics(){
