@@ -35,17 +35,11 @@ private:
     double yaw_ = 0;
     double vx_ = 0;
     double vy_ = 0;
+    double r_ = 0;
     double ax_ = 0;
     double ay_ = 0;
-    double r_ = 0;
-
-    double noisy_ax_ = 0;
-    double noisy_ay_ = 0;
-    double noisy_r_ = 0;
-    double noisy_yaw_ = 0;
-    double noisy_delta_ = 0;
-
     double delta_ = 0;
+
     double speed_front_right_ = 0;
     double speed_front_left_ = 0;
     double speed_rear_right_ = 0;

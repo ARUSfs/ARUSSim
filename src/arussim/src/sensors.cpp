@@ -99,6 +99,9 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     vx_ = msg->vx;
     vy_ = msg->vy;
     r_ = msg->r;
+    ax_ = msg->ax;
+    ay_ = msg->ay;
+    delta_ = msg->delta;
 }
 
 /**
@@ -116,32 +119,26 @@ void Sensors::imu_timer()
     std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
-    // Apply noise to the state variables
-    noisy_yaw_ = yaw_ + dist_yaw(gen);
-    noisy_ax_ = ax_ + dist_ax(gen);
-    noisy_ay_ = ay_ + dist_ay(gen);
-    noisy_r_ = r_ + dist_r(gen);
-
     // Create the IMU message
     auto message = sensor_msgs::msg::Imu();
 
     // Convert yaw (Euler angle) to quaternion
     tf2::Quaternion q;
-    q.setRPY(0, 0, noisy_yaw_); // Roll and pitch are 0 since you're only working with yaw
+    q.setRPY(0, 0, yaw_ + dist_yaw(gen)); 
     message.orientation.x = q.x();
     message.orientation.y = q.y();
     message.orientation.z = q.z();
     message.orientation.w = q.w();
 
     // Fill in the angular velocity
-    message.angular_velocity.x = 0.0;  // Roll is 0, no roll velocity
-    message.angular_velocity.y = 0.0;  // Pitch is 0, no pitch velocity
-    message.angular_velocity.z = noisy_r_;   // Yaw rate (r_) goes here
+    message.angular_velocity.x = 0.0;  
+    message.angular_velocity.y = 0.0;  
+    message.angular_velocity.z = r_ + dist_r(gen);  
 
     // Fill in the linear acceleration
-    message.linear_acceleration.x = noisy_ax_;  // Linear acceleration in X
-    message.linear_acceleration.y = noisy_ay_;  // Linear acceleration in Y
-    message.linear_acceleration.z = 0.0;  // No acceleration in Z, so it's 0
+    message.linear_acceleration.x = ax_ + dist_ax(gen);  
+    message.linear_acceleration.y = ay_ + dist_ay(gen);  
+    message.linear_acceleration.z = 0.0;  
 
     // Publish the IMU message
     imu_pub_->publish(message);
@@ -190,16 +187,9 @@ void Sensors::extensometer_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
-    // Apply noise to the state variables
-    noisy_delta_ = delta_ + dist(gen);
 
-    // Create the extensometer message
     auto message = std_msgs::msg::Float32();
-
-    // 0 until physics is created
-    message.data = noisy_delta_;
-
-    // Publish the extensometer message
+    message.data = delta_ + dist(gen);
     ext_pub_->publish(message);
 }
 
