@@ -55,13 +55,6 @@ class Simulator : public rclcpp::Node
     Simulator();
 
   private:
-    double x_ = 0;
-    double y_ = 0;
-    double yaw_ = 0;
-    double vx_ = 0;
-    double vy_ = 0;
-    double r_ = 0;
-
     VehicleDynamics vehicle_dynamics_;
 
     std::string kTrackName;

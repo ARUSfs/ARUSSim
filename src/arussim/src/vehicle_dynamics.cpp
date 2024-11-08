@@ -1,40 +1,51 @@
 # include "arussim/vehicle_dynamics.hpp"
 
-VehicleDynamics::VehicleDynamics(){}
+VehicleDynamics::VehicleDynamics(){
+    x_ = 0;
+    y_ = 0;
+    yaw_ = 0;
+    vx_ = 0;
+    input_delta_ = 0;
+    input_acc_ = 0;
+    dt_ = 0.01;
+}
 
-void VehicleDynamics::update_simulation(double& x, 
-                                        double& y, 
-                                        double& yaw, 
-                                        double& vx, 
-                                        double input_delta, 
+void VehicleDynamics::update_simulation(double input_delta, 
                                         double input_acc, 
-                                        double dt,
-                                        double kMass,
-                                        double kWheelBase){
-    calculate_dynamics(vx, yaw, input_delta, input_acc, kMass, kWheelBase);
-    integrate_dynamics(x, y, yaw, vx, dt);
+                                        double dt){
+    input_delta_ = input_delta;
+    input_acc_ = input_acc;
+    dt_ = dt;
+
+    calculate_dynamics();
+    integrate_dynamics();
 }
 
-void VehicleDynamics::calculate_dynamics(double vx, double yaw, double input_delta, double input_acc, double kMass, double kWheelBase){
-    x_dot_ = vx * std::cos(yaw);
-    y_dot_ = vx * std::sin(yaw);
-    yaw_dot_ = vx / kWheelBase * std::atan(input_delta);
-    vx_dot_ = calculate_fx(vx, input_acc, kMass) / kMass;
+void VehicleDynamics::calculate_dynamics(){
+    x_dot_ = vx_ * std::cos(yaw_);
+    y_dot_ = vx_ * std::sin(yaw_);
+    yaw_dot_ = vx_ / kWheelBase * std::atan(input_delta_);
+    vx_dot_ = calculate_fx() / kMass;
+
+    r_ = yaw_dot_;
+    ax_ = vx_dot_;
+    ay_ = 0;
+    delta_ = input_delta_;
 }
 
-void VehicleDynamics::integrate_dynamics(double& x, double& y, double& yaw, double& vx, double dt){
-    x += x_dot_ * dt;
-    y += y_dot_ * dt;
-    yaw += yaw_dot_ * dt;
-    vx += vx_dot_ * dt;
-    if(vx < 0){
-        vx = 0;
+void VehicleDynamics::integrate_dynamics(){
+    x_ += x_dot_ * dt_;
+    y_ += y_dot_ * dt_;
+    yaw_ += yaw_dot_ * dt_;
+    vx_ += vx_dot_ * dt_;
+    if(vx_ < 0){
+        vx_ = 0;
     }
 }
 
-double VehicleDynamics::calculate_fx(double vx, double input_acc, double kMass){
-    double Drag = 0.5*kAirDensity*kCDA*pow(vx,2);
-    double longitudinal_force = std::clamp(kMass * input_acc, kMinFx, kMaxFx) - Drag - kRollingResistance;
+double VehicleDynamics::calculate_fx(){
+    double Drag = 0.5*kAirDensity*kCDA*pow(vx_,2);
+    double longitudinal_force = std::clamp(kMass * input_acc_, kMinFx, kMaxFx) - Drag - kRollingResistance;
 
     return longitudinal_force;
 }

@@ -22,8 +22,6 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("track", "FSG.pcd");
     this->declare_parameter<double>("friction_coef", 0.5);
     this->declare_parameter<double>("state_update_rate", 100);
-    this->declare_parameter<double>("vehicle.mass", 200);
-    this->declare_parameter<double>("vehicle.wheel_base", 1.5);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -36,8 +34,6 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("vehicle.mass", kMass);
-    this->get_parameter("vehicle.wheel_base", kWheelBase);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -107,11 +103,14 @@ Simulator::Simulator() : Node("simulator")
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
 void Simulator::check_lap() {
+    double x = vehicle_dynamics_.x_;
+    double y = vehicle_dynamics_.y_;
+
     // Calculate the signed distance from the vehicle to the line equation through the TPLs
-    double dist_to_tpl = y_ - tpl_coef_a_ * x_ - tpl_coef_b_;
+    double dist_to_tpl = y - tpl_coef_a_ * x - tpl_coef_b_;
 
     // Calculate the distance from the vehicle to the midpoint between the TPLs
-    double d = std::sqrt(std::pow(x_ - mid_tpl_x_, 2) + std::pow(y_ - mid_tpl_y_, 2));
+    double d = std::sqrt(std::pow(x - mid_tpl_x_, 2) + std::pow(y - mid_tpl_y_, 2));
 
     if (dist_to_tpl * prev_dist_to_tpl_ < 0 and d < 5) {
         // Publish the result
@@ -130,6 +129,10 @@ void Simulator::check_lap() {
  */
 void Simulator::on_slow_timer()
 {   
+    double x = vehicle_dynamics_.x_;
+    double y = vehicle_dynamics_.y_;
+    double yaw = vehicle_dynamics_.yaw_;
+
     // Update track
     sensor_msgs::msg::PointCloud2 track_msg;
     pcl::toROSMsg(track_, track_msg);
@@ -147,12 +150,12 @@ void Simulator::on_slow_timer()
     auto perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)
     {
-        double d = std::sqrt(std::pow(point.x - (x_ + kPosLidarX*std::cos(yaw_)), 2) + std::pow(point.y - (y_ + kPosLidarX*std::sin(yaw_)), 2));
+        double d = std::sqrt(std::pow(point.x - (x + kPosLidarX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosLidarX*std::sin(yaw)), 2));
         if (d < kFOV)
         {
             ConeXYZColorScore p;
-            p.x = (point.x - x_)*std::cos(yaw_) + (point.y - y_)*std::sin(yaw_) + dist(gen);
-            p.y = -(point.x - x_)*std::sin(yaw_) + (point.y - y_)*std::cos(yaw_) + dist(gen);
+            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen);
+            p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist(gen);
             p.z = 0.0;
             p.color = point.color;
             p.score = 1.0;
@@ -189,26 +192,29 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
-    if((current_time - time_last_cmd_).seconds() > 0.2 && vx_ != 0)
+    if((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
     {
         input_acc_ = 0;
     }
 
     double dt = 1/kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(x_, y_, yaw_, vx_, input_delta_, input_acc_, dt, kMass, kWheelBase);
+    vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
 
     if(use_tpl_){
         check_lap();
     }
     
     auto message = arussim_msgs::msg::State();
-    message.x = x_;
-    message.y = y_;
-    message.yaw = yaw_;
-    message.vx = vx_;
-    message.vy = vy_;
-    message.r = r_;
+    message.x = vehicle_dynamics_.x_;
+    message.y = vehicle_dynamics_.y_;
+    message.yaw = vehicle_dynamics_.yaw_;
+    message.vx = vehicle_dynamics_.vx_;
+    message.vy = vehicle_dynamics_.vy_;
+    message.r = vehicle_dynamics_.r_;
+    message.ax = vehicle_dynamics_.ax_;
+    message.ay = vehicle_dynamics_.ay_;
+    message.delta = vehicle_dynamics_.delta_;
     state_pub_->publish(message);
 
     broadcast_transform();
@@ -248,12 +254,12 @@ void Simulator::rviz_telep_callback(const geometry_msgs::msg::PoseWithCovariance
     double roll, pitch, yaw;
     mat.getRPY(roll, pitch, yaw);
 
-    x_ = msg->pose.pose.position.x;
-    y_ = msg->pose.pose.position.y;
-    yaw_ = yaw;
-    vx_ = 0;
-    vy_ = 0;
-    r_ = 0;
+    vehicle_dynamics_.x_ = msg->pose.pose.position.x;
+    vehicle_dynamics_.y_ = msg->pose.pose.position.y;
+    vehicle_dynamics_.yaw_ = yaw;
+    vehicle_dynamics_.vx_ = 0;
+    vehicle_dynamics_.vy_ = 0;
+    vehicle_dynamics_.r_ = 0;
 }
 
 /**
@@ -273,13 +279,13 @@ void Simulator::broadcast_transform()
     transform_stamped.child_frame_id = "arussim/vehicle_cog";
 
     // Set the translation (x, y, z)
-    transform_stamped.transform.translation.x = x_;
-    transform_stamped.transform.translation.y = y_;
+    transform_stamped.transform.translation.x = vehicle_dynamics_.x_;
+    transform_stamped.transform.translation.y = vehicle_dynamics_.y_;
     transform_stamped.transform.translation.z = 0.0;
 
     // Set the rotation (using a quaternion)
     tf2::Quaternion q;
-    q.setRPY(0, 0, yaw_); // Roll, Pitch, Yaw in radians
+    q.setRPY(0, 0, vehicle_dynamics_.yaw_); // Roll, Pitch, Yaw in radians
     transform_stamped.transform.rotation.x = q.x();
     transform_stamped.transform.rotation.y = q.y();
     transform_stamped.transform.rotation.z = q.z();
@@ -325,18 +331,18 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
         use_tpl_ = true;
 
         // Coordinates of the two cones (tpl_cones)
-        double x1_ = tpl_cones_[0].first;
-        double y1_ = tpl_cones_[0].second;
-        double x2_ = tpl_cones_[1].first;
-        double y2_ = tpl_cones_[1].second;
+        double x1 = tpl_cones_[0].first;
+        double y1 = tpl_cones_[0].second;
+        double x2 = tpl_cones_[1].first;
+        double y2 = tpl_cones_[1].second;
 
         // Calculate the slope (a) and y-intercept (b)
-        tpl_coef_a_ = (y2_ - y1_) / (x2_ - x1_ + 0.000001);  // Avoid division by zero in case of vertically aligned cones
-        tpl_coef_b_ = y1_ - tpl_coef_a_ * x1_;
+        tpl_coef_a_ = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        tpl_coef_b_ = y1 - tpl_coef_a_ * x1;
 
         // Calculate the midpoint between the two cones
-        mid_tpl_x_ = (x1_ + x2_) / 2.0;
-        mid_tpl_y_ = (y1_ + y2_) / 2.0;
+        mid_tpl_x_ = (x1 + x2) / 2.0;
+        mid_tpl_y_ = (y1 + y2) / 2.0;
     }
 
 
