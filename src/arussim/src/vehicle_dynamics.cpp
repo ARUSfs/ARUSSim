@@ -5,9 +5,11 @@ VehicleDynamics::VehicleDynamics(){
     y_ = 0;
     yaw_ = 0;
     vx_ = 0;
+    vy_ = 0;
+    r_ = 0;
     input_delta_ = 0;
     input_acc_ = 0;
-    dt_ = 0.01;
+    dt_ = 0.001;
 }
 
 void VehicleDynamics::update_simulation(double input_delta, 
@@ -22,22 +24,33 @@ void VehicleDynamics::update_simulation(double input_delta,
 }
 
 void VehicleDynamics::calculate_dynamics(){
+
+    calculate_tire_slip();
+    double fy_front, fy_rear;
+    calculate_tire_forces(fy_front, fy_rear);
+
+    ax_ = (calculate_fx() - fy_front * std::sin(delta_)) / kMass ;
+    ay_ = (fy_front * std::cos(delta_) + fy_rear) / kMass;
+
     x_dot_ = vx_ * std::cos(yaw_);
     y_dot_ = vx_ * std::sin(yaw_);
-    yaw_dot_ = vx_ / kWheelBase * std::atan(input_delta_);
-    vx_dot_ = calculate_fx() / kMass;
 
-    r_ = yaw_dot_;
-    ax_ = vx_dot_;
-    ay_ = vx_*r_;
+    vx_dot_ = ax_ + r_ * vy_;
+    vy_dot_ = ay_ - r_ * vx_;
+    r_dot_ = (fy_front*kLf*std::cos(delta_) - fy_rear*kLr) / kIzz;
+
     delta_ = input_delta_;
 }
 
 void VehicleDynamics::integrate_dynamics(){
+
     x_ += x_dot_ * dt_;
     y_ += y_dot_ * dt_;
-    yaw_ += yaw_dot_ * dt_;
+    yaw_ += r_ * dt_;
     vx_ += vx_dot_ * dt_;
+    vy_ += vy_dot_ *dt_;
+    r_ += r_dot_ * dt_;
+
     if(vx_ < 0){
         vx_ = 0;
     }
@@ -48,4 +61,19 @@ double VehicleDynamics::calculate_fx(){
     double longitudinal_force = std::clamp(kMass * input_acc_, kMinFx, kMaxFx) - Drag - kRollingResistance;
 
     return longitudinal_force;
+}
+
+void VehicleDynamics::calculate_tire_slip(){
+    if(vx_ > 0.1){
+        tire_slip_.alpha_front_ = std::atan((vy_ + kLf * r_)/vx_) - delta_;
+        tire_slip_.alpha_rear_ = std::atan((vy_ - kLr * r_)/vx_);
+    }else{
+        tire_slip_.alpha_front_ = 0;
+        tire_slip_.alpha_rear_ = 0;
+    }
+}
+
+void VehicleDynamics::calculate_tire_forces(double &fy_front, double &fy_rear){
+    fy_front = kCamberStiffness * tire_slip_.alpha_front_;
+    fy_rear = kCamberStiffness * tire_slip_.alpha_rear_; 
 }
