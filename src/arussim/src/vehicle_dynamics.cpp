@@ -7,6 +7,10 @@ VehicleDynamics::VehicleDynamics(){
     vx_ = 0;
     vy_ = 0;
     r_ = 0;
+
+    ax_ = 0;
+    ay_ = 0;
+    
     input_delta_ = 0;
     input_acc_ = 0;
     dt_ = 0.001;
@@ -84,6 +88,7 @@ void VehicleDynamics::calculate_tire_slip(){
 }
 
 void VehicleDynamics::calculate_tire_forces(double &fy_front, double &fy_rear){
-    fy_front = kCamberStiffness * tire_slip_.alpha_front_;
-    fy_rear = kCamberStiffness * tire_slip_.alpha_rear_; 
+    
+    fy_front = (tire_loads_.fl_ + tire_loads_.fr_) * kCamberStiffness * tire_slip_.alpha_front_;
+    fy_rear = (tire_loads_.rl_ + tire_loads_.rr_) * kCamberStiffness * tire_slip_.alpha_rear_; 
 }

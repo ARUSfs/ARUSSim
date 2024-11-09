@@ -39,7 +39,7 @@ class VehicleDynamics
         double kCDA = 1;
         double kAirDensity = 1.1;
 
-        double kCamberStiffness = -100000;
+        double kCamberStiffness = -1000;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
 
