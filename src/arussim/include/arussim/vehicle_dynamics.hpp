@@ -26,6 +26,8 @@ class VehicleDynamics
         double kMass = 270.0;
         double kMassDistributionRear = 0.52;
         double kWheelBase = 1.535;
+        double kTrackWidth = 1.22;
+        double kHCog = 0.28;
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
         double kIzz = 180;
@@ -41,14 +43,29 @@ class VehicleDynamics
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
 
+        double kG = 9.81;
+
         struct {
-            double alpha_front_;
-            double alpha_rear_;
+            double alpha_front_ = 0;
+            double alpha_rear_ = 0;
         } tire_slip_;
+
+        double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
+        double kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
+
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } tire_loads_;
 
         void calculate_dynamics();
         void integrate_dynamics();
+
         double calculate_fx();
+
+        void calculate_tire_loads();
         void calculate_tire_slip();
         void calculate_tire_forces(double &fy_front, double &fy_rear);
 };

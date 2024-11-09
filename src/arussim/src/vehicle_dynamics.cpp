@@ -26,6 +26,7 @@ void VehicleDynamics::update_simulation(double input_delta,
 void VehicleDynamics::calculate_dynamics(){
 
     calculate_tire_slip();
+    calculate_tire_loads();
     double fy_front, fy_rear;
     calculate_tire_forces(fy_front, fy_rear);
 
@@ -37,7 +38,7 @@ void VehicleDynamics::calculate_dynamics(){
 
     vx_dot_ = ax_ + r_ * vy_;
     vy_dot_ = ay_ - r_ * vx_;
-    r_dot_ = (fy_front*kLf*std::cos(delta_) - fy_rear*kLr) / kIzz;
+    r_dot_ = (fy_front*std::cos(delta_)*kLf - fy_rear*kLr) / kIzz;
 
     delta_ = input_delta_;
 }
@@ -61,6 +62,15 @@ double VehicleDynamics::calculate_fx(){
     double longitudinal_force = std::clamp(kMass * input_acc_, kMinFx, kMaxFx) - Drag - kRollingResistance;
 
     return longitudinal_force;
+}
+
+void VehicleDynamics::calculate_tire_loads(){
+    double load_transfer_ay = kMass * kHCog * ay_ / kTrackWidth;
+
+    tire_loads_.fl_ = kStaticLoadFront - (1 - kMassDistributionRear) * load_transfer_ay;
+    tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay;
+    tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay;
+    tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay;
 }
 
 void VehicleDynamics::calculate_tire_slip(){
