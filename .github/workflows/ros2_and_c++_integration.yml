@@ -42,7 +42,7 @@ jobs:
 
       - name: Install PCL and dependencies manually
         run: |
-          sudo apt upgrade -y
+          sudo apt update
           # Install PCL manually
           sudo apt install -y libpcl-dev
           
