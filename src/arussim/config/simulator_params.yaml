@@ -2,7 +2,7 @@ arussim:
   ros__parameters:
     track: "FSG"
     friction_coef: 0.5 
-    state_update_rate: 100.0      # Hz
+    state_update_rate: 1000.0      # Hz
 
     vehicle:
       mass:               270.0   # kg
