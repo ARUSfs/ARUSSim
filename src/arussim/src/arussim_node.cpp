@@ -255,7 +255,6 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 void Simulator::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     reset_ = msg->data;
-    RCLCPP_INFO(this->get_logger(), "Reset Simulation (saludos desde arussim_node.cpp)");
 }
 
 /**

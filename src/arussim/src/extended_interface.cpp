@@ -18,7 +18,7 @@ void Buttons::resetButtonClicked()
     msg.data = true;
     reset_pub_->publish(msg);
 
-    RCLCPP_INFO(this->get_logger(), "Reset Simulation");
+    RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
 int main(int argc, char * argv[])

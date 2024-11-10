@@ -42,14 +42,28 @@ private:
      */
     void hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg);
 
+    /**
+     * @brief Callback for receiving reset commands.
+     * 
+     * This method resets the lap times.
+     * 
+     * @param msg The reset command message.
+     */
+    void reset_callback(const std_msgs::msg::Bool::SharedPtr msg);
+
+
+
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub;
 
     bool between_tpl_;
     bool started_;
+    bool reset_;
     
     double prev_time_;
+
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

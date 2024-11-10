@@ -25,6 +25,29 @@ Supervisor::Supervisor() : Node("Supervisor")
         "/arussim/hit_cones", 10,
         std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
     );
+
+    reset_sub = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+        std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
+
+}
+/**
+ * @brief Callback for receiving reset commands.
+ * 
+ * This method resets the lap times.
+ * 
+ * @param msg 
+ */
+void Supervisor::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    reset_ = msg->data;
+
+    if (reset_){
+        time_list_.clear();
+        list_total_hit_cones_.clear();
+        started_ = false;
+        reset_ = false;
+    }
+
 }
 
 /**
