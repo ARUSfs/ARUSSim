@@ -1,15 +1,19 @@
 #include <QWidget>
 #include <QPushButton>
 #include <rclcpp/rclcpp.hpp>
+#include "std_msgs/msg/bool.hpp"
 
-class Buttons : public QWidget
+class Buttons : public QWidget, public rclcpp::Node
 {
     Q_OBJECT
 
 public:
-    explicit Buttons(QWidget* parent = nullptr);
+    Buttons(QWidget* parent = nullptr);
 
 private:
-    QPushButton* hello_button;
-    void onHelloButtonClicked();
+    QPushButton* reset_button_;
+
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
+    
+    void resetButtonClicked();
 };

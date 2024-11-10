@@ -2,18 +2,23 @@
 #include <QVBoxLayout>
 #include <QApplication>
 
-Buttons::Buttons(QWidget* parent) : QWidget(parent)
+Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node")
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    hello_button = new QPushButton("Hello World", this);
-    connect(hello_button, &QPushButton::clicked, this, &Buttons::onHelloButtonClicked);
-    layout->addWidget(hello_button);
-    setLayout(layout);
+    QVBoxLayout* lReset = new QVBoxLayout(this);
+    reset_button_ = new QPushButton("Reset", this);
+    connect(reset_button_, &QPushButton::clicked, this, &Buttons::resetButtonClicked);
+    lReset->addWidget(reset_button_);
+    setLayout(lReset);
+    reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
 }
 
-void Buttons::onHelloButtonClicked()
+void Buttons::resetButtonClicked()
 {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Hello World");
+    auto msg = std_msgs::msg::Bool();
+    msg.data = true;
+    reset_pub_->publish(msg);
+
+    RCLCPP_INFO(this->get_logger(), "Reset Simulation");
 }
 
 int main(int argc, char * argv[])
@@ -25,14 +30,13 @@ int main(int argc, char * argv[])
     auto node = std::make_shared<Buttons>();
     node->show();
 
-    // Spin rclcpp in a separate thread
-    std::thread rclcpp_thread([]() {
-        rclcpp::spin(rclcpp::Node::make_shared("arussim_buttons"));
+    std::thread rclcpp_thread([&]() {
+        rclcpp::spin(node);
         rclcpp::shutdown();
     });
 
     int result = app.exec();
-    rclcpp_thread.join(); // Wait for rclcpp thread to finish
+    rclcpp_thread.join();
 
     return result;
 }

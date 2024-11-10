@@ -85,7 +85,7 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # Launch the Buttons node
+        # Launch the extended interface node
         Node(
             package='arussim',
             executable='extended_interface_exec',

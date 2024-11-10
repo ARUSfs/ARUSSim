@@ -61,7 +61,8 @@ ament_target_dependencies(supervisor_exec rclcpp
 # generate executable for extended_interface.cpp
 add_executable(extended_interface_exec src/extended_interface.cpp ${MOC_SOURCES})
 ament_target_dependencies(extended_interface_exec rclcpp 
-                            Qt5Widgets)
+                            Qt5Widgets
+                            std_msgs)
 
 # Install both executables
 install(TARGETS

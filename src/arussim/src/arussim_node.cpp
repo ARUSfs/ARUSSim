@@ -73,6 +73,9 @@ Simulator::Simulator() : Node("simulator")
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
+    
+    reset_sub = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+        std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
 
     // Load the car mesh
@@ -205,6 +208,15 @@ void Simulator::on_fast_timer()
         check_lap();
     }
     
+    if (reset_ == true) {
+        vehicle_dynamics_.x_ = 0;
+        vehicle_dynamics_.y_ = 0;
+        vehicle_dynamics_.yaw_ = 0;
+        vehicle_dynamics_.vx_ = 0;
+        vehicle_dynamics_.vy_ = 0;
+        vehicle_dynamics_.r_ = 0;
+        reset_ = false;
+    } 
     auto message = arussim_msgs::msg::State();
     message.x = vehicle_dynamics_.x_;
     message.y = vehicle_dynamics_.y_;
@@ -216,6 +228,7 @@ void Simulator::on_fast_timer()
     message.ay = vehicle_dynamics_.ay_;
     message.delta = vehicle_dynamics_.delta_;
     state_pub_->publish(message);
+
 
     broadcast_transform();
     
@@ -237,6 +250,12 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
     input_acc_ = msg->acc;
     input_delta_ = msg->delta;
     time_last_cmd_ = clock_->now();
+}
+
+void Simulator::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    reset_ = msg->data;
+    RCLCPP_INFO(this->get_logger(), "Reset Simulation (saludos desde arussim_node.cpp)");
 }
 
 /**

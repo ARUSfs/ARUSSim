@@ -94,6 +94,8 @@ class Simulator : public rclcpp::Node
 
     double mid_tpl_x_ = 0;
     double mid_tpl_y_ = 0;
+
+    bool reset_;
     
     /**
      * @brief Callback function for the slow timer.
@@ -130,6 +132,14 @@ class Simulator : public rclcpp::Node
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
     
+    /**
+     * @brief Callback for receiving reset commands.
+     * 
+     * This method resets the vehicle's state to the initial pose.
+     * 
+     * @param msg The reset command message.
+     */
+    void reset_callback(const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
@@ -170,4 +180,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub;
 };
