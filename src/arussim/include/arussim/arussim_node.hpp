@@ -94,8 +94,6 @@ class Simulator : public rclcpp::Node
 
     double mid_tpl_x_ = 0;
     double mid_tpl_y_ = 0;
-
-    bool reset_;
     
     /**
      * @brief Callback function for the slow timer.
@@ -139,7 +137,7 @@ class Simulator : public rclcpp::Node
      * 
      * @param msg The reset command message.
      */
-    void reset_callback(const std_msgs::msg::Bool::SharedPtr msg);
+    void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
@@ -180,5 +178,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
 };

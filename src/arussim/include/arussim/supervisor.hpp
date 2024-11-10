@@ -56,11 +56,10 @@ private:
     //Variables
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
 
     bool between_tpl_;
     bool started_;
-    bool reset_;
     
     double prev_time_;
 

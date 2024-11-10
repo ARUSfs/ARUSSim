@@ -26,7 +26,7 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
     );
 
-    reset_sub = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
 
 }
@@ -37,17 +37,11 @@ Supervisor::Supervisor() : Node("Supervisor")
  * 
  * @param msg 
  */
-void Supervisor::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
+void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::SharedPtr msg)
 {
-    reset_ = msg->data;
-
-    if (reset_){
-        time_list_.clear();
-        list_total_hit_cones_.clear();
-        started_ = false;
-        reset_ = false;
-    }
-
+    time_list_.clear();
+    list_total_hit_cones_.clear();
+    started_ = false;
 }
 
 /**
