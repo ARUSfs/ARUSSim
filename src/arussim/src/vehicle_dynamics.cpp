@@ -28,7 +28,7 @@ void VehicleDynamics::update_simulation(double input_delta,
 }
 
 void VehicleDynamics::calculate_dynamics(){
-
+    
     calculate_tire_slip();
     calculate_tire_loads();
     double fy_front, fy_rear;
@@ -56,6 +56,8 @@ void VehicleDynamics::integrate_dynamics(){
     vy_ += vy_dot_ *dt_;
     r_ += r_dot_ * dt_;
 
+    kinematic_correction();
+
     if(vx_ < 0){
         vx_ = 0;
     }
@@ -78,17 +80,24 @@ void VehicleDynamics::calculate_tire_loads(){
 }
 
 void VehicleDynamics::calculate_tire_slip(){
-    if(vx_ > 0.1){
-        tire_slip_.alpha_front_ = std::atan((vy_ + kLf * r_)/vx_) - delta_;
-        tire_slip_.alpha_rear_ = std::atan((vy_ - kLr * r_)/vx_);
-    }else{
-        tire_slip_.alpha_front_ = 0;
-        tire_slip_.alpha_rear_ = 0;
+    if(vx_ > 1){
+        tire_slip_.alpha_fl_ = std::atan((vy_ + kLf * r_)/(vx_ - r_ * kTrackWidth / 2)) - delta_;
+        tire_slip_.alpha_fr_ = std::atan((vy_ + kLf * r_)/(vx_ + r_ * kTrackWidth / 2)) - delta_;
+        tire_slip_.alpha_rl_ = std::atan((vy_ - kLr * r_)/(vx_ - r_ * kTrackWidth / 2));
+        tire_slip_.alpha_rr_ = std::atan((vy_ - kLr * r_)/(vx_ + r_ * kTrackWidth / 2));
     }
 }
 
 void VehicleDynamics::calculate_tire_forces(double &fy_front, double &fy_rear){
-    
-    fy_front = (tire_loads_.fl_ + tire_loads_.fr_) * kCamberStiffness * tire_slip_.alpha_front_;
-    fy_rear = (tire_loads_.rl_ + tire_loads_.rr_) * kCamberStiffness * tire_slip_.alpha_rear_; 
+    fy_front = (tire_loads_.fl_ + tire_loads_.fr_) * kCamberStiffness * (tire_slip_.alpha_fl_ + tire_slip_.alpha_fr_)*0.5;
+    fy_rear = (tire_loads_.rl_ + tire_loads_.rr_) * kCamberStiffness * (tire_slip_.alpha_rr_ + tire_slip_.alpha_rl_)*0.5; 
+}
+
+void VehicleDynamics::kinematic_correction(){
+    double lambda = 1 - std::clamp((vx_ - 2.0)/(5.0 - 2.0),0.0,1.0);
+    double r_kinematic = std::tan(delta_) * vx_ / kWheelBase;
+    double vy_kinematic = r_kinematic * kLr;
+
+    r_ = lambda * r_kinematic + (1 - lambda) * r_;
+    vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
 }

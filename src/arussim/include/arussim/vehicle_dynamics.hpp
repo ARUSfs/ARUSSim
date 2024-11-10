@@ -46,8 +46,10 @@ class VehicleDynamics
         double kG = 9.81;
 
         struct {
-            double alpha_front_ = 0;
-            double alpha_rear_ = 0;
+            double alpha_fl_ = 0;
+            double alpha_fr_ = 0;
+            double alpha_rl_ = 0;
+            double alpha_rr_ = 0;
         } tire_slip_;
 
         double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
@@ -68,4 +70,5 @@ class VehicleDynamics
         void calculate_tire_loads();
         void calculate_tire_slip();
         void calculate_tire_forces(double &fy_front, double &fy_rear);
+        void kinematic_correction();
 };
