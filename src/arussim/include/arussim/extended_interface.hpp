@@ -24,6 +24,8 @@ public:
 
 private:
     QPushButton* reset_button_;
+    QPushButton* a_button_;
+    QPushButton* b_button_;
 
     QLabel* telemetry_label_;
     QWidget* telemetry_container_fl_;
@@ -70,8 +72,12 @@ private:
 
 
     void reset_button_clicked();
+    void a_button_clicked();
+    void b_button_clicked();
+
     void update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param);
     void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+    
     void fov_set(int value);
     void a_set(int value);
     void b_set(int value);

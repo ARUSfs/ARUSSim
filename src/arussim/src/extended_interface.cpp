@@ -123,6 +123,22 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(b_setter_, &QSlider::valueChanged, this, &Buttons::b_set);
 
+    //Button 1
+    a_button_ = new QPushButton("a", this);
+    a_button_->move(margins, 750);
+    a_button_->setFixedSize(150, 40);
+    a_button_->setFont(customFont);
+    connect(a_button_, &QPushButton::clicked, this, &Buttons::a_button_clicked);
+
+    //Button 2
+    b_button_ = new QPushButton("b", this);
+    b_button_->move(margins + 175, 750);
+    b_button_->setFixedSize(150, 40);
+    b_button_->setFont(customFont);
+    connect(b_button_, &QPushButton::clicked, this, &Buttons::b_button_clicked);
+
+
+
 
     // Publisher
     reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
@@ -255,6 +271,16 @@ void Buttons::reset_button_clicked()
     reset_pub_->publish(msg);
 
     RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
+}
+
+void Buttons::a_button_clicked()
+{
+    RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
+}
+
+void Buttons::b_button_clicked()
+{
+    RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
 }
 
 int main(int argc, char * argv[])
