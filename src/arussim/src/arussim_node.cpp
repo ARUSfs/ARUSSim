@@ -77,6 +77,10 @@ Simulator::Simulator() : Node("simulator")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
+    set_fov_service_ = this->create_service<arussim_msgs::srv::SetFOV>(
+        "arussim/set_fov",
+        std::bind(&Simulator::handle_set_fov, this, 
+            std::placeholders::_1, std::placeholders::_2));
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
@@ -97,6 +101,29 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the track pointcloud
     load_track(track_);
+}
+
+/**
+ * @brief Service handler for setting the FOV.
+ * 
+ * This method updates the FOV parameter based on a service request.
+ * 
+ * @param request The service request message.
+ * @param response The service response message.
+ */
+void Simulator::handle_set_fov(
+    const std::shared_ptr<arussim_msgs::srv::SetFOV::Request> request,
+    std::shared_ptr<arussim_msgs::srv::SetFOV::Response> response)
+{
+    try {
+        kFOV = request->fov;
+        response->success = true;
+        response->message = "FOV updated successfully to " + std::to_string(kFOV);
+    } catch (const std::exception& e) {
+        response->success = false;
+        response->message = "Error updating FOV: " + std::string(e.what());
+        RCLCPP_ERROR(get_logger(), "Error updating FOV: %s", e.what());
+    }
 }
 
 

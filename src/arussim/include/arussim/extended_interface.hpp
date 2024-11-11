@@ -5,9 +5,12 @@
 #include <QScreen>
 #include <QFont>
 #include <QTimer>
+#include <QSlider>
+#include <QLabel>
 
 
 #include <rclcpp/rclcpp.hpp>
+#include "arussim_msgs/srv/set_fov.hpp"
 
 #include "arussim_msgs/msg/cmd.hpp"
 #include "std_msgs/msg/bool.hpp"
@@ -23,6 +26,9 @@ private:
     QPushButton* reset_button_;
     QWidget* telemetry_bar_;
     QWidget* telemetry_container_;
+    QSlider* fov_setter_;
+    QLabel* fov_label_;
+    QLabel* telemetry_label_;
 
     double scaleFactor = 100;
     double maxBarHeight = 200;
@@ -30,13 +36,18 @@ private:
     double centerY = containerHeight / 2;
     double margins = 50;
 
+    double kFOV;
+
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
 
+    rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedPtr fov_client_;
+
 
     void resetButtonClicked();
     void updateTelemetryBar(double parameter);
+    void fovValueChanged(int value);
 
 
     //Loginfo colors

@@ -13,6 +13,7 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
+#include "arussim_msgs/srv/set_fov.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
 
@@ -165,6 +166,19 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    /**
+     * @brief Service handler for setting the FOV.
+     * 
+     * This method updates the FOV parameter based on a service request.
+     * 
+     * @param request The service request message.
+     * @param response The service response message.
+     */
+    void handle_set_fov(
+      const std::shared_ptr<arussim_msgs::srv::SetFOV::Request> request,
+      std::shared_ptr<arussim_msgs::srv::SetFOV::Response> response);
+
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
@@ -179,4 +193,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Service<arussim_msgs::srv::SetFOV>::SharedPtr set_fov_service_;
 };

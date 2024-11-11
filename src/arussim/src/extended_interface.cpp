@@ -1,7 +1,6 @@
 #include "arussim/extended_interface.hpp"
 
-Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node")
-{
+Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(20.0) {
     // Set window size
     QScreen* screen = QGuiApplication::primaryScreen();
     setFixedWidth(400);
@@ -18,6 +17,10 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node")
     connect(reset_button_, &QPushButton::clicked, this, &Buttons::resetButtonClicked);
 
     // Telemetry bar
+    telemetry_label_ = new QLabel("Telemetry", this);
+    telemetry_label_->setFont(customFont);
+    telemetry_label_->move(margins, 25);
+
     telemetry_container_ = new QWidget(this);
     telemetry_container_->setFixedSize(50, containerHeight);
     telemetry_container_->setStyleSheet("background-color: lightgray;");
@@ -26,7 +29,19 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node")
     telemetry_bar_ = new QWidget(telemetry_container_);
     telemetry_bar_->setFixedWidth(50);
     telemetry_bar_->move(0, centerY);
-    
+
+    // Label for FOV slider
+    fov_label_ = new QLabel("FOV: 20", this);
+    fov_label_->setFont(customFont);
+    fov_label_->move(margins, 575);
+
+    // FOV setter (Slider)
+    fov_setter_ = new QSlider(Qt::Horizontal, this);
+    fov_setter_->setRange(0, 100);
+    fov_setter_->setValue(static_cast<int>(kFOV));
+    fov_setter_->setGeometry(margins, 600, 300, 40);
+    fov_setter_->setStyleSheet("QSlider::handle { background: blue; }");
+    connect(fov_setter_, &QSlider::valueChanged, this, &Buttons::fovValueChanged);
 
     // Publisher
     reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
@@ -41,11 +56,30 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node")
         }
     );
 
+    fov_client_ = this->create_client<arussim_msgs::srv::SetFOV>("arussim/set_fov");
+
     QTimer::singleShot(1000, [this]() {
         raise();
         activateWindow();
     });
+}
 
+void Buttons::fovValueChanged(int value) {
+    kFOV = static_cast<double>(value);
+    fov_label_->setText("FOV: " + QString::number(value));
+
+    auto request = std::make_shared<arussim_msgs::srv::SetFOV::Request>();
+    request->fov = kFOV;
+
+    auto future = fov_client_->async_send_request(
+        request,
+        [this](rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedFuture future) {
+            auto result = future.get();
+            if (!result->success) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to set FOV: %s", result->message.c_str());
+            }
+        }
+    );
 }
 
 void Buttons::updateTelemetryBar(double parameter)
