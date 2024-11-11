@@ -15,12 +15,12 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "std_msgs/msg/bool.hpp"
 
-class Buttons : public QWidget, public rclcpp::Node
+class ExtendedInterface : public QWidget, public rclcpp::Node
 {
     Q_OBJECT
 
 public:
-    Buttons(QWidget* parent = nullptr);
+    ExtendedInterface(QWidget* parent = nullptr);
 
 private:
     QPushButton* reset_button_;
@@ -77,7 +77,7 @@ private:
 
     void update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param);
     void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
-    
+
     void fov_set(int value);
     void a_set(int value);
     void b_set(int value);

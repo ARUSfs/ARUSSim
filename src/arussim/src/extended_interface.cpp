@@ -1,6 +1,6 @@
 #include "arussim/extended_interface.hpp"
 
-Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
+ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("extended_interface") {
     // Set window size
     QScreen* screen = QGuiApplication::primaryScreen();
     setFixedWidth(400);
@@ -14,7 +14,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     reset_button_->move(margins, 500);
     reset_button_->setFixedSize(300, 40);
     reset_button_->setFont(customFont);
-    connect(reset_button_, &QPushButton::clicked, this, &Buttons::reset_button_clicked);
+    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
     // Telemetry bars
     telemetry_label_ = new QLabel("Telemetry", this);
@@ -95,7 +95,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     fov_setter_->setValue(static_cast<int>(kFOV));
     fov_setter_->setGeometry(margins, 590, 300, 40);
     fov_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(fov_setter_, &QSlider::valueChanged, this, &Buttons::fov_set);
+    connect(fov_setter_, &QSlider::valueChanged, this, &ExtendedInterface::fov_set);
 
     // Slider 1
     a_label_ = new QLabel("a: 0", this);
@@ -108,7 +108,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     a_setter_->setValue(static_cast<int>(kA));
     a_setter_->setGeometry(margins, 640, 300, 40);
     a_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(a_setter_, &QSlider::valueChanged, this, &Buttons::a_set);
+    connect(a_setter_, &QSlider::valueChanged, this, &ExtendedInterface::a_set);
 
     // Slider 2
     b_label_ = new QLabel("b: 0", this);
@@ -121,21 +121,21 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     b_setter_->setValue(static_cast<int>(kB));
     b_setter_->setGeometry(margins, 690, 300, 40);
     b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(b_setter_, &QSlider::valueChanged, this, &Buttons::b_set);
+    connect(b_setter_, &QSlider::valueChanged, this, &ExtendedInterface::b_set);
 
     //Button 1
     a_button_ = new QPushButton("a", this);
     a_button_->move(margins, 750);
     a_button_->setFixedSize(150, 40);
     a_button_->setFont(customFont);
-    connect(a_button_, &QPushButton::clicked, this, &Buttons::a_button_clicked);
+    connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::a_button_clicked);
 
     //Button 2
     b_button_ = new QPushButton("b", this);
     b_button_->move(margins + 175, 750);
     b_button_->setFixedSize(150, 40);
     b_button_->setFont(customFont);
-    connect(b_button_, &QPushButton::clicked, this, &Buttons::b_button_clicked);
+    connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::b_button_clicked);
 
 
 
@@ -171,7 +171,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     });
 }
 
-void Buttons::fov_set(int value) {
+void ExtendedInterface::fov_set(int value) {
     kFOV = static_cast<double>(value);
     fov_label_->setText("FOV: " + QString::number(value));
 
@@ -189,17 +189,17 @@ void Buttons::fov_set(int value) {
     );
 }
 
-void Buttons::a_set(int value) {
+void ExtendedInterface::a_set(int value) {
     kA = static_cast<double>(value);
     a_label_->setText("a: " + QString::number(value));
 }
 
-void Buttons::b_set(int value) {
+void ExtendedInterface::b_set(int value) {
     kB = static_cast<double>(value);
     b_label_->setText("b: " + QString::number(value));
 }
 
-void Buttons::update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param)
+void ExtendedInterface::update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param)
 {
     fr_param = fl_param;
     rl_param = fl_param;
@@ -254,7 +254,7 @@ void Buttons::update_telemetry_bar(double fl_param, double fr_param, double rl_p
     }
 }
 
-void Buttons::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
+void ExtendedInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
 {
     vx_label_->setText("vx: " + QString::number(vx, 'f', 3) + " m/s");
     vy_label_->setText("vy: " + QString::number(vy, 'f', 3) + " m/s");
@@ -264,7 +264,7 @@ void Buttons::update_telemetry_labels(double vx, double vy, double r, double ax,
     delta_label_->setText("delta: " + QString::number(delta * 180.0 / M_PI, 'f', 3) + "º");
 }
 
-void Buttons::reset_button_clicked()
+void ExtendedInterface::reset_button_clicked()
 {
     auto msg = std_msgs::msg::Bool();
     msg.data = true;
@@ -273,12 +273,12 @@ void Buttons::reset_button_clicked()
     RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
-void Buttons::a_button_clicked()
+void ExtendedInterface::a_button_clicked()
 {
     RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
 }
 
-void Buttons::b_button_clicked()
+void ExtendedInterface::b_button_clicked()
 {
     RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
 }
@@ -288,7 +288,7 @@ int main(int argc, char * argv[])
     QApplication app(argc, argv);
     rclcpp::init(argc, argv);
 
-    auto node = std::make_shared<Buttons>();
+    auto node = std::make_shared<ExtendedInterface>();
     node->show();
 
     // Crear un timer para verificar el estado de ROS
