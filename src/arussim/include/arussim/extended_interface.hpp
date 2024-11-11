@@ -24,11 +24,16 @@ public:
 
 private:
     QPushButton* reset_button_;
-    QWidget* telemetry_bar_;
-    QWidget* telemetry_container_;
-    QSlider* fov_setter_;
-    QLabel* fov_label_;
+
     QLabel* telemetry_label_;
+    QWidget* telemetry_container_fl_;
+    QWidget* telemetry_bar_fl_;
+    QWidget* telemetry_container_fr_;
+    QWidget* telemetry_bar_fr_;
+    QWidget* telemetry_container_rl_;
+    QWidget* telemetry_bar_rl_;
+    QWidget* telemetry_container_rr_;
+    QWidget* telemetry_bar_rr_;
     QLabel* vx_label_;
     QLabel* vy_label_;
     QLabel* ax_label_;
@@ -36,9 +41,13 @@ private:
     QLabel* r_label_;
     QLabel* delta_label_;
 
+    QSlider* fov_setter_;
+    QLabel* fov_label_;
+
     double scaleFactor = 100;
-    double maxBarHeight = 200;
-    double containerHeight = 300;
+    double maxBarHeight = 150;
+    double containerHeight = 150;
+    double containerWidth = 150;
     double centerY = containerHeight / 2;
     double margins = 50;
 
@@ -53,7 +62,7 @@ private:
 
 
     void resetButtonClicked();
-    void updateTelemetryBar(double parameter);
+    void updateTelemetryBar(double fl_param, double fr_param, double rl_param, double rr_param);
     void updateTelemetryLabels(double vx, double vy, double r, double ax, double ay, double delta);
     void fovValueChanged(int value);
 

@@ -19,16 +19,42 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     // Telemetry bar
     telemetry_label_ = new QLabel("Telemetry", this);
     telemetry_label_->setFont(customFont);
-    telemetry_label_->move(margins, 40);
+    telemetry_label_->move(margins - 15, 40);
 
-    telemetry_container_ = new QWidget(this);
-    telemetry_container_->setFixedSize(50, containerHeight);
-    telemetry_container_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_->move(margins, 75);
+    telemetry_container_fl_ = new QWidget(this);
+    telemetry_container_fl_->setFixedSize(containerWidth, containerHeight);
+    telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
+    telemetry_container_fl_->move(margins, 75);
+    telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
+    telemetry_bar_fl_->setFixedWidth(containerWidth);
+    telemetry_bar_fl_->move(0, centerY);
 
-    telemetry_bar_ = new QWidget(telemetry_container_);
-    telemetry_bar_->setFixedWidth(50);
-    telemetry_bar_->move(0, centerY);
+    telemetry_container_fr_ = new QWidget(this);
+    telemetry_container_fr_->setFixedSize(containerWidth, containerHeight);
+    telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
+    telemetry_container_fr_->move(225, 75);
+    telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
+    telemetry_bar_fr_->setFixedWidth(containerWidth);
+    telemetry_bar_fr_->move(0, centerY);
+
+    telemetry_container_rl_ = new QWidget(this);
+    telemetry_container_rl_->setFixedSize(containerWidth, containerHeight);
+    telemetry_container_rl_->setStyleSheet("background-color: lightgray;");
+    telemetry_container_rl_->move(margins, 250);
+    telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
+    telemetry_bar_rl_->setFixedWidth(containerWidth);
+    telemetry_bar_rl_->move(0, centerY);
+
+    telemetry_container_rr_ = new QWidget(this);
+    telemetry_container_rr_->setFixedSize(containerWidth, containerHeight);
+    telemetry_container_rr_->setStyleSheet("background-color: lightgray;");
+    telemetry_container_rr_->move(225, 250);
+    telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
+    telemetry_bar_rr_->setFixedWidth(containerWidth);
+    telemetry_bar_rr_->move(0, centerY);
+
+
+
 
     vx_label_ = new QLabel("vx: 0 m/s", this);
     vx_label_->setFont(customFont);
@@ -82,7 +108,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
         "/arussim/cmd", 1, 
         [this](const arussim_msgs::msg::Cmd::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                updateTelemetryBar(msg->acc);
+                updateTelemetryBar(msg->acc, msg->acc, msg->acc, msg->acc);
             }, Qt::QueuedConnection);
         }
     );
@@ -123,19 +149,58 @@ void Buttons::fovValueChanged(int value) {
     );
 }
 
-void Buttons::updateTelemetryBar(double parameter)
+void Buttons::updateTelemetryBar(double fl_param, double fr_param, double rl_param, double rr_param)
 {
-    double height = std::abs(parameter) * scaleFactor;
-    height = std::min(height, maxBarHeight);
+    fr_param = fl_param;
+    rl_param = fl_param;
+    rr_param = fl_param;
 
-    telemetry_bar_->setFixedHeight(static_cast<int>(height));
-
-    if (parameter >= 0) {
-        telemetry_bar_->move(telemetry_bar_->x(), centerY - height);
-        telemetry_bar_->setStyleSheet("background-color: green;");
+    // Front Left
+    double height_fl = std::abs(fl_param) * scaleFactor;
+    height_fl = std::min(height_fl, maxBarHeight);
+    telemetry_bar_fl_->setFixedHeight(static_cast<int>(height_fl));
+    if (fl_param >= 0) {
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), centerY - height_fl);
+        telemetry_bar_fl_->setStyleSheet("background-color: green;");
     } else {
-        telemetry_bar_->move(telemetry_bar_->x(), centerY);
-        telemetry_bar_->setStyleSheet("background-color: red;");
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), centerY);
+        telemetry_bar_fl_->setStyleSheet("background-color: red;");
+    }
+
+    // Front Right
+    double height_fr = std::abs(fr_param) * scaleFactor;
+    height_fr = std::min(height_fr, maxBarHeight);
+    telemetry_bar_fr_->setFixedHeight(static_cast<int>(height_fr));
+    if (fr_param >= 0) {
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), centerY - height_fr);
+        telemetry_bar_fr_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), centerY);
+        telemetry_bar_fr_->setStyleSheet("background-color: red;");
+    }
+
+    // Rear Left
+    double height_rl = std::abs(rl_param) * scaleFactor;
+    height_rl = std::min(height_rl, maxBarHeight);
+    telemetry_bar_rl_->setFixedHeight(static_cast<int>(height_rl));
+    if (rl_param >= 0) {
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), centerY - height_rl);
+        telemetry_bar_rl_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), centerY);
+        telemetry_bar_rl_->setStyleSheet("background-color: red;");
+    }
+
+    // Rear Right
+    double height_rr = std::abs(rr_param) * scaleFactor;
+    height_rr = std::min(height_rr, maxBarHeight);
+    telemetry_bar_rr_->setFixedHeight(static_cast<int>(height_rr));
+    if (rr_param >= 0) {
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), centerY - height_rr);
+        telemetry_bar_rr_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), centerY);
+        telemetry_bar_rr_->setStyleSheet("background-color: red;");
     }
 }
 
