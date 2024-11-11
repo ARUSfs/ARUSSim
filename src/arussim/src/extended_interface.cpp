@@ -1,6 +1,6 @@
 #include "arussim/extended_interface.hpp"
 
-Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(20.0) {
+Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node") {
     // Set window size
     QScreen* screen = QGuiApplication::primaryScreen();
     setFixedWidth(400);
@@ -14,9 +14,9 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     reset_button_->move(margins, 500);
     reset_button_->setFixedSize(300, 40);
     reset_button_->setFont(customFont);
-    connect(reset_button_, &QPushButton::clicked, this, &Buttons::resetButtonClicked);
+    connect(reset_button_, &QPushButton::clicked, this, &Buttons::reset_button_clicked);
 
-    // Telemetry bar
+    // Telemetry bars
     telemetry_label_ = new QLabel("Telemetry", this);
     telemetry_label_->setFont(customFont);
     telemetry_label_->move(margins - 15, 40);
@@ -53,9 +53,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     telemetry_bar_rr_->setFixedWidth(containerWidth);
     telemetry_bar_rr_->move(0, centerY);
 
-
-
-
+    // Telemetry labels
     vx_label_ = new QLabel("vx: 0 m/s", this);
     vx_label_->setFont(customFont);
     vx_label_->setFixedSize(150, 25);
@@ -87,18 +85,44 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     delta_label_->move(margins + 175, 450);
 
 
-    // Label for FOV slider
+    // FOV slider
     fov_label_ = new QLabel("FOV: 20", this);
     fov_label_->setFont(customFont);
     fov_label_->move(margins, 575);
 
-    // FOV setter (Slider)
     fov_setter_ = new QSlider(Qt::Horizontal, this);
     fov_setter_->setRange(0, 100);
     fov_setter_->setValue(static_cast<int>(kFOV));
-    fov_setter_->setGeometry(margins, 600, 300, 40);
+    fov_setter_->setGeometry(margins, 590, 300, 40);
     fov_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(fov_setter_, &QSlider::valueChanged, this, &Buttons::fovValueChanged);
+    connect(fov_setter_, &QSlider::valueChanged, this, &Buttons::fov_set);
+
+    // Slider 1
+    a_label_ = new QLabel("a: 0", this);
+    a_label_->setFont(customFont);
+    a_label_->setFixedSize(150, 25);
+    a_label_->move(margins, 625);
+
+    a_setter_ = new QSlider(Qt::Horizontal, this);
+    a_setter_->setRange(0, 100);
+    a_setter_->setValue(static_cast<int>(kA));
+    a_setter_->setGeometry(margins, 640, 300, 40);
+    a_setter_->setStyleSheet("QSlider::handle { background: blue; }");
+    connect(a_setter_, &QSlider::valueChanged, this, &Buttons::a_set);
+
+    // Slider 2
+    b_label_ = new QLabel("b: 0", this);
+    b_label_->setFont(customFont);
+    b_label_->setFixedSize(150, 25);
+    b_label_->move(margins, 675);
+
+    b_setter_ = new QSlider(Qt::Horizontal, this);
+    b_setter_->setRange(0, 100);
+    b_setter_->setValue(static_cast<int>(kB));
+    b_setter_->setGeometry(margins, 690, 300, 40);
+    b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
+    connect(b_setter_, &QSlider::valueChanged, this, &Buttons::b_set);
+
 
     // Publisher
     reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
@@ -108,7 +132,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
         "/arussim/cmd", 1, 
         [this](const arussim_msgs::msg::Cmd::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                updateTelemetryBar(msg->acc, msg->acc, msg->acc, msg->acc);
+                update_telemetry_bar(msg->acc, msg->acc, msg->acc, msg->acc);
             }, Qt::QueuedConnection);
         }
     );
@@ -117,7 +141,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
         "/arussim/state", 1, 
         [this](const arussim_msgs::msg::State::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                updateTelemetryLabels(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+                update_telemetry_labels(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
             }, Qt::QueuedConnection);
         }
     );
@@ -131,7 +155,7 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     });
 }
 
-void Buttons::fovValueChanged(int value) {
+void Buttons::fov_set(int value) {
     kFOV = static_cast<double>(value);
     fov_label_->setText("FOV: " + QString::number(value));
 
@@ -149,7 +173,17 @@ void Buttons::fovValueChanged(int value) {
     );
 }
 
-void Buttons::updateTelemetryBar(double fl_param, double fr_param, double rl_param, double rr_param)
+void Buttons::a_set(int value) {
+    kA = static_cast<double>(value);
+    a_label_->setText("a: " + QString::number(value));
+}
+
+void Buttons::b_set(int value) {
+    kB = static_cast<double>(value);
+    b_label_->setText("b: " + QString::number(value));
+}
+
+void Buttons::update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param)
 {
     fr_param = fl_param;
     rl_param = fl_param;
@@ -204,7 +238,7 @@ void Buttons::updateTelemetryBar(double fl_param, double fr_param, double rl_par
     }
 }
 
-void Buttons::updateTelemetryLabels(double vx, double vy, double r, double ax, double ay, double delta)
+void Buttons::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
 {
     vx_label_->setText("vx: " + QString::number(vx, 'f', 3) + " m/s");
     vy_label_->setText("vy: " + QString::number(vy, 'f', 3) + " m/s");
@@ -214,7 +248,7 @@ void Buttons::updateTelemetryLabels(double vx, double vy, double r, double ax, d
     delta_label_->setText("delta: " + QString::number(delta * 180.0 / M_PI, 'f', 3) + "º");
 }
 
-void Buttons::resetButtonClicked()
+void Buttons::reset_button_clicked()
 {
     auto msg = std_msgs::msg::Bool();
     msg.data = true;

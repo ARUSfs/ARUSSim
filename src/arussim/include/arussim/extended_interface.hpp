@@ -44,6 +44,12 @@ private:
     QSlider* fov_setter_;
     QLabel* fov_label_;
 
+    QSlider* a_setter_;
+    QLabel* a_label_;
+
+    QSlider* b_setter_;
+    QLabel* b_label_;
+
     double scaleFactor = 100;
     double maxBarHeight = 150;
     double containerHeight = 150;
@@ -51,7 +57,9 @@ private:
     double centerY = containerHeight / 2;
     double margins = 50;
 
-    double kFOV;
+    double kFOV = 20;
+    double kA;
+    double kB;
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 
@@ -61,10 +69,12 @@ private:
     rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedPtr fov_client_;
 
 
-    void resetButtonClicked();
-    void updateTelemetryBar(double fl_param, double fr_param, double rl_param, double rr_param);
-    void updateTelemetryLabels(double vx, double vy, double r, double ax, double ay, double delta);
-    void fovValueChanged(int value);
+    void reset_button_clicked();
+    void update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param);
+    void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+    void fov_set(int value);
+    void a_set(int value);
+    void b_set(int value);
 
 
     //Loginfo colors
