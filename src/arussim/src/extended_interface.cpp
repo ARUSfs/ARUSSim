@@ -19,16 +19,47 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
     // Telemetry bar
     telemetry_label_ = new QLabel("Telemetry", this);
     telemetry_label_->setFont(customFont);
-    telemetry_label_->move(margins, 25);
+    telemetry_label_->move(margins, 40);
 
     telemetry_container_ = new QWidget(this);
     telemetry_container_->setFixedSize(50, containerHeight);
     telemetry_container_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_->move(margins, margins);
+    telemetry_container_->move(margins, 75);
 
     telemetry_bar_ = new QWidget(telemetry_container_);
     telemetry_bar_->setFixedWidth(50);
     telemetry_bar_->move(0, centerY);
+
+    vx_label_ = new QLabel("vx: 0 m/s", this);
+    vx_label_->setFont(customFont);
+    vx_label_->setFixedSize(150, 25);
+    vx_label_->move(margins, 400);
+
+    vy_label_ = new QLabel("vy: 0 m/s", this);
+    vy_label_->setFont(customFont);
+    vy_label_->setFixedSize(150, 25);
+    vy_label_->move(margins + 175, 400);
+    
+    ax_label_ = new QLabel("ax: 0 m/s^2", this);
+    ax_label_->setFont(customFont);
+    ax_label_->setFixedSize(150, 25);
+    ax_label_->move(margins, 425);
+
+    ay_label_ = new QLabel("ay: 0 m/s^2", this);
+    ay_label_->setFont(customFont);
+    ay_label_->setFixedSize(150, 25);
+    ay_label_->move(margins + 175, 425);
+
+    r_label_ = new QLabel("r: 0 rad/s", this);
+    r_label_->setFont(customFont);
+    r_label_->setFixedSize(150, 25);
+    r_label_->move(margins, 450);
+    
+    delta_label_ = new QLabel("delta: 0º", this);
+    delta_label_->setFont(customFont);
+    delta_label_->setFixedSize(150, 25);
+    delta_label_->move(margins + 175, 450);
+
 
     // Label for FOV slider
     fov_label_ = new QLabel("FOV: 20", this);
@@ -56,6 +87,16 @@ Buttons::Buttons(QWidget* parent) : QWidget(parent), Node("Buttons_Node"), kFOV(
         }
     );
 
+    state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
+        "/arussim/state", 1, 
+        [this](const arussim_msgs::msg::State::SharedPtr msg) { 
+            QMetaObject::invokeMethod(this, [this, msg]() {
+                updateTelemetryLabels(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+            }, Qt::QueuedConnection);
+        }
+    );
+
+    // Client
     fov_client_ = this->create_client<arussim_msgs::srv::SetFOV>("arussim/set_fov");
 
     QTimer::singleShot(1000, [this]() {
@@ -96,6 +137,16 @@ void Buttons::updateTelemetryBar(double parameter)
         telemetry_bar_->move(telemetry_bar_->x(), centerY);
         telemetry_bar_->setStyleSheet("background-color: red;");
     }
+}
+
+void Buttons::updateTelemetryLabels(double vx, double vy, double r, double ax, double ay, double delta)
+{
+    vx_label_->setText("vx: " + QString::number(vx, 'f', 3) + " m/s");
+    vy_label_->setText("vy: " + QString::number(vy, 'f', 3) + " m/s");
+    ax_label_->setText("ax: " + QString::number(ax, 'f', 3) + " m/s^2");
+    ay_label_->setText("ay: " + QString::number(ay, 'f', 3) + " m/s^2");
+    r_label_->setText("r: " + QString::number(r, 'f', 3) + " rad/s");
+    delta_label_->setText("delta: " + QString::number(delta * 180.0 / M_PI, 'f', 3) + "º");
 }
 
 void Buttons::resetButtonClicked()

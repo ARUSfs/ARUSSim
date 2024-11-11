@@ -11,7 +11,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include "arussim_msgs/srv/set_fov.hpp"
-
+#include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
 #include "std_msgs/msg/bool.hpp"
 
@@ -29,6 +29,12 @@ private:
     QSlider* fov_setter_;
     QLabel* fov_label_;
     QLabel* telemetry_label_;
+    QLabel* vx_label_;
+    QLabel* vy_label_;
+    QLabel* ax_label_;
+    QLabel* ay_label_;
+    QLabel* r_label_;
+    QLabel* delta_label_;
 
     double scaleFactor = 100;
     double maxBarHeight = 200;
@@ -41,12 +47,14 @@ private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
 
     rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedPtr fov_client_;
 
 
     void resetButtonClicked();
     void updateTelemetryBar(double parameter);
+    void updateTelemetryLabels(double vx, double vy, double r, double ax, double ay, double delta);
     void fovValueChanged(int value);
 
 
