@@ -83,5 +83,14 @@ def generate_launch_description():
             executable='supervisor_exec',
             name='arussim_supervisor',
             output='screen'
+        ),
+
+        # Launch the extended interface node
+        Node(
+            package='arussim',
+            executable='extended_interface_exec',
+            name='arussim_buttons',
+            output='screen'
         )
+
     ])
