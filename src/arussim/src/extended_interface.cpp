@@ -1,5 +1,17 @@
+/**
+ * @file extended_interface.cpp
+ * @author Rafael Guil (rafaguilvalero@gmail.com)
+ * @brief Extended interface with some controls and car data.
+ * @version 0.1
+ * @date 2024-11-11
+ */
 #include "arussim/extended_interface.hpp"
 
+/**
+ * @brief Construct a new Extended Interface:: Extended Interface object
+ * 
+ * @param parent 
+ */
 ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("extended_interface") {
     // Set window size
     QScreen* screen = QGuiApplication::primaryScreen();
@@ -171,6 +183,11 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     });
 }
 
+/**
+ * @brief setter for the FOV parameter
+ * 
+ * @param value_ 
+ */
 void ExtendedInterface::fov_set(int value_) {
     kFOV = static_cast<double>(value_);
     fov_label_->setText("FOV: " + QString::number(value_));
@@ -189,16 +206,34 @@ void ExtendedInterface::fov_set(int value_) {
     );
 }
 
+/**
+ * @brief setter for the a parameter
+ * 
+ * @param value_ 
+ */
 void ExtendedInterface::a_set(int value_) {
     kA = static_cast<double>(value_);
     a_label_->setText("a: " + QString::number(value_));
 }
 
+/**
+ * @brief setter for the b parameter
+ * 
+ * @param value_ 
+ */
 void ExtendedInterface::b_set(int value_) {
     kB = static_cast<double>(value_);
     b_label_->setText("b: " + QString::number(value_));
 }
 
+/**
+ * @brief Update the telemetry bars
+ * 
+ * @param fl_param_ 
+ * @param fr_param_ 
+ * @param rl_param_ 
+ * @param rr_param_ 
+ */
 void ExtendedInterface::update_telemetry_bar(double fl_param_, double fr_param_, double rl_param_, double rr_param_)
 {
     fr_param_ = fl_param_;
@@ -254,6 +289,16 @@ void ExtendedInterface::update_telemetry_bar(double fl_param_, double fr_param_,
     }
 }
 
+/**
+ * @brief Update the telemetry labels
+ * 
+ * @param vx_ 
+ * @param vy_ 
+ * @param r_ 
+ * @param ax_ 
+ * @param ay_ 
+ * @param delta_ 
+ */
 void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
 {
     vx_label_->setText("vx: " + QString::number(vx_, 'f', 3) + " m/s");
@@ -264,6 +309,10 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
     delta_label_->setText("delta: " + QString::number(delta_ * 180.0 / M_PI, 'f', 3) + "º");
 }
 
+/**
+ * @brief Callback for the reset button
+ * 
+ */
 void ExtendedInterface::reset_button_clicked()
 {
     auto msg = std_msgs::msg::Bool();
@@ -273,16 +322,33 @@ void ExtendedInterface::reset_button_clicked()
     RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
+/**
+ * @brief Callback for the a button
+ * 
+ */
 void ExtendedInterface::a_button_clicked()
 {
     RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
 }
 
+/**
+ * @brief Callback for the b button
+ * 
+ */
 void ExtendedInterface::b_button_clicked()
 {
     RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
 }
 
+/**
+ * @brief Main function
+ * 
+ * This initializes the ROS 2 system and starts spinning the Extended Interface node.
+ * 
+ * @param argc Number of command line arguments.
+ * @param argv Array of command line arguments.
+ * @return int Exit status of the application. 
+ */
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
