@@ -86,7 +86,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
 
 
     // FOV slider
-    fov_label_ = new QLabel("FOV: 20", this);
+    fov_label_ = new QLabel("FOV: " + QString::number(kFOV), this);
     fov_label_->setFont(customFont);
     fov_label_->move(margins, 575);
 

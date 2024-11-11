@@ -89,7 +89,7 @@ def generate_launch_description():
         Node(
             package='arussim',
             executable='extended_interface_exec',
-            name='arussim_buttons',
+            name='arussim_extended_interface',
             output='screen'
         )
 
