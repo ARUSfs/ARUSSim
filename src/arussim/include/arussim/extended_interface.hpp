@@ -52,12 +52,12 @@ private:
     QSlider* b_setter_;
     QLabel* b_label_;
 
-    double scaleFactor = 100;
-    double maxBarHeight = 150;
-    double containerHeight = 150;
-    double containerWidth = 150;
-    double centerY = containerHeight / 2;
-    double margins = 50;
+    double scaleFactor_ = 100;
+    double maxBarHeight_ = 150;
+    double containerHeight_ = 150;
+    double containerWidth_ = 150;
+    double centerY_ = containerHeight_ / 2;
+    double margins_ = 50;
 
     double kFOV = 20;
     double kA;
@@ -75,12 +75,12 @@ private:
     void a_button_clicked();
     void b_button_clicked();
 
-    void update_telemetry_bar(double fl_param, double fr_param, double rl_param, double rr_param);
-    void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+    void update_telemetry_bar(double fl_param_, double fr_param_, double rl_param_, double rr_param_);
+    void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
 
-    void fov_set(int value);
-    void a_set(int value);
-    void b_set(int value);
+    void fov_set(int value_);
+    void a_set(int value_);
+    void b_set(int value_);
 
 
     //Loginfo colors
