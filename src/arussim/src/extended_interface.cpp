@@ -109,16 +109,25 @@ void Buttons::resetButtonClicked()
 
 int main(int argc, char * argv[])
 {
-    // Initialize both QApplication and rclcpp
     QApplication app(argc, argv);
     rclcpp::init(argc, argv);
 
     auto node = std::make_shared<Buttons>();
     node->show();
 
+    // Crear un timer para verificar el estado de ROS
+    QTimer rosShutdownTimer;
+    QObject::connect(&rosShutdownTimer, &QTimer::timeout, [&]() {
+        if (!rclcpp::ok()) {
+            app.quit();  // Cerrar la aplicación Qt si ROS se ha apagado
+        }
+    });
+    rosShutdownTimer.start(100);  // Verificar cada 100ms
+
     std::thread rclcpp_thread([&]() {
         rclcpp::spin(node);
         rclcpp::shutdown();
+        app.quit();  // Asegurar que la aplicación Qt se cierre cuando ROS se apaga
     });
 
     int result = app.exec();
