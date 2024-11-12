@@ -54,14 +54,23 @@ private:
 
     double scaleFactor_ = 100;
     double maxBarHeight_ = 150;
-    double containerHeight_ = 150;
+    double window_width_ = QGuiApplication::primaryScreen()->availableGeometry().width() * 0.25;
+    double window_height_ = QGuiApplication::primaryScreen()->availableGeometry().height();
+    double containerHeight_ = window_height_ * 0.15;
     double containerWidth_ = 150;
     double centerY_ = containerHeight_ / 2;
-    double margins_ = 50;
+
+    double telemetry_rear_container_position_y_;
+    double telemetry_parameters_position_y_;
+    double reset_button_position_y_;
+    double fov_setter_position_y_;
+    double ab_button_position_y_;
 
     double kFOV = 20;
     double kA;
     double kB;
+
+    QMargins window_margins_;
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 

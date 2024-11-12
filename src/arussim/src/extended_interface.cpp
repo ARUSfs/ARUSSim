@@ -14,138 +14,148 @@
  */
 ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("extended_interface") {
     // Set window size
-    QScreen* screen = QGuiApplication::primaryScreen();
-    setFixedWidth(400);
-    setFixedHeight(screen->availableGeometry().height());
+    double margins_ = window_width_ * 0.05;
+    setFixedWidth(window_width_);
+    setFixedHeight(window_height_);
 
     // Set font
     QFont customFont("Montserrat Regular", 13);
 
-    // Reset button
-    reset_button_ = new QPushButton("Reset", this);
-    reset_button_->move(margins_, 500);
-    reset_button_->setFixedSize(300, 40);
-    reset_button_->setFont(customFont);
-    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
-
     // Telemetry bars
     telemetry_label_ = new QLabel("Telemetry", this);
     telemetry_label_->setFont(customFont);
-    telemetry_label_->move(margins_ - 15, 40);
+    telemetry_label_->move(margins_ * 0.95, margins_);
 
     telemetry_container_fl_ = new QWidget(this);
-    telemetry_container_fl_->setFixedSize(containerWidth_, containerHeight_);
+    telemetry_container_fl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fl_->move(margins_, 75);
+    telemetry_container_fl_->move(margins_, margins_ * 2);
     telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
-    telemetry_bar_fl_->setFixedWidth(containerWidth_);
+    telemetry_bar_fl_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_fl_->move(0, centerY_);
 
     telemetry_container_fr_ = new QWidget(this);
-    telemetry_container_fr_->setFixedSize(containerWidth_, containerHeight_);
+    telemetry_container_fr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fr_->move(225, 75);
+    telemetry_container_fr_->move(window_width_ * 0.525, margins_ * 2);
     telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
-    telemetry_bar_fr_->setFixedWidth(containerWidth_);
+    telemetry_bar_fr_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_fr_->move(0, centerY_);
 
+    telemetry_rear_container_position_y_ = window_height_ * 0.15 + margins_ * 3;
+
     telemetry_container_rl_ = new QWidget(this);
-    telemetry_container_rl_->setFixedSize(containerWidth_, containerHeight_);
+    telemetry_container_rl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_rl_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_rl_->move(margins_, 250);
+    telemetry_container_rl_->move(margins_, telemetry_rear_container_position_y_);
     telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
-    telemetry_bar_rl_->setFixedWidth(containerWidth_);
+    telemetry_bar_rl_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_rl_->move(0, centerY_);
 
     telemetry_container_rr_ = new QWidget(this);
-    telemetry_container_rr_->setFixedSize(containerWidth_, containerHeight_);
+    telemetry_container_rr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_rr_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_rr_->move(225, 250);
+    telemetry_container_rr_->move(window_width_ * 0.525, telemetry_rear_container_position_y_);
     telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
-    telemetry_bar_rr_->setFixedWidth(containerWidth_);
+    telemetry_bar_rr_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_rr_->move(0, centerY_);
 
     // Telemetry labels
+    telemetry_parameters_position_y_ = telemetry_rear_container_position_y_ + window_height_ * 0.15 + margins_;
+
     vx_label_ = new QLabel("vx: 0 m/s", this);
     vx_label_->setFont(customFont);
-    vx_label_->setFixedSize(150, 25);
-    vx_label_->move(margins_, 400);
+    vx_label_->setFixedSize(window_width_ * 0.425, margins_);
+    vx_label_->move(margins_, telemetry_parameters_position_y_);
 
     vy_label_ = new QLabel("vy: 0 m/s", this);
     vy_label_->setFont(customFont);
-    vy_label_->setFixedSize(150, 25);
-    vy_label_->move(margins_ + 175, 400);
+    vy_label_->setFixedSize(window_width_ * 0.425, margins_);
+    vy_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_);
     
     ax_label_ = new QLabel("ax: 0 m/s^2", this);
     ax_label_->setFont(customFont);
-    ax_label_->setFixedSize(150, 25);
-    ax_label_->move(margins_, 425);
+    ax_label_->setFixedSize(window_width_ * 0.425, margins_);
+    ax_label_->move(margins_, telemetry_parameters_position_y_ + margins_);
 
     ay_label_ = new QLabel("ay: 0 m/s^2", this);
     ay_label_->setFont(customFont);
-    ay_label_->setFixedSize(150, 25);
-    ay_label_->move(margins_ + 175, 425);
+    ay_label_->setFixedSize(window_width_ * 0.425, margins_);
+    ay_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_);
 
     r_label_ = new QLabel("r: 0 rad/s", this);
     r_label_->setFont(customFont);
-    r_label_->setFixedSize(150, 25);
-    r_label_->move(margins_, 450);
+    r_label_->setFixedSize(window_width_ * 0.425, margins_);
+    r_label_->move(margins_, telemetry_parameters_position_y_ + margins_ * 2);
     
     delta_label_ = new QLabel("delta: 0º", this);
     delta_label_->setFont(customFont);
-    delta_label_->setFixedSize(150, 25);
-    delta_label_->move(margins_ + 175, 450);
+    delta_label_->setFixedSize(window_width_ * 0.425, margins_);
+    delta_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_ * 2);
+
+    // Reset button
+    reset_button_position_y_ = telemetry_parameters_position_y_ + margins_ * 4;
+
+    reset_button_ = new QPushButton("Reset", this);
+    reset_button_->move(margins_, reset_button_position_y_);
+    reset_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
+    reset_button_->setFont(customFont);
+    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
 
     // FOV slider
+    fov_setter_position_y_ = reset_button_position_y_ + window_height_ * 0.05 + margins_;
+
     fov_label_ = new QLabel("FOV: " + QString::number(kFOV), this);
     fov_label_->setFont(customFont);
-    fov_label_->move(margins_, 575);
+    fov_label_->move(margins_, fov_setter_position_y_);
 
     fov_setter_ = new QSlider(Qt::Horizontal, this);
     fov_setter_->setRange(0, 100);
     fov_setter_->setValue(static_cast<int>(kFOV));
-    fov_setter_->setGeometry(margins_, 590, 300, 40);
+    fov_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
     fov_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(fov_setter_, &QSlider::valueChanged, this, &ExtendedInterface::fov_set);
 
     // Slider 1
     a_label_ = new QLabel("a: 0", this);
     a_label_->setFont(customFont);
-    a_label_->setFixedSize(150, 25);
-    a_label_->move(margins_, 625);
+    a_label_->setFixedSize(window_width_*0.9, margins_);
+    a_label_->move(margins_, fov_setter_position_y_ + margins_ * 3);
 
     a_setter_ = new QSlider(Qt::Horizontal, this);
     a_setter_->setRange(0, 100);
     a_setter_->setValue(static_cast<int>(kA));
-    a_setter_->setGeometry(margins_, 640, 300, 40);
+    a_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_*4, window_width_ * 0.9, margins_);
     a_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(a_setter_, &QSlider::valueChanged, this, &ExtendedInterface::a_set);
 
     // Slider 2
     b_label_ = new QLabel("b: 0", this);
     b_label_->setFont(customFont);
-    b_label_->setFixedSize(150, 25);
-    b_label_->move(margins_, 675);
+    b_label_->setFixedSize(window_width_*0.9, margins_);
+    b_label_->move(margins_, fov_setter_position_y_ + margins_ * 6);
 
     b_setter_ = new QSlider(Qt::Horizontal, this);
     b_setter_->setRange(0, 100);
     b_setter_->setValue(static_cast<int>(kB));
-    b_setter_->setGeometry(margins_, 690, 300, 40);
+    b_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_*7, window_width_ * 0.9, margins_);
     b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(b_setter_, &QSlider::valueChanged, this, &ExtendedInterface::b_set);
 
     //Button 1
+    ab_button_position_y_ = fov_setter_position_y_ + margins_ * 9;
+
     a_button_ = new QPushButton("a", this);
-    a_button_->move(margins_, 750);
-    a_button_->setFixedSize(150, 40);
+    a_button_->move(margins_, ab_button_position_y_);
+    a_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
     a_button_->setFont(customFont);
     connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::a_button_clicked);
 
     //Button 2
     b_button_ = new QPushButton("b", this);
-    b_button_->move(margins_ + 175, 750);
-    b_button_->setFixedSize(150, 40);
+    b_button_->move(window_width_ * 0.525, ab_button_position_y_);
+    b_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
     b_button_->setFont(customFont);
     connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::b_button_clicked);
 
