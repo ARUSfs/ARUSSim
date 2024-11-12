@@ -52,13 +52,12 @@ private:
     QSlider* b_setter_;
     QLabel* b_label_;
 
-    double scaleFactor_ = 100;
-    double maxBarHeight_ = 150;
+    double scale_factor_ = 100;
+    double max_bar_height_ = 150;
     double window_width_ = QGuiApplication::primaryScreen()->availableGeometry().width() * 0.25;
     double window_height_ = QGuiApplication::primaryScreen()->availableGeometry().height();
-    double containerHeight_ = window_height_ * 0.15;
-    double containerWidth_ = 150;
-    double centerY_ = containerHeight_ / 2;
+    double center_y_ = window_height_ * 0.15 / 2;
+    double margins_ = window_width_ * 0.05;
 
     double telemetry_rear_container_position_y_;
     double telemetry_parameters_position_y_;
@@ -69,8 +68,6 @@ private:
     double kFOV = 20;
     double kA;
     double kB;
-
-    QMargins window_margins_;
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 

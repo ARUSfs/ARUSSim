@@ -14,7 +14,6 @@
  */
 ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("extended_interface") {
     // Set window size
-    double margins_ = window_width_ * 0.05;
     setFixedWidth(window_width_);
     setFixedHeight(window_height_);
 
@@ -32,7 +31,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_container_fl_->move(margins_, margins_ * 2);
     telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
     telemetry_bar_fl_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_fl_->move(0, centerY_);
+    telemetry_bar_fl_->move(0, center_y_);
 
     telemetry_container_fr_ = new QWidget(this);
     telemetry_container_fr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
@@ -40,7 +39,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_container_fr_->move(window_width_ * 0.525, margins_ * 2);
     telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
     telemetry_bar_fr_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_fr_->move(0, centerY_);
+    telemetry_bar_fr_->move(0, center_y_);
 
     telemetry_rear_container_position_y_ = window_height_ * 0.15 + margins_ * 3;
 
@@ -50,7 +49,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_container_rl_->move(margins_, telemetry_rear_container_position_y_);
     telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
     telemetry_bar_rl_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_rl_->move(0, centerY_);
+    telemetry_bar_rl_->move(0, center_y_);
 
     telemetry_container_rr_ = new QWidget(this);
     telemetry_container_rr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
@@ -58,7 +57,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_container_rr_->move(window_width_ * 0.525, telemetry_rear_container_position_y_);
     telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
     telemetry_bar_rr_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_rr_->move(0, centerY_);
+    telemetry_bar_rr_->move(0, center_y_);
 
     // Telemetry labels
     telemetry_parameters_position_y_ = telemetry_rear_container_position_y_ + window_height_ * 0.15 + margins_;
@@ -251,50 +250,50 @@ void ExtendedInterface::update_telemetry_bar(double fl_param_, double fr_param_,
     rr_param_ = fl_param_;
 
     // Front Left
-    double height_fl = std::abs(fl_param_) * scaleFactor_;
-    height_fl = std::min(height_fl, maxBarHeight_);
+    double height_fl = std::abs(fl_param_) * scale_factor_;
+    height_fl = std::min(height_fl, max_bar_height_);
     telemetry_bar_fl_->setFixedHeight(static_cast<int>(height_fl));
     if (fl_param_ >= 0) {
-        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), centerY_ - height_fl);
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_ - height_fl);
         telemetry_bar_fl_->setStyleSheet("background-color: green;");
     } else {
-        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), centerY_);
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_);
         telemetry_bar_fl_->setStyleSheet("background-color: red;");
     }
 
     // Front Right
-    double height_fr = std::abs(fr_param_) * scaleFactor_;
-    height_fr = std::min(height_fr, maxBarHeight_);
+    double height_fr = std::abs(fr_param_) * scale_factor_;
+    height_fr = std::min(height_fr, max_bar_height_);
     telemetry_bar_fr_->setFixedHeight(static_cast<int>(height_fr));
     if (fr_param_ >= 0) {
-        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), centerY_ - height_fr);
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_ - height_fr);
         telemetry_bar_fr_->setStyleSheet("background-color: green;");
     } else {
-        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), centerY_);
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_);
         telemetry_bar_fr_->setStyleSheet("background-color: red;");
     }
 
     // Rear Left
-    double height_rl = std::abs(rl_param_) * scaleFactor_;
-    height_rl = std::min(height_rl, maxBarHeight_);
+    double height_rl = std::abs(rl_param_) * scale_factor_;
+    height_rl = std::min(height_rl, max_bar_height_);
     telemetry_bar_rl_->setFixedHeight(static_cast<int>(height_rl));
     if (rl_param_ >= 0) {
-        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), centerY_ - height_rl);
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_ - height_rl);
         telemetry_bar_rl_->setStyleSheet("background-color: green;");
     } else {
-        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), centerY_);
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_);
         telemetry_bar_rl_->setStyleSheet("background-color: red;");
     }
 
     // Rear Right
-    double height_rr = std::abs(rr_param_) * scaleFactor_;
-    height_rr = std::min(height_rr, maxBarHeight_);
+    double height_rr = std::abs(rr_param_) * scale_factor_;
+    height_rr = std::min(height_rr, max_bar_height_);
     telemetry_bar_rr_->setFixedHeight(static_cast<int>(height_rr));
     if (rr_param_ >= 0) {
-        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), centerY_ - height_rr);
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_ - height_rr);
         telemetry_bar_rr_->setStyleSheet("background-color: green;");
     } else {
-        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), centerY_);
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_);
         telemetry_bar_rr_->setStyleSheet("background-color: red;");
     }
 }
