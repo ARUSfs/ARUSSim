@@ -186,10 +186,14 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // Client
     fov_client_ = this->create_client<arussim_msgs::srv::SetFOV>("arussim/set_fov");
 
+    // Activate window
     QTimer::singleShot(1000, [this]() {
         raise();
         activateWindow();
     });
+
+    // Move the window to the right side of the screen
+    move(window_position_x_, 0);
 }
 
 /**
