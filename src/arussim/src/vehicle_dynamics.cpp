@@ -34,10 +34,10 @@ void VehicleDynamics::calculate_dynamics(){
     calculate_tire_slip();
     calculate_tire_loads();
 
-    Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_loads_.fl_);
-    Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_loads_.fr_);
-    Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_loads_.rl_);
-    Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_loads_.rr_);
+    Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_slip_.lambda_fl_, tire_loads_.fl_);
+    Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_);
+    Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_);
+    Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_);
 
     double fy_front = force_fl.fy + force_fr.fy;
     double fy_rear = force_rl.fy + force_rr.fy;
@@ -124,20 +124,23 @@ void VehicleDynamics::calculate_tire_slip(){
     double vx_rl = std::sqrt(vy_rear*vy_rear + vx_left*vx_left) * std::cos(tire_slip_.alpha_rl_);
     double vx_rr = std::sqrt(vy_rear*vy_rear + vx_right*vx_right) * std::cos(tire_slip_.alpha_rr_);
 
-    tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / vx_fl;
-    tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / vx_fr;
-    tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / vx_rl;
-    tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / vx_rr;
+    double eps = 0.01;
+
+    tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps);
+    tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps);
+    tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps);
+    tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps);
 
 }
 
-VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double tire_load){
+VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load){
 
     double fy_pure = tire_load * kCamberStiffness * slip_angle;
+    double fx_pure = tire_load * kCamberStiffness * slip_ratio;
 
     Tire_force tire_force;
     tire_force.fy = fy_pure;
-    tire_force.fx = 0; // provisionally
+    tire_force.fx = fx_pure;
 
     return tire_force;
 }

@@ -98,7 +98,7 @@ class VehicleDynamics
 
         void calculate_tire_loads();
         void calculate_tire_slip();
-        Tire_force calculate_tire_forces(double slip_angle, double tire_load);
+        Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
         void kinematic_correction();
         void update_torque_cmd();
 };
