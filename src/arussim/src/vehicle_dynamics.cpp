@@ -31,6 +31,7 @@ void VehicleDynamics::calculate_dynamics(){
     
     calculate_tire_slip();
     calculate_tire_loads();
+
     double fy_front, fy_rear;
     calculate_tire_forces(fy_front, fy_rear);
 
@@ -49,6 +50,7 @@ void VehicleDynamics::calculate_dynamics(){
 
 void VehicleDynamics::integrate_dynamics(){
 
+    // Simple Euler method for now
     x_ += x_dot_ * dt_;
     y_ += y_dot_ * dt_;
     yaw_ += r_ * dt_;
@@ -57,6 +59,8 @@ void VehicleDynamics::integrate_dynamics(){
     r_ += r_dot_ * dt_;
 
     kinematic_correction();
+
+    calculate_wheel_speed(); // provisional calculation until longitudinal tire model is included
 
     if(vx_ < 0){
         vx_ = 0;
@@ -114,4 +118,11 @@ void VehicleDynamics::kinematic_correction(){
 
     r_ = lambda * r_kinematic + (1 - lambda) * r_;
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
+}
+
+void VehicleDynamics::calculate_wheel_speed(){
+    wheel_speed_.fl_ = std::sqrt(std::pow(vx_ - r_ * kTrackWidth / 2, 2) + std::pow(vy_ + kLf * r_, 2)) / std::cos(tire_slip_.alpha_fl_);
+    wheel_speed_.fr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ + kLf * r_, 2)) / std::cos(tire_slip_.alpha_fr_);
+    wheel_speed_.rl_ = std::sqrt(std::pow(vx_ - r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rl_);
+    wheel_speed_.rr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rr_);
 }

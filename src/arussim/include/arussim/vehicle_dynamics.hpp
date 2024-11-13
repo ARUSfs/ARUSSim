@@ -1,5 +1,6 @@
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 class VehicleDynamics
 {
@@ -16,6 +17,13 @@ class VehicleDynamics
         double ax_;
         double ay_;
         double delta_;
+
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } wheel_speed_;
         
         double input_delta_;
         double input_acc_;
@@ -71,4 +79,5 @@ class VehicleDynamics
         void calculate_tire_slip();
         void calculate_tire_forces(double &fy_front, double &fy_rear);
         void kinematic_correction();
+        void calculate_wheel_speed();
 };
