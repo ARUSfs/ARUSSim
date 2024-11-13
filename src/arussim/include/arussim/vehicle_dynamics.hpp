@@ -70,6 +70,11 @@ class VehicleDynamics
             double rr_ = 0;
         } tire_loads_;
 
+        struct Tire_force {
+            double fy;
+            double fx;
+        };
+
         void calculate_dynamics();
         void integrate_dynamics();
 
@@ -77,7 +82,7 @@ class VehicleDynamics
 
         void calculate_tire_loads();
         void calculate_tire_slip();
-        void calculate_tire_forces(double &fy_front, double &fy_rear);
+        Tire_force calculate_tire_forces(double slip_angle, double tire_load);
         void kinematic_correction();
         void calculate_wheel_speed();
 };
