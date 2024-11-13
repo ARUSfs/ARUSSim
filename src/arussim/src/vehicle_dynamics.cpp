@@ -23,6 +23,8 @@ void VehicleDynamics::update_simulation(double input_delta,
     input_acc_ = input_acc;
     dt_ = dt;
 
+    update_torque_cmd();
+
     calculate_dynamics();
     integrate_dynamics();
 }
@@ -51,6 +53,12 @@ void VehicleDynamics::calculate_dynamics(){
     r_dot_ = (fy_front*std::cos(delta_)*kLf - fy_rear*kLr) / kIzz;
 
     delta_ = input_delta_;
+
+    // Tire angular acceleration
+    w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx / kTireDynRadius) / kTireInertia;
+    w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx / kTireDynRadius) / kTireInertia;
+    w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx / kTireDynRadius) / kTireInertia;
+    w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx / kTireDynRadius) / kTireInertia;
 }
 
 void VehicleDynamics::integrate_dynamics(){
@@ -65,7 +73,12 @@ void VehicleDynamics::integrate_dynamics(){
 
     kinematic_correction();
 
-    calculate_wheel_speed(); // provisional calculation until longitudinal tire model is included
+    // calculate_wheel_speed(); // provisional calculation until longitudinal tire model is included
+
+    wheel_speed_.fl_ += w_fl_dot_ * dt_;
+    wheel_speed_.fr_ += w_fr_dot_ * dt_;
+    wheel_speed_.rl_ += w_rl_dot_ * dt_;
+    wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
     if(vx_ < 0){
         vx_ = 0;
@@ -129,4 +142,12 @@ void VehicleDynamics::calculate_wheel_speed(){
     wheel_speed_.fr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ + kLf * r_, 2)) / std::cos(tire_slip_.alpha_fr_);
     wheel_speed_.rl_ = std::sqrt(std::pow(vx_ - r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rl_);
     wheel_speed_.rr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rr_);
+}
+
+void VehicleDynamics::update_torque_cmd(){
+    double total_fx_cmd = input_acc_ * kMass;
+    torque_cmd_.fl_ = 0.2 * total_fx_cmd / kTireDynRadius;
+    torque_cmd_.fr_ = 0.2 * total_fx_cmd / kTireDynRadius;
+    torque_cmd_.rl_ = 0.3 * total_fx_cmd / kTireDynRadius;
+    torque_cmd_.rr_ = 0.3 * total_fx_cmd / kTireDynRadius;
 }

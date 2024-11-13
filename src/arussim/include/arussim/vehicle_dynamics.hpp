@@ -40,6 +40,9 @@ class VehicleDynamics
         double kLr = kWheelBase*(1-kMassDistributionRear);
         double kIzz = 180;
 
+        double kTireDynRadius = 0.202;
+        double kTireInertia = 0.5;
+
         double kMinFx = -3500;
         double kMaxFx = 2000;
 
@@ -50,8 +53,16 @@ class VehicleDynamics
         double kCamberStiffness = -100;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
+        double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
 
         double kG = 9.81;
+
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } torque_cmd_;
 
         struct {
             double alpha_fl_ = 0;
@@ -85,4 +96,5 @@ class VehicleDynamics
         Tire_force calculate_tire_forces(double slip_angle, double tire_load);
         void kinematic_correction();
         void calculate_wheel_speed();
+        void update_torque_cmd();
 };
