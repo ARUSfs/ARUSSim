@@ -73,8 +73,6 @@ void VehicleDynamics::integrate_dynamics(){
 
     kinematic_correction();
 
-    // calculate_wheel_speed(); // provisional calculation until longitudinal tire model is included
-
     wheel_speed_.fl_ += w_fl_dot_ * dt_;
     wheel_speed_.fr_ += w_fr_dot_ * dt_;
     wheel_speed_.rl_ += w_rl_dot_ * dt_;
@@ -109,12 +107,28 @@ void VehicleDynamics::calculate_tire_loads(){
 }
 
 void VehicleDynamics::calculate_tire_slip(){
+    double vy_front = vy_ + kLf * r_;
+    double vy_rear = vy_ - kLr * r_;
+    double vx_left = vx_ - r_ * kTrackWidth / 2;
+    double vx_right = vx_ + r_ * kTrackWidth / 2;
+
     if(vx_ > 1){
-        tire_slip_.alpha_fl_ = std::atan((vy_ + kLf * r_)/(vx_ - r_ * kTrackWidth / 2)) - delta_;
-        tire_slip_.alpha_fr_ = std::atan((vy_ + kLf * r_)/(vx_ + r_ * kTrackWidth / 2)) - delta_;
-        tire_slip_.alpha_rl_ = std::atan((vy_ - kLr * r_)/(vx_ - r_ * kTrackWidth / 2));
-        tire_slip_.alpha_rr_ = std::atan((vy_ - kLr * r_)/(vx_ + r_ * kTrackWidth / 2));
+        tire_slip_.alpha_fl_ = std::atan(vy_front / vx_left) - delta_;
+        tire_slip_.alpha_fr_ = std::atan(vy_front / vx_right) - delta_;
+        tire_slip_.alpha_rl_ = std::atan(vy_rear / vx_left);
+        tire_slip_.alpha_rr_ = std::atan(vy_rear / vx_right);
     }
+
+    double vx_fl = std::sqrt(vy_front*vy_front + vx_left*vx_left) * std::cos(tire_slip_.alpha_fl_);
+    double vx_fr = std::sqrt(vy_front*vy_front + vx_right*vx_right) * std::cos(tire_slip_.alpha_fr_);
+    double vx_rl = std::sqrt(vy_rear*vy_rear + vx_left*vx_left) * std::cos(tire_slip_.alpha_rl_);
+    double vx_rr = std::sqrt(vy_rear*vy_rear + vx_right*vx_right) * std::cos(tire_slip_.alpha_rr_);
+
+    tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / vx_fl;
+    tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / vx_fr;
+    tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / vx_rl;
+    tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / vx_rr;
+
 }
 
 VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double tire_load){
@@ -135,13 +149,6 @@ void VehicleDynamics::kinematic_correction(){
 
     r_ = lambda * r_kinematic + (1 - lambda) * r_;
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
-}
-
-void VehicleDynamics::calculate_wheel_speed(){
-    wheel_speed_.fl_ = std::sqrt(std::pow(vx_ - r_ * kTrackWidth / 2, 2) + std::pow(vy_ + kLf * r_, 2)) / std::cos(tire_slip_.alpha_fl_);
-    wheel_speed_.fr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ + kLf * r_, 2)) / std::cos(tire_slip_.alpha_fr_);
-    wheel_speed_.rl_ = std::sqrt(std::pow(vx_ - r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rl_);
-    wheel_speed_.rr_ = std::sqrt(std::pow(vx_ + r_ * kTrackWidth / 2, 2) + std::pow(vy_ - kLf * r_, 2)) / std::cos(tire_slip_.alpha_rr_);
 }
 
 void VehicleDynamics::update_torque_cmd(){

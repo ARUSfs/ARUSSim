@@ -69,6 +69,11 @@ class VehicleDynamics
             double alpha_fr_ = 0;
             double alpha_rl_ = 0;
             double alpha_rr_ = 0;
+
+            double lambda_fl_ = 0;
+            double lambda_fr_ = 0;
+            double lambda_rl_ = 0;
+            double lambda_rr_ = 0;
         } tire_slip_;
 
         double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
@@ -95,6 +100,5 @@ class VehicleDynamics
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double tire_load);
         void kinematic_correction();
-        void calculate_wheel_speed();
         void update_torque_cmd();
 };
