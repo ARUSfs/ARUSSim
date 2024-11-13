@@ -56,7 +56,7 @@ private:
     double max_bar_height_ = 150;
     double window_width_ = QGuiApplication::primaryScreen()->availableGeometry().width() * 0.25;
     double window_height_ = QGuiApplication::primaryScreen()->availableGeometry().height();
-    int window_position_x_ = QGuiApplication::primaryScreen()->availableGeometry().width() - window_width_;
+    double window_position_x_ = QGuiApplication::primaryScreen()->availableGeometry().width() - window_width_;
     double center_y_ = window_height_ * 0.15 / 2;
     double margins_ = window_width_ * 0.05;
 
