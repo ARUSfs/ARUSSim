@@ -47,8 +47,10 @@ Simulator::Simulator() : Node("simulator")
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-    state_pub_ = this->create_publisher<arussim_msgs::msg::State>("/arussim/state", 10);
-    track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/arussim/track", 10);
+    state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
+        "/arussim/state", 10);
+    track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
+        "/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(

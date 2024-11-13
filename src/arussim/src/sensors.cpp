@@ -61,7 +61,8 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // IMU
-    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("/arussim/imu", 10);
+    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(
+        "/arussim/imu", 10);
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
@@ -69,7 +70,8 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Wheel speed
-    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/wheel_speeds", 10);
+    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/wheel_speeds", 10);
 
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
