@@ -42,6 +42,8 @@ class VehicleDynamics
 
         double kTireDynRadius = 0.202;
         double kTireInertia = 0.5;
+        double kCamberStiffnessLat = -100;
+        double kCamberStiffnessLong = 9;
 
         double kMinFx = -3500;
         double kMaxFx = 2000;
@@ -49,8 +51,6 @@ class VehicleDynamics
         double kRollingResistance = 100;
         double kCDA = 1;
         double kAirDensity = 1.1;
-
-        double kCamberStiffness = -100;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
@@ -94,7 +94,7 @@ class VehicleDynamics
         void calculate_dynamics();
         void integrate_dynamics();
 
-        double calculate_fx();
+        double calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr);
 
         void calculate_tire_loads();
         void calculate_tire_slip();
