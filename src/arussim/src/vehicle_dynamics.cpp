@@ -106,9 +106,9 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
     double longitudinal_tire_force = (force_fl.fx + force_fr.fx) * std::cos(delta_) + force_rl.fx + force_rr.fx;
     longitudinal_tire_force -= (force_fl.fy + force_fr.fy) * std::sin(delta_);
 
-    double Drag = 0.5*kAirDensity*kCDA*pow(vx_,2);
+    double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
 
-    double longitudinal_force = longitudinal_tire_force - Drag - kRollingResistance;
+    double longitudinal_force = longitudinal_tire_force - aero_drag - kRollingResistance;
 
     return longitudinal_force;
 }
@@ -122,6 +122,15 @@ void VehicleDynamics::calculate_tire_loads(){
     tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay - load_transfer_ax/2;
     tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
     tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
+
+    double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
+    double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
+
+    tire_loads_.fl_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
+    tire_loads_.fr_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
+    tire_loads_.rl_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
+    tire_loads_.rr_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
+
 
     if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
     if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}

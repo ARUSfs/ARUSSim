@@ -60,6 +60,9 @@ class VehicleDynamics
 
         double kRollingResistance = 100;
         double kCDA = 1;
+        double kCLA = 3.5;
+        double kCOPx = 0.5; //longitudinal distribution (rear)
+        double kCOPy = kHCog;
         double kAirDensity = 1.1;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
