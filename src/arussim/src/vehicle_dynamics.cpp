@@ -28,13 +28,6 @@ void VehicleDynamics::update_simulation(double input_delta,
 
     calculate_dynamics();
     integrate_dynamics();
-
-    // std::ofstream myfile;
-    // myfile.open("telemetries.txt",std::ios::app);
-    // myfile << "slipratio: " << tire_slip_.lambda_fl_ << " accel_cmd: " << input_acc_ << " ax: " << ax_ << " ay_: " << ay_ 
-    // << " delta: " << delta_ << " yaw_rate: " << r_ << " slipangle: " << tire_slip_.alpha_fl_ 
-    // << " vx: " << vx_ << " vy: " << vy_ 
-    // << " fz_fl: " << tire_loads_.fl_ << "\n";
     }
 
 void VehicleDynamics::calculate_dynamics(){
