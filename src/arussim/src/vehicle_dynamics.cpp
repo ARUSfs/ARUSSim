@@ -29,11 +29,11 @@ void VehicleDynamics::update_simulation(double input_delta,
     calculate_dynamics();
     integrate_dynamics();
 
-    std::ofstream myfile;
-    myfile.open("telemetries.txt",std::ios::app);
-    myfile << "slipratio: " << tire_slip_.lambda_fl_ << " accel_cmd: " << input_acc_ << " ax: " << ax_ << " ay_: " << ay_ 
-    << " delta: " << delta_ << " yaw_rate: " << r_ << " slipangle: " << tire_slip_.alpha_fl_ 
-    << " vx: " << vx_ << " vy: " << vy_ << "\n";
+    // std::ofstream myfile;
+    // myfile.open("telemetries.txt",std::ios::app);
+    // myfile << "slipratio: " << tire_slip_.lambda_fl_ << " accel_cmd: " << input_acc_ << " ax: " << ax_ << " ay_: " << ay_ 
+    // << " delta: " << delta_ << " yaw_rate: " << r_ << " slipangle: " << tire_slip_.alpha_fl_ 
+    // << " vx: " << vx_ << " vy: " << vy_ << "\n";
     }
 
 void VehicleDynamics::calculate_dynamics(){
@@ -50,14 +50,24 @@ void VehicleDynamics::calculate_dynamics(){
     double fy_rear = force_rl.fy + force_rr.fy;
 
     ax_ = calculate_fx(force_fl, force_fr, force_rl, force_rr) / kMass;
-    ay_ = (fy_front * std::cos(delta_) + fy_rear) / kMass;
+    double total_fy = fy_front * std::cos(delta_) + fy_rear;
+    total_fy += (force_fl.fx + force_fr.fx) * std::sin(delta_);
+    ay_ = total_fy / kMass;
 
     x_dot_ = vx_ * std::cos(yaw_);
     y_dot_ = vx_ * std::sin(yaw_);
 
     vx_dot_ = ax_ + r_ * vy_;
     vy_dot_ = ay_ - r_ * vx_;
-    r_dot_ = (fy_front*std::cos(delta_)*kLf - fy_rear*kLr) / kIzz;
+
+    double mz_lateral = fy_front * std::cos(delta_) * kLf - fy_rear * kLr;
+    // mz_lateral += (force_fl.fy - force_fr.fy) * std::sin(delta_) * kTrackWidth/2;
+    double mz_longitudinal = ((force_fr.fx - force_fl.fx) * std::cos(delta_) + force_rr.fx - force_rl.fx) * kTrackWidth/2;
+    // + (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
+
+    double total_mz = mz_lateral + mz_longitudinal;
+
+    r_dot_ = total_mz / kIzz;
 
     delta_ = input_delta_;
 
@@ -154,8 +164,8 @@ void VehicleDynamics::calculate_tire_slip(){
 
 VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load){
 
-    double fy_pure = tire_load * kCamberStiffnessLat * slip_angle;
-    double fx_pure = tire_load * kCamberStiffnessLong * slip_ratio;
+    double fy_pure = tire_load * pac_param_.Dlat * std::sin(pac_param_.Clat * std::atan(pac_param_.Blat * slip_angle));
+    double fx_pure = tire_load * pac_param_.Dlon * std::sin(pac_param_.Clon * std::atan(pac_param_.Blon * slip_ratio));
 
     Tire_force tire_force;
     tire_force.fy = fy_pure;

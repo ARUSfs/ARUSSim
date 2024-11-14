@@ -45,6 +45,16 @@ class VehicleDynamics
         double kCamberStiffnessLat = -100;
         double kCamberStiffnessLong = 9;
 
+        struct {
+            double Dlat = -1.537;
+            double Clat = 1.54;
+            double Blat = 9.0;
+
+            double Dlon = 1.38;
+            double Clon = 1.5;
+            double Blon = 12.4;
+        } pac_param_;
+
         double kMinFx = -3500;
         double kMaxFx = 2000;
 
