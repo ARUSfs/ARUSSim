@@ -33,7 +33,8 @@ void VehicleDynamics::update_simulation(double input_delta,
     // myfile.open("telemetries.txt",std::ios::app);
     // myfile << "slipratio: " << tire_slip_.lambda_fl_ << " accel_cmd: " << input_acc_ << " ax: " << ax_ << " ay_: " << ay_ 
     // << " delta: " << delta_ << " yaw_rate: " << r_ << " slipangle: " << tire_slip_.alpha_fl_ 
-    // << " vx: " << vx_ << " vy: " << vy_ << "\n";
+    // << " vx: " << vx_ << " vy: " << vy_ 
+    // << " fz_fl: " << tire_loads_.fl_ << "\n";
     }
 
 void VehicleDynamics::calculate_dynamics(){
@@ -115,11 +116,12 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
 void VehicleDynamics::calculate_tire_loads(){
 
     double load_transfer_ay = kMass * kHCog * ay_ / kTrackWidth;
+    double load_transfer_ax = kMass * kHCog * ax_ / kWheelBase;
 
-    tire_loads_.fl_ = kStaticLoadFront - (1 - kMassDistributionRear) * load_transfer_ay;
-    tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay;
-    tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay;
-    tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay;
+    tire_loads_.fl_ = kStaticLoadFront - (1 - kMassDistributionRear) * load_transfer_ay - load_transfer_ax/2;
+    tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay - load_transfer_ax/2;
+    tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
+    tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
 
     if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
     if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}
