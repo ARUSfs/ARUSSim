@@ -28,6 +28,7 @@ void VehicleDynamics::update_simulation(double input_delta,
 
     calculate_dynamics();
     integrate_dynamics();
+
     }
 
 void VehicleDynamics::calculate_dynamics(){
@@ -39,6 +40,9 @@ void VehicleDynamics::calculate_dynamics(){
     Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_);
     Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_);
     Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_);
+
+    force.fy = force_fl.fy;
+    force.fx = force_fl.fx;
 
     double fy_front = force_fl.fy + force_fr.fy;
     double fy_rear = force_rl.fy + force_rr.fy;
@@ -168,12 +172,21 @@ void VehicleDynamics::calculate_tire_slip(){
 
 VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load){
 
+    // Combined slip
+    double alpha_star = slip_angle / pac_param_.kAlphaP;
+    double lambda_star = slip_ratio / pac_param_.kLambdaP;
+
+    double s_star = std::max(std::sqrt(alpha_star*alpha_star + lambda_star*lambda_star), 0.01);
+
+    slip_angle = s_star * pac_param_.kAlphaP;
+    slip_ratio = s_star * pac_param_.kLambdaP;
+
     double fy_pure = tire_load * pac_param_.Dlat * std::sin(pac_param_.Clat * std::atan(pac_param_.Blat * slip_angle));
     double fx_pure = tire_load * pac_param_.Dlon * std::sin(pac_param_.Clon * std::atan(pac_param_.Blon * slip_ratio));
 
     Tire_force tire_force;
-    tire_force.fy = fy_pure;
-    tire_force.fx = fx_pure;
+    tire_force.fy = fy_pure * alpha_star / s_star;
+    tire_force.fx = fx_pure * lambda_star / s_star;
 
     return tire_force;
 }

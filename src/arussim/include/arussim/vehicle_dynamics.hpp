@@ -33,7 +33,7 @@ class VehicleDynamics
 
         double kMass = 270.0;
         double kMassDistributionRear = 0.52;
-        double kWheelBase = 1.535;
+        double kWheelBase = 1.533;
         double kTrackWidth = 1.22;
         double kHCog = 0.28;
         double kLf = kWheelBase*kMassDistributionRear;
@@ -53,6 +53,9 @@ class VehicleDynamics
             double Dlon = 1.38;
             double Clon = 1.5;
             double Blon = 12.4;
+
+            double kAlphaP = 0.1809;
+            double kLambdaP = 0.1397;
         } pac_param_;
 
         double kMinFx = -3500;
@@ -103,6 +106,8 @@ class VehicleDynamics
             double fy;
             double fx;
         };
+
+        Tire_force force;
 
         void calculate_dynamics();
         void integrate_dynamics();
