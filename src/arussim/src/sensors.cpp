@@ -102,6 +102,7 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     ax_ = msg->ax;
     ay_ = msg->ay;
     delta_ = msg->delta;
+    wheel_speed_ = msg->wheel_speeds;
 }
 
 /**
@@ -159,18 +160,18 @@ void Sensors::wheel_speed_timer()
     std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    speed_front_right_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_right(gen);
-    speed_front_left_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_front_left(gen);
-    speed_rear_right_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_right(gen);
-    speed_rear_left_ = std::sqrt(vx_ * vx_ + vy_ * vy_) + dist_rear_left(gen);
+    speed_front_right_ = wheel_speed_.front_right * 0.202 + dist_front_right(gen);
+    speed_front_left_ = wheel_speed_.front_left * 0.202 + dist_front_left(gen);
+    speed_rear_right_ = wheel_speed_.rear_right * 0.202 + dist_rear_right(gen);
+    speed_rear_left_ = wheel_speed_.rear_left * 0.202 + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto message = arussim_msgs::msg::FourWheelDrive();
 
-    message.front_right = speed_front_right_;    // Speed until physics is created
-    message.front_left = speed_front_left_;      // Speed until physics is created
-    message.rear_right = speed_rear_right_;      // Speed until physics is created   
-    message.rear_left = speed_rear_left_;        // Speed until physics is created    
+    message.front_right = speed_front_right_;    
+    message.front_left = speed_front_left_;      
+    message.rear_right = speed_rear_right_;     
+    message.rear_left = speed_rear_left_;     
 
     // Publish the wheel speed message
     ws_pub_->publish(message);
