@@ -215,6 +215,14 @@ void Simulator::on_fast_timer()
     message.ax = vehicle_dynamics_.ax_;
     message.ay = vehicle_dynamics_.ay_;
     message.delta = vehicle_dynamics_.delta_;
+
+    auto wheel_speeds = arussim_msgs::msg::FourWheelDrive();
+    wheel_speeds.front_left = vehicle_dynamics_.wheel_speed_.fl_;
+    wheel_speeds.front_right = vehicle_dynamics_.wheel_speed_.fr_;
+    wheel_speeds.rear_left = vehicle_dynamics_.wheel_speed_.rl_;
+    wheel_speeds.rear_right = vehicle_dynamics_.wheel_speed_.rr_;
+
+    message.wheel_speeds = wheel_speeds;
     state_pub_->publish(message);
 
     broadcast_transform();
