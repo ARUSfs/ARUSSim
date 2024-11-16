@@ -55,9 +55,9 @@ void VehicleDynamics::calculate_dynamics(){
     vy_dot_ = ay_ - r_ * vx_;
 
     double mz_lateral = fy_front * std::cos(delta_) * kLf - fy_rear * kLr;
-    // mz_lateral += (force_fl.fy - force_fr.fy) * std::sin(delta_) * kTrackWidth/2;
+    mz_lateral += (force_fl.fy - force_fr.fy) * std::sin(delta_) * kTrackWidth/2;
     double mz_longitudinal = ((force_fr.fx - force_fl.fx) * std::cos(delta_) + force_rr.fx - force_rl.fx) * kTrackWidth/2;
-    // + (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
+    mz_longitudinal += (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
 
     double total_mz = mz_lateral + mz_longitudinal;
 
