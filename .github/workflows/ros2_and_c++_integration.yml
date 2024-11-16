@@ -48,12 +48,6 @@ jobs:
           # Set ROS_DISTRO environment variable
           export ROS_DISTRO=humble
 
-          # Install all dependencies without skipping keys
-          rosdep install --from-paths src --ignore-src -y
-
-          # Install additional dependencies if necessary
-          sudo apt-get update && sudo apt-get install -y nlohmann-json3-dev
-
       - name: Compile the code
         run: |
           # Source ROS2 environment and build all packages in src
