@@ -40,21 +40,18 @@ jobs:
           python3-pytest-repeat \
           python3-pytest-rerunfailures
 
-      - name: Install PCL and dependencies manually
+      - name: Install Dependencies with rosdep
         run: |
-          sudo apt update
-          # Install PCL manually
-          sudo apt install -y libpcl-dev
-          
           sudo rosdep init || true  # Skips init if already initialized
           rosdep update
-          
+
           # Set ROS_DISTRO environment variable
           export ROS_DISTRO=humble
-          
-          # Run rosdep without attempting to resolve PCL
-          rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers PCL"
-          
+
+          # Install all dependencies without skipping keys
+          rosdep install --from-paths src --ignore-src -y
+
+          # Install additional dependencies if necessary
           sudo apt-get update && sudo apt-get install -y nlohmann-json3-dev
 
       - name: Compile the code
@@ -71,7 +68,7 @@ jobs:
 
       - name: Install ROS2 linters and tools
         run: |
-          # Install ament linters and any required linter plugins for ROS2
+          # Install ament linters and any required ROS2 plugins
           sudo apt update && sudo apt install -y \
             ros-humble-ament-lint \
             ros-humble-ament-cmake \
@@ -90,7 +87,7 @@ jobs:
 
       - name: C++ Style Check
         run: |
-          # Apply clang-format for C++ code and run cpplint
+          # Apply clang-format to C++ code and run cpplint
           sudo apt install -y clang-format
           clang-format -i --style=Google $(find ./src -name '*.cpp' -or -name '*.hpp')
           source /opt/ros/humble/setup.bash
@@ -98,7 +95,7 @@ jobs:
 
       - name: Python Style Check (PEP8)
         run: |
-          # Install flake8 and run PEP8 linter for Python
+          # Install flake8 and run the PEP8 linter for Python
           sudo apt install -y flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
@@ -106,7 +103,7 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.8"
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -117,10 +114,9 @@ jobs:
         run: |
           # Replace any tabs with 4 spaces in all Python files in the src directory
           find ./src ./docs/_source -name "*.py" -exec sed -i 's/\t/    /g' {} +
-          
+
           # Stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82,E101,E112 --show-source --statistics
-          
-          # Exit-zero treats all errors as warnings.
+
+          # Exit-zero treats all errors as warnings
           flake8 . --count --exit-zero --max-complexity=10 --statistics
-        
