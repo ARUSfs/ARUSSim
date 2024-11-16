@@ -40,13 +40,26 @@ jobs:
           python3-pytest-repeat \
           python3-pytest-rerunfailures
 
-      - name: Install Dependencies with rosdep
+      - name: Handle Missing Dependencies
         run: |
-          sudo rosdep init || true  # Skips init if already initialized
-          rosdep update
+          set +e
+          
+          # Install dependencies using rosdep, skipping known problematic keys
+          rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers PCL"
+          
+          # Simulate rosdep install to find missing dependencies
+          MISSING_DEPS=$(rosdep install --from-paths src --ignore-src --simulate -y --skip-keys "")
+          set -e
+          
+          # If there are missing dependencies, install them using apt
+          if [[ -n "$MISSING_DEPS" ]]; then
+            echo "Installing missing dependencies: $MISSING_DEPS"
+            sudo apt install -y $MISSING_DEPS
+          fi
+          
+          # Install additional required packages manually
+          sudo apt-get update && sudo apt-get install -y nlohmann-json3-dev
 
-          # Set ROS_DISTRO environment variable
-          export ROS_DISTRO=humble
 
       - name: Compile the code
         run: |
