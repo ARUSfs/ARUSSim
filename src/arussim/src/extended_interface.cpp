@@ -19,16 +19,41 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
 
     // Set font
     QFont customFont("Montserrat Regular", 13);
+    QFont boldFont = customFont;
+    boldFont.setBold(true);
+
+    //Time per lap labels
+    last_lt_label_ = new QLabel("Last Lap Time: 0s", this);
+    last_lt_label_->setFont(boldFont);
+    last_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
+    last_lt_label_->move(margins_, margins_);
+
+    lap_counter_ = 0;
+
+    lap_label_ = new QLabel("Lap: 0", this);
+    lap_label_->setFont(boldFont);
+    lap_label_->setFixedSize(window_width_ * 0.55, margins_);
+    lap_label_->move(window_width_ * 0.55, margins_);
+
+    best_lt_label_ = new QLabel("Best Lap Time: 0s", this);
+    best_lt_label_->setFont(boldFont);
+    best_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
+    best_lt_label_->move(margins_, margins_*2);
+
+    hit_cones_label_ = new QLabel("Hit cones: 0", this);
+    hit_cones_label_->setFont(boldFont);
+    hit_cones_label_->setFixedSize(window_width_ * 0.55, margins_);
+    hit_cones_label_->move(window_width_ * 0.55, margins_*2);
 
     // Telemetry bars
     telemetry_label_ = new QLabel("Telemetry", this);
     telemetry_label_->setFont(customFont);
-    telemetry_label_->move(margins_ * 0.95, margins_);
+    telemetry_label_->move(margins_ * 0.95, margins_*4);
 
     telemetry_container_fl_ = new QWidget(this);
     telemetry_container_fl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fl_->move(margins_, margins_ * 2);
+    telemetry_container_fl_->move(margins_, margins_ * 5);
     telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
     telemetry_bar_fl_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_fl_->move(0, center_y_);
@@ -36,12 +61,12 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_container_fr_ = new QWidget(this);
     telemetry_container_fr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
     telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fr_->move(window_width_ * 0.525, margins_ * 2);
+    telemetry_container_fr_->move(window_width_ * 0.525, margins_ * 5);
     telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
     telemetry_bar_fr_->setFixedWidth(window_width_ * 0.425);
     telemetry_bar_fr_->move(0, center_y_);
 
-    telemetry_rear_container_position_y_ = window_height_ * 0.15 + margins_ * 3;
+    telemetry_rear_container_position_y_ = window_height_ * 0.15 + margins_ * 6;
 
     telemetry_container_rl_ = new QWidget(this);
     telemetry_container_rl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
@@ -183,6 +208,28 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
         }
     );
 
+    lap_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/lap_time", 1, 
+        [this](const std_msgs::msg::Float32::SharedPtr msg) { 
+            QMetaObject::invokeMethod(this, [this, msg]() {
+                update_lap_time_labels(msg->data);
+            }, Qt::QueuedConnection);
+        }
+    );
+
+    hit_cones_bool_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/arussim/hit_cones_bool", 1,
+        [this](const std_msgs::msg::Bool::SharedPtr msg) {
+            if (msg->data) {
+                QMetaObject::invokeMethod(this, [this]() {
+                    hit_cones_counter_++;
+                    hit_cones_label_->setText("Hit cones: " + QString::number(hit_cones_counter_));
+                }, Qt::QueuedConnection);
+            }
+        }
+    );
+
+
     // Client
     fov_client_ = this->create_client<arussim_msgs::srv::SetFOV>("arussim/set_fov");
 
@@ -320,6 +367,29 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
     ay_label_->setText("ay: " + QString::number(ay_, 'f', 3) + " m/s^2");
     r_label_->setText("r: " + QString::number(r_, 'f', 3) + " rad/s");
     delta_label_->setText("delta: " + QString::number(delta_ * 180.0 / M_PI, 'f', 3) + "º");
+}
+
+/**
+ * @brief Update the lap time labels
+ * 
+ * @param time_list_ 
+ */
+void ExtendedInterface::update_lap_time_labels(double lap_time_)
+{
+    lap_counter_++;
+    lap_label_->setText("Lap: " + QString::number(lap_counter_));
+
+    if (lap_time_ < best_lap_time_) {
+        best_lap_time_ = lap_time_;
+        best_lt_label_->setText("Best Lap Time: " + QString::number(best_lap_time_, 'f', 3) + "s");
+        last_lt_label_->setStyleSheet("color: purple;");
+    } else if (lap_time_ < last_lap_time_) {
+        last_lap_time_ = lap_time_;
+        last_lt_label_->setStyleSheet("color: green;");
+    } else {
+        last_lt_label_->setStyleSheet("color: black;");
+    }
+    last_lt_label_->setText("Last Lap Time: " + QString::number(lap_time_, 'f', 3) + "s");
 }
 
 /**

@@ -8,6 +8,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include <algorithm>
 #include <vector>
 #include <utility>
@@ -53,11 +54,14 @@ private:
 
 
 
-    //Variables
+    //Publishers and subscribers
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lap_time_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr hit_cones_pub_;
 
+    //Variables
     bool between_tpl_;
     bool started_;
     

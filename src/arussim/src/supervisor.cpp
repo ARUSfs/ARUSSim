@@ -29,6 +29,10 @@ Supervisor::Supervisor() : Node("Supervisor")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
 
+    lap_time_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/lap_time", 1);
+
+    hit_cones_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/hit_cones_bool", 1);
+
 }
 /**
  * @brief Callback for receiving reset commands.
@@ -57,6 +61,10 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     }
     else{
         time_list_.push_back(this->get_clock()->now().seconds() - prev_time_);
+
+        std_msgs::msg::Float32 lap_time_msg;
+        lap_time_msg.data = time_list_.back();
+        lap_time_pub_->publish(lap_time_msg);
 
         // Detect hit cones in this lap and add to total
         list_total_hit_cones_.push_back(hit_cones_lap_);
@@ -91,6 +99,10 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
         hit_cones_lap_.push_back(cone_position);
         RCLCPP_INFO(this->get_logger(), "%sHit cones: %zu%s", 
         yellow.c_str(), hit_cones_lap_.size(), reset.c_str());
+
+        std_msgs::msg::Bool hit_cones_msg;
+        hit_cones_msg.data = true;
+        hit_cones_pub_->publish(hit_cones_msg);
     }
 }
 

@@ -11,6 +11,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include "arussim_msgs/srv/set_fov.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
 #include "std_msgs/msg/bool.hpp"
@@ -26,6 +27,11 @@ private:
     QPushButton* reset_button_;
     QPushButton* a_button_;
     QPushButton* b_button_;
+
+    QLabel* last_lt_label_;
+    QLabel* best_lt_label_;
+    QLabel* hit_cones_label_;
+    QLabel* lap_label_;
 
     QLabel* telemetry_label_;
     QWidget* telemetry_container_fl_;
@@ -70,11 +76,17 @@ private:
     double kA;
     double kB;
 
+    double best_lap_time_ = 9999.99;
+    double last_lap_time_ = 9999.99;
+    int hit_cones_counter_ = 0;
+    int lap_counter_ = 0;
+
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
-
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
     rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedPtr fov_client_;
 
 
@@ -84,6 +96,7 @@ private:
 
     void update_telemetry_bar(double fl_param_, double fr_param_, double rl_param_, double rr_param_);
     void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
+    void update_lap_time_labels(double lap_time_);
 
     void fov_set(int value_);
     void a_set(int value_);
