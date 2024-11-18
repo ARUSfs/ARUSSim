@@ -45,6 +45,7 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
 {
     time_list_.clear();
     list_total_hit_cones_.clear();
+    hit_cones_lap_.clear();
     started_ = false;
 }
 

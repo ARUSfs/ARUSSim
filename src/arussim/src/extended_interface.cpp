@@ -28,8 +28,6 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     last_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
     last_lt_label_->move(margins_, margins_);
 
-    lap_counter_ = 0;
-
     lap_label_ = new QLabel("Lap: 0", this);
     lap_label_->setFont(boldFont);
     lap_label_->setFixedSize(window_width_ * 0.55, margins_);
@@ -401,6 +399,16 @@ void ExtendedInterface::reset_button_clicked()
     auto msg = std_msgs::msg::Bool();
     msg.data = true;
     reset_pub_->publish(msg);
+
+    best_lap_time_ = 9999.99;
+    last_lap_time_ = 9999.99;
+    hit_cones_counter_ = 0;
+    lap_counter_ = 0;
+
+    best_lt_label_->setText("Best Lap Time: 0s");
+    last_lt_label_->setText("Last Lap Time: 0s");
+    hit_cones_label_->setText("Hit cones: 0");
+    lap_label_->setText("Lap: 0");
 
     RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
