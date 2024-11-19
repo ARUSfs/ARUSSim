@@ -6,6 +6,8 @@
  * @date 2024-11-11
  */
 #include "arussim/extended_interface.hpp"
+#include <QProcess>
+#include <signal.h>
 
 /**
  * @brief Construct a new Extended Interface:: Extended Interface object
@@ -118,11 +120,11 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // Reset button
     reset_button_position_y_ = telemetry_parameters_position_y_ + margins_ * 4;
 
-    reset_button_ = new QPushButton("Reset", this);
+    reset_button_ = new QPushButton("Launch Simulation", this);
     reset_button_->move(margins_, reset_button_position_y_);
     reset_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
     reset_button_->setFont(customFont);
-    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
+    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
 
 
     // FOV slider
@@ -168,18 +170,18 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     //Button 1
     ab_button_position_y_ = fov_setter_position_y_ + margins_ * 9;
 
-    a_button_ = new QPushButton("a", this);
+    a_button_ = new QPushButton("Stop Simulation", this);
     a_button_->move(margins_, ab_button_position_y_);
     a_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
     a_button_->setFont(customFont);
-    connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::a_button_clicked);
+    connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
 
     //Button 2
-    b_button_ = new QPushButton("b", this);
+    b_button_ = new QPushButton("Reset", this);
     b_button_->move(window_width_ * 0.525, ab_button_position_y_);
     b_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
     b_button_->setFont(customFont);
-    connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::b_button_clicked);
+    connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
 
 
@@ -417,18 +419,27 @@ void ExtendedInterface::reset_button_clicked()
  * @brief Callback for the a button
  * 
  */
-void ExtendedInterface::a_button_clicked()
+void ExtendedInterface::launch_button_clicked()
 {
-    RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
+    simulation_process_ = new QProcess(this);
+    QStringList arguments;
+    arguments << "launch" << "common_meta" << "simulation_launch.py";
+    simulation_process_->start("ros2", arguments);
 }
 
 /**
  * @brief Callback for the b button
  * 
  */
-void ExtendedInterface::b_button_clicked()
+void ExtendedInterface::stop_button_clicked()
 {
-    RCLCPP_INFO(this->get_logger(), "%sBotón peruano. Todavía por desperuanizar%s", red.c_str(), reset.c_str());
+    if (simulation_process_) {
+        kill(simulation_process_->pid(), SIGINT);
+        simulation_process_->waitForFinished();
+        simulation_process_->deleteLater();
+        simulation_process_ = nullptr;
+        RCLCPP_INFO(this->get_logger(), "%sSimulation stopped%s", red.c_str(), reset.c_str());
+    }
 }
 
 /**

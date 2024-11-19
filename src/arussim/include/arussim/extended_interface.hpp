@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QSlider>
 #include <QLabel>
-
+#include <QProcess>
 
 #include <rclcpp/rclcpp.hpp>
 #include "arussim_msgs/srv/set_fov.hpp"
@@ -58,6 +58,8 @@ private:
     QSlider* b_setter_;
     QLabel* b_label_;
 
+    QProcess* simulation_process_ = nullptr;
+
     double scale_factor_ = 100;
     double telemetry_container_height_;
     double window_width_ = QGuiApplication::primaryScreen()->availableGeometry().width() * 0.25;
@@ -92,8 +94,8 @@ private:
 
 
     void reset_button_clicked();
-    void a_button_clicked();
-    void b_button_clicked();
+    void launch_button_clicked();
+    void stop_button_clicked();
 
     void update_telemetry_bar(double fl_param_, double fr_param_, double rl_param_, double rr_param_);
     void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
