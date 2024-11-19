@@ -130,14 +130,14 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // timer slider
     timer_setter_position_y_ = reset_button_position_y_ + window_height_ * 0.05 + margins_;
 
-    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(kTimer), this);
+    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(kTimer, 'f', 1), this);
     timer_label_->setFont(custom_font_);
     timer_label_->setFixedSize(window_width_*0.9, margins_);
     timer_label_->move(margins_, timer_setter_position_y_);
 
     timer_setter_ = new QSlider(Qt::Horizontal, this);
-    timer_setter_->setRange(0, 15);
-    timer_setter_->setValue(static_cast<int>(kTimer));
+    timer_setter_->setRange(0, 150);
+    timer_setter_->setValue(static_cast<int>(kTimer * 10));
     timer_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
     timer_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(timer_setter_, &QSlider::valueChanged, this, &ExtendedInterface::timer_set);
@@ -249,12 +249,12 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
  * 
  * @param value_ 
  */
-void ExtendedInterface::timer_set(int value_) {
-    kTimer = static_cast<double>(value_);
-    timer_label_->setText("Automatic Simulation: x" + QString::number(value_));
+void ExtendedInterface::timer_set(int value) {
+    double timer_value = value / 10.0;
+    timer_label_->setText("Automatic Simulation: x" + QString::number(timer_value, 'f', 1));
 
     auto request = std::make_shared<arussim_msgs::srv::SetTimer::Request>();
-    request->timer = kTimer;
+    request->timer = timer_value;
 
     auto future = timer_client_->async_send_request(
         request,
