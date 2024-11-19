@@ -136,7 +136,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     timer_label_->move(margins_, timer_setter_position_y_);
 
     timer_setter_ = new QSlider(Qt::Horizontal, this);
-    timer_setter_->setRange(0, 100);
+    timer_setter_->setRange(0, 15);
     timer_setter_->setValue(static_cast<int>(kTimer));
     timer_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
     timer_setter_->setStyleSheet("QSlider::handle { background: blue; }");

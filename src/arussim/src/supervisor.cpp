@@ -33,7 +33,35 @@ Supervisor::Supervisor() : Node("Supervisor")
 
     hit_cones_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/hit_cones_bool", 1);
 
+    set_timer_service_ = this->create_service<arussim_msgs::srv::SetTimer>(
+        "arussim/set_timer",
+        std::bind(&Supervisor::handle_set_timer, this, 
+            std::placeholders::_1, std::placeholders::_2));
 }
+
+/**
+ * @brief Service handler for setting the timer.
+ * 
+ * This method updates the timer parameter based on a service request.
+ * 
+ * @param request The service request message.
+ * @param response The service response message.
+ */
+void Supervisor::handle_set_timer(
+    const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+    std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response)
+{
+    try {
+        kSimulationSpeedMultiplier = request->timer;
+        response->success = true;
+        response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
+    } catch (const std::exception& e) {
+        response->success = false;
+        response->message = "Error updating timer: " + std::string(e.what());
+        RCLCPP_ERROR(get_logger(), "Error updating timer: %s", e.what());
+    }
+}
+
 /**
  * @brief Callback for receiving reset commands.
  * 
@@ -61,7 +89,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         started_ = true;
     }
     else{
-        time_list_.push_back(this->get_clock()->now().seconds() - prev_time_);
+        time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * kSimulationSpeedMultiplier);
 
         std_msgs::msg::Float32 lap_time_msg;
         lap_time_msg.data = time_list_.back();
