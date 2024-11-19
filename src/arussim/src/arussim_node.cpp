@@ -11,7 +11,7 @@
 
 /**
  * @class Simulator
- * @brief Simulator class for the ARUS Team (ARUSim).
+ * @brief Simulator class for the ARUS Team (ARUSsim).
  * 
  * This class simulates the behavior of a vehicle in a racing environment, 
  * handling the simulation of state updates, sensor data generation, and broadcasting
@@ -30,6 +30,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
+    this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
@@ -42,6 +43,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
+    this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
 
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
@@ -79,9 +81,9 @@ Simulator::Simulator() : Node("simulator")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
-    set_fov_service_ = this->create_service<arussim_msgs::srv::SetFOV>(
-        "arussim/set_fov",
-        std::bind(&Simulator::handle_set_fov, this, 
+    set_timer_service_ = this->create_service<arussim_msgs::srv::SetTimer>(
+        "arussim/set_timer",
+        std::bind(&Simulator::handle_set_timer, this, 
             std::placeholders::_1, std::placeholders::_2));
 
     // Load the car mesh
@@ -106,25 +108,25 @@ Simulator::Simulator() : Node("simulator")
 }
 
 /**
- * @brief Service handler for setting the FOV.
+ * @brief Service handler for setting the timer.
  * 
- * This method updates the FOV parameter based on a service request.
+ * This method updates the timer parameter based on a service request.
  * 
  * @param request The service request message.
  * @param response The service response message.
  */
-void Simulator::handle_set_fov(
-    const std::shared_ptr<arussim_msgs::srv::SetFOV::Request> request,
-    std::shared_ptr<arussim_msgs::srv::SetFOV::Response> response)
+void Simulator::handle_set_timer(
+    const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+    std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response)
 {
     try {
-        kFOV = request->fov;
+        kSimulationSpeedMultiplier = request->timer;
         response->success = true;
-        response->message = "FOV updated successfully to " + std::to_string(kFOV);
+        response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
     } catch (const std::exception& e) {
         response->success = false;
-        response->message = "Error updating FOV: " + std::string(e.what());
-        RCLCPP_ERROR(get_logger(), "Error updating FOV: %s", e.what());
+        response->message = "Error updating timer: " + std::string(e.what());
+        RCLCPP_ERROR(get_logger(), "Error updating timer: %s", e.what());
     }
 }
 
@@ -229,7 +231,7 @@ void Simulator::on_fast_timer()
         input_acc_ = 0;
     }
 
-    double dt = 1/kStateUpdateRate;
+    double dt = (1.0 / kStateUpdateRate) * kSimulationSpeedMultiplier;
 
     vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
 

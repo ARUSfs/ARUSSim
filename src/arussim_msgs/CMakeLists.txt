@@ -18,7 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PointXY.msg"
   "msg/State.msg"
   "msg/Trajectory.msg"
-  "srv/SetFOV.srv"
+  "srv/SetTimer.srv"
   DEPENDENCIES std_msgs
 )
 

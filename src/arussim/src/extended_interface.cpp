@@ -20,34 +20,34 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     setFixedHeight(window_height_);
 
     // Set font
-    QFont customFont("Montserrat Regular", 13);
-    QFont boldFont = customFont;
-    boldFont.setBold(true);
+    QFont custom_font_("Montserrat Regular", 13);
+    QFont bold_font_ = custom_font_;
+    bold_font_.setBold(true);
 
     //Time per lap labels
     last_lt_label_ = new QLabel("Last Lap Time: 0s", this);
-    last_lt_label_->setFont(boldFont);
+    last_lt_label_->setFont(bold_font_);
     last_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
     last_lt_label_->move(margins_, margins_);
 
     lap_label_ = new QLabel("Lap: 0", this);
-    lap_label_->setFont(boldFont);
+    lap_label_->setFont(bold_font_);
     lap_label_->setFixedSize(window_width_ * 0.55, margins_);
     lap_label_->move(window_width_ * 0.55, margins_);
 
     best_lt_label_ = new QLabel("Best Lap Time: 0s", this);
-    best_lt_label_->setFont(boldFont);
+    best_lt_label_->setFont(bold_font_);
     best_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
     best_lt_label_->move(margins_, margins_*2);
 
     hit_cones_label_ = new QLabel("Hit cones: 0", this);
-    hit_cones_label_->setFont(boldFont);
+    hit_cones_label_->setFont(bold_font_);
     hit_cones_label_->setFixedSize(window_width_ * 0.55, margins_);
     hit_cones_label_->move(window_width_ * 0.55, margins_*2);
 
     // Telemetry bars
     telemetry_label_ = new QLabel("Telemetry", this);
-    telemetry_label_->setFont(customFont);
+    telemetry_label_->setFont(custom_font_);
     telemetry_label_->move(margins_ * 0.95, margins_*4);
 
     telemetry_container_fl_ = new QWidget(this);
@@ -88,32 +88,32 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     telemetry_parameters_position_y_ = telemetry_rear_container_position_y_ + window_height_ * 0.15 + margins_;
 
     vx_label_ = new QLabel("vx: 0 m/s", this);
-    vx_label_->setFont(customFont);
+    vx_label_->setFont(custom_font_);
     vx_label_->setFixedSize(window_width_ * 0.425, margins_);
     vx_label_->move(margins_, telemetry_parameters_position_y_);
 
     vy_label_ = new QLabel("vy: 0 m/s", this);
-    vy_label_->setFont(customFont);
+    vy_label_->setFont(custom_font_);
     vy_label_->setFixedSize(window_width_ * 0.425, margins_);
     vy_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_);
     
     ax_label_ = new QLabel("ax: 0 m/s^2", this);
-    ax_label_->setFont(customFont);
+    ax_label_->setFont(custom_font_);
     ax_label_->setFixedSize(window_width_ * 0.425, margins_);
     ax_label_->move(margins_, telemetry_parameters_position_y_ + margins_);
 
     ay_label_ = new QLabel("ay: 0 m/s^2", this);
-    ay_label_->setFont(customFont);
+    ay_label_->setFont(custom_font_);
     ay_label_->setFixedSize(window_width_ * 0.425, margins_);
     ay_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_);
 
     r_label_ = new QLabel("r: 0 rad/s", this);
-    r_label_->setFont(customFont);
+    r_label_->setFont(custom_font_);
     r_label_->setFixedSize(window_width_ * 0.425, margins_);
     r_label_->move(margins_, telemetry_parameters_position_y_ + margins_ * 2);
     
     delta_label_ = new QLabel("delta: 0º", this);
-    delta_label_->setFont(customFont);
+    delta_label_->setFont(custom_font_);
     delta_label_->setFixedSize(window_width_ * 0.425, margins_);
     delta_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_ * 2);
 
@@ -123,64 +123,65 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     reset_button_ = new QPushButton("Launch Simulation", this);
     reset_button_->move(margins_, reset_button_position_y_);
     reset_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
-    reset_button_->setFont(customFont);
+    reset_button_->setFont(custom_font_);
     connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
 
 
-    // FOV slider
-    fov_setter_position_y_ = reset_button_position_y_ + window_height_ * 0.05 + margins_;
+    // timer slider
+    timer_setter_position_y_ = reset_button_position_y_ + window_height_ * 0.05 + margins_;
 
-    fov_label_ = new QLabel("FOV: " + QString::number(kFOV), this);
-    fov_label_->setFont(customFont);
-    fov_label_->move(margins_, fov_setter_position_y_);
+    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(kTimer), this);
+    timer_label_->setFont(custom_font_);
+    timer_label_->setFixedSize(window_width_*0.9, margins_);
+    timer_label_->move(margins_, timer_setter_position_y_);
 
-    fov_setter_ = new QSlider(Qt::Horizontal, this);
-    fov_setter_->setRange(0, 100);
-    fov_setter_->setValue(static_cast<int>(kFOV));
-    fov_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
-    fov_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(fov_setter_, &QSlider::valueChanged, this, &ExtendedInterface::fov_set);
+    timer_setter_ = new QSlider(Qt::Horizontal, this);
+    timer_setter_->setRange(0, 100);
+    timer_setter_->setValue(static_cast<int>(kTimer));
+    timer_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
+    timer_setter_->setStyleSheet("QSlider::handle { background: blue; }");
+    connect(timer_setter_, &QSlider::valueChanged, this, &ExtendedInterface::timer_set);
 
     // Slider 1
     a_label_ = new QLabel("a: 0", this);
-    a_label_->setFont(customFont);
+    a_label_->setFont(custom_font_);
     a_label_->setFixedSize(window_width_*0.9, margins_);
-    a_label_->move(margins_, fov_setter_position_y_ + margins_ * 3);
+    a_label_->move(margins_, timer_setter_position_y_ + margins_ * 3);
 
     a_setter_ = new QSlider(Qt::Horizontal, this);
     a_setter_->setRange(0, 100);
     a_setter_->setValue(static_cast<int>(kA));
-    a_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_*4, window_width_ * 0.9, margins_);
+    a_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_*4, window_width_ * 0.9, margins_);
     a_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(a_setter_, &QSlider::valueChanged, this, &ExtendedInterface::a_set);
 
     // Slider 2
     b_label_ = new QLabel("b: 0", this);
-    b_label_->setFont(customFont);
+    b_label_->setFont(custom_font_);
     b_label_->setFixedSize(window_width_*0.9, margins_);
-    b_label_->move(margins_, fov_setter_position_y_ + margins_ * 6);
+    b_label_->move(margins_, timer_setter_position_y_ + margins_ * 6);
 
     b_setter_ = new QSlider(Qt::Horizontal, this);
     b_setter_->setRange(0, 100);
     b_setter_->setValue(static_cast<int>(kB));
-    b_setter_->setGeometry(margins_, fov_setter_position_y_ + margins_*7, window_width_ * 0.9, margins_);
+    b_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_*7, window_width_ * 0.9, margins_);
     b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(b_setter_, &QSlider::valueChanged, this, &ExtendedInterface::b_set);
 
     //Button 1
-    ab_button_position_y_ = fov_setter_position_y_ + margins_ * 9;
+    ab_button_position_y_ = timer_setter_position_y_ + margins_ * 9;
 
     a_button_ = new QPushButton("Stop Simulation", this);
     a_button_->move(margins_, ab_button_position_y_);
     a_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    a_button_->setFont(customFont);
+    a_button_->setFont(custom_font_);
     connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
 
     //Button 2
     b_button_ = new QPushButton("Reset", this);
     b_button_->move(window_width_ * 0.525, ab_button_position_y_);
     b_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    b_button_->setFont(customFont);
+    b_button_->setFont(custom_font_);
     connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
 
@@ -231,10 +232,10 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
 
 
     // Client
-    fov_client_ = this->create_client<arussim_msgs::srv::SetFOV>("arussim/set_fov");
+    timer_client_ = this->create_client<arussim_msgs::srv::SetTimer>("arussim/set_timer");
 
     // Activate window
-    QTimer::singleShot(1000, [this]() {
+    QTimer::singleShot(3000, [this]() {
         raise();
         activateWindow();
     });
@@ -244,23 +245,23 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
 }
 
 /**
- * @brief setter for the FOV parameter
+ * @brief setter for the timer parameter
  * 
  * @param value_ 
  */
-void ExtendedInterface::fov_set(int value_) {
-    kFOV = static_cast<double>(value_);
-    fov_label_->setText("FOV: " + QString::number(value_));
+void ExtendedInterface::timer_set(int value_) {
+    kTimer = static_cast<double>(value_);
+    timer_label_->setText("Automatic Simulation: x" + QString::number(value_));
 
-    auto request = std::make_shared<arussim_msgs::srv::SetFOV::Request>();
-    request->fov = kFOV;
+    auto request = std::make_shared<arussim_msgs::srv::SetTimer::Request>();
+    request->timer = kTimer;
 
-    auto future = fov_client_->async_send_request(
+    auto future = timer_client_->async_send_request(
         request,
-        [this](rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedFuture future) {
+        [this](rclcpp::Client<arussim_msgs::srv::SetTimer>::SharedFuture future) {
             auto result = future.get();
             if (!result->success) {
-                RCLCPP_ERROR(this->get_logger(), "Failed to set FOV: %s", result->message.c_str());
+                RCLCPP_ERROR(this->get_logger(), "Failed to set timer: %s", result->message.c_str());
             }
         }
     );

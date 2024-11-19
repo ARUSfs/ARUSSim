@@ -10,7 +10,7 @@
 #include <QProcess>
 
 #include <rclcpp/rclcpp.hpp>
-#include "arussim_msgs/srv/set_fov.hpp"
+#include "arussim_msgs/srv/set_timer.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
@@ -49,8 +49,8 @@ private:
     QLabel* r_label_;
     QLabel* delta_label_;
 
-    QSlider* fov_setter_;
-    QLabel* fov_label_;
+    QSlider* timer_setter_;
+    QLabel* timer_label_;
 
     QSlider* a_setter_;
     QLabel* a_label_;
@@ -72,10 +72,10 @@ private:
     double telemetry_rear_container_position_y_;
     double telemetry_parameters_position_y_;
     double reset_button_position_y_;
-    double fov_setter_position_y_;
+    double timer_setter_position_y_;
     double ab_button_position_y_;
 
-    double kFOV = 20;
+    double kTimer = 1.0;
     double kA;
     double kB;
 
@@ -90,7 +90,7 @@ private:
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
-    rclcpp::Client<arussim_msgs::srv::SetFOV>::SharedPtr fov_client_;
+    rclcpp::Client<arussim_msgs::srv::SetTimer>::SharedPtr timer_client_;
 
 
     void reset_button_clicked();
@@ -101,7 +101,7 @@ private:
     void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
     void update_lap_time_labels(double lap_time_);
 
-    void fov_set(int value_);
+    void timer_set(int value_);
     void a_set(int value_);
     void b_set(int value_);
 

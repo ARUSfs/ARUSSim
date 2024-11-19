@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include "arussim_msgs/srv/set_timer.hpp"
 
 /**
  * @class Supervisor

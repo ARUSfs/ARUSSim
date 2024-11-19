@@ -13,7 +13,7 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
-#include "arussim_msgs/srv/set_fov.hpp"
+#include "arussim_msgs/srv/set_timer.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
 
@@ -68,6 +68,8 @@ class Simulator : public rclcpp::Node
     double kSensorRate;
     double kNoisePerception;
     double kMinPerceptionX;
+    double kSimulationSpeedMultiplier;
+    double kTimer;
 
     //Car boundaries
     double kCOGFrontDist;
@@ -174,10 +176,9 @@ class Simulator : public rclcpp::Node
      * @param request The service request message.
      * @param response The service response message.
      */
-    void handle_set_fov(
-      const std::shared_ptr<arussim_msgs::srv::SetFOV::Request> request,
-      std::shared_ptr<arussim_msgs::srv::SetFOV::Response> response);
-
+    void handle_set_timer(
+      const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+      std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
@@ -193,5 +194,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
-    rclcpp::Service<arussim_msgs::srv::SetFOV>::SharedPtr set_fov_service_;
+    rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
 };
