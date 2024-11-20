@@ -82,7 +82,7 @@ private:
 
 
     //Variables
-    double kSimulationSpeedMultiplier = 1.0;
+    double simulation_speed_multiplier = 1.0;
     std::vector<double> speed_multiplier_list_;
     double mean_;
 

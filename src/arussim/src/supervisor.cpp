@@ -49,7 +49,7 @@ Supervisor::Supervisor() : Node("Supervisor")
  * 
  */
 void Supervisor::timer_callback(){
-    speed_multiplier_list_.push_back(kSimulationSpeedMultiplier);
+    speed_multiplier_list_.push_back(simulation_speed_multiplier);
     double sum_ = std::accumulate(speed_multiplier_list_.begin(), speed_multiplier_list_.end(), 0.0);
     mean_ = sum_ / speed_multiplier_list_.size();
 }
@@ -67,9 +67,9 @@ void Supervisor::handle_set_timer(
     std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response)
 {
     try {
-        kSimulationSpeedMultiplier = request->timer;
+        simulation_speed_multiplier = request->timer;
         response->success = true;
-        response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
+        response->message = "timer updated successfully to " + std::to_string(simulation_speed_multiplier);
     } catch (const std::exception& e) {
         response->success = false;
         response->message = "Error updating timer: " + std::string(e.what());

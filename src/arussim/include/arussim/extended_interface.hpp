@@ -75,7 +75,7 @@ private:
     double timer_setter_position_y_;
     double ab_button_position_y_;
 
-    double kTimer = 1.0;
+    double simulation_speed_multiplier = 1.0;
     double kA;
     double kB;
 

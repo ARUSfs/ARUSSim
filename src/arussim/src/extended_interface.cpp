@@ -130,14 +130,14 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // timer slider
     timer_setter_position_y_ = reset_button_position_y_ + window_height_ * 0.05 + margins_;
 
-    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(kTimer, 'f', 1), this);
+    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(simulation_speed_multiplier, 'f', 1), this);
     timer_label_->setFont(custom_font_);
     timer_label_->setFixedSize(window_width_*0.9, margins_);
     timer_label_->move(margins_, timer_setter_position_y_);
 
     timer_setter_ = new QSlider(Qt::Horizontal, this);
     timer_setter_->setRange(0, 150);
-    timer_setter_->setValue(static_cast<int>(kTimer * 10));
+    timer_setter_->setValue(static_cast<int>(simulation_speed_multiplier * 10));
     timer_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
     timer_setter_->setStyleSheet("QSlider::handle { background: blue; }");
     connect(timer_setter_, &QSlider::valueChanged, this, &ExtendedInterface::timer_set);
