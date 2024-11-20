@@ -435,7 +435,7 @@ void ExtendedInterface::launch_button_clicked()
 void ExtendedInterface::stop_button_clicked()
 {
     if (simulation_process_) {
-        kill(simulation_process_->pid(), SIGINT);
+        kill(static_cast<pid_t>(simulation_process_->processId()), SIGINT);
         simulation_process_->waitForFinished();
         simulation_process_->deleteLater();
         simulation_process_ = nullptr;
