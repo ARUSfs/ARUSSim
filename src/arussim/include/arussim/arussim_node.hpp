@@ -69,7 +69,6 @@ class Simulator : public rclcpp::Node
     double kNoisePerception;
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
-    double kTimer;
 
     //Car boundaries
     double kCOGFrontDist;
