@@ -37,6 +37,21 @@ Supervisor::Supervisor() : Node("Supervisor")
         "arussim/set_timer",
         std::bind(&Supervisor::handle_set_timer, this, 
             std::placeholders::_1, std::placeholders::_2));
+
+    timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(100),
+        std::bind(&Supervisor::timer_callback, this)
+    );
+}
+
+/**
+ * @brief Timer callback to update the timer.
+ * 
+ */
+void Supervisor::timer_callback(){
+    speed_multiplier_list_.push_back(kSimulationSpeedMultiplier);
+    double sum_ = std::accumulate(speed_multiplier_list_.begin(), speed_multiplier_list_.end(), 0.0);
+    mean_ = sum_ / speed_multiplier_list_.size();
 }
 
 /**
@@ -74,6 +89,7 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
     time_list_.clear();
     list_total_hit_cones_.clear();
     hit_cones_lap_.clear();
+    speed_multiplier_list_.clear();
     started_ = false;
 }
 
@@ -89,7 +105,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         started_ = true;
     }
     else{
-        time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * kSimulationSpeedMultiplier);
+        time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
 
         std_msgs::msg::Float32 lap_time_msg;
         lap_time_msg.data = time_list_.back();
@@ -113,6 +129,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         }
     }
     prev_time_ = this->get_clock()->now().seconds();
+    speed_multiplier_list_.clear();
 }
 
 /**
