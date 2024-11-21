@@ -71,7 +71,7 @@ private:
 
     double telemetry_rear_container_position_y_;
     double telemetry_parameters_position_y_;
-    double reset_button_position_y_;
+    double launch_button_position_y_;
     double timer_setter_position_y_;
     double ab_button_position_y_;
 
