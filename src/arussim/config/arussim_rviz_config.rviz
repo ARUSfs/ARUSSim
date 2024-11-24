@@ -105,7 +105,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        {}
+        trajectory: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -118,7 +118,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        {}
+        triangulation: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
