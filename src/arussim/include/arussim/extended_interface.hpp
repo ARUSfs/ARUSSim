@@ -8,6 +8,9 @@
 #include <QSlider>
 #include <QLabel>
 #include <QProcess>
+#include <QIcon>
+#include <QProcess>
+#include <signal.h>
 
 #include <rclcpp/rclcpp.hpp>
 #include "arussim_msgs/srv/set_timer.hpp"

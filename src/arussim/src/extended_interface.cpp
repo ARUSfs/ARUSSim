@@ -6,8 +6,7 @@
  * @date 2024-11-11
  */
 #include "arussim/extended_interface.hpp"
-#include <QProcess>
-#include <signal.h>
+
 
 /**
  * @brief Construct a new Extended Interface:: Extended Interface object
@@ -23,6 +22,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     QFont custom_font_("Montserrat Regular", 13);
     QFont bold_font_ = custom_font_;
     bold_font_.setBold(true);
+
+    // Set icon
+    setWindowIcon(QIcon("ARUSSim/src/track_editor/icons/icon.png"));
 
     //Time per lap labels
     last_lt_label_ = new QLabel("Last Lap Time: 0s", this);

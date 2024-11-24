@@ -21,7 +21,7 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG.pcd");
     this->declare_parameter<double>("friction_coef", 0.5);
-    this->declare_parameter<double>("state_update_rate", 100);
+    this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -106,6 +106,29 @@ Simulator::Simulator() : Node("simulator")
     // Load the track pointcloud
     load_track(track_);
 }
+/**
+ * @brief Destructor for the Simulator class.
+ *
+ * 
+ */
+void Simulator::update_timers() {
+    // Destroy the current timers
+    slow_timer_.reset();
+    fast_timer_.reset();
+
+    // Calculate intervals in nanoseconds for higher precision
+    auto slow_interval_ns = std::chrono::nanoseconds(
+        static_cast<int>(1000000000 / (kSensorRate * kSimulationSpeedMultiplier)));
+    auto fast_interval_ns = std::chrono::nanoseconds(
+        static_cast<int>(1000000000 / (kStateUpdateRate * kSimulationSpeedMultiplier)));
+
+    // Create new timers with adjusted intervals
+    slow_timer_ = this->create_wall_timer(
+        slow_interval_ns, std::bind(&Simulator::on_slow_timer, this));
+    fast_timer_ = this->create_wall_timer(
+        fast_interval_ns, std::bind(&Simulator::on_fast_timer, this));
+}
+
 
 /**
  * @brief Service handler for setting the timer.
@@ -121,6 +144,7 @@ void Simulator::handle_set_timer(
 {
     try {
         kSimulationSpeedMultiplier = request->timer;
+        update_timers();
         response->success = true;
         response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
     } catch (const std::exception& e) {
@@ -231,7 +255,7 @@ void Simulator::on_fast_timer()
         input_acc_ = 0;
     }
 
-    double dt = (1.0 / kStateUpdateRate) * kSimulationSpeedMultiplier;
+    double dt = 1.0 / kStateUpdateRate;
 
     vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
 
