@@ -18,6 +18,8 @@ find_package(tf2 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+qt5_wrap_cpp(MOC_SOURCES include/arussim/extended_interface.hpp)
 
 include_directories(
   include
@@ -47,6 +49,7 @@ ament_target_dependencies(sensors_exec rclcpp
                             tf2_ros
                             tf2)
 
+# generate executable for supervisor.cpp
 add_executable(supervisor_exec src/supervisor.cpp)
 ament_target_dependencies(supervisor_exec rclcpp 
                             std_msgs 
@@ -55,11 +58,19 @@ ament_target_dependencies(supervisor_exec rclcpp
                             tf2_ros
                             tf2)
 
+# generate executable for extended_interface.cpp
+add_executable(extended_interface_exec src/extended_interface.cpp ${MOC_SOURCES})
+ament_target_dependencies(extended_interface_exec rclcpp 
+                            Qt5Widgets
+                            std_msgs
+                            arussim_msgs)
+
 # Install both executables
 install(TARGETS
   arussim_exec
   sensors_exec
   supervisor_exec
+  extended_interface_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location

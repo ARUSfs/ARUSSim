@@ -11,7 +11,7 @@
 
 /**
  * @class Simulator
- * @brief Simulator class for the ARUS Team (ARUSim).
+ * @brief Simulator class for the ARUS Team (ARUSsim).
  * 
  * This class simulates the behavior of a vehicle in a racing environment, 
  * handling the simulation of state updates, sensor data generation, and broadcasting
@@ -30,6 +30,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
+    this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
@@ -42,13 +43,16 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
+    this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
 
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-    state_pub_ = this->create_publisher<arussim_msgs::msg::State>("/arussim/state", 10);
-    track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/arussim/track", 10);
+    state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
+        "/arussim/state", 10);
+    track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
+        "/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
@@ -73,7 +77,14 @@ Simulator::Simulator() : Node("simulator")
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
+    
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+        std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
+    set_timer_service_ = this->create_service<arussim_msgs::srv::SetTimer>(
+        "arussim/set_timer",
+        std::bind(&Simulator::handle_set_timer, this, 
+            std::placeholders::_1, std::placeholders::_2));
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
@@ -94,6 +105,29 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the track pointcloud
     load_track(track_);
+}
+
+/**
+ * @brief Service handler for setting the timer.
+ * 
+ * This method updates the timer parameter based on a service request.
+ * 
+ * @param request The service request message.
+ * @param response The service response message.
+ */
+void Simulator::handle_set_timer(
+    const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+    std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response)
+{
+    try {
+        kSimulationSpeedMultiplier = request->timer;
+        response->success = true;
+        response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
+    } catch (const std::exception& e) {
+        response->success = false;
+        response->message = "Error updating timer: " + std::string(e.what());
+        RCLCPP_ERROR(get_logger(), "Error updating timer: %s", e.what());
+    }
 }
 
 
@@ -197,7 +231,7 @@ void Simulator::on_fast_timer()
         input_acc_ = 0;
     }
 
-    double dt = 1/kStateUpdateRate;
+    double dt = (1.0 / kStateUpdateRate) * kSimulationSpeedMultiplier;
 
     vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
 
@@ -216,6 +250,7 @@ void Simulator::on_fast_timer()
     message.ay = vehicle_dynamics_.ay_;
     message.delta = vehicle_dynamics_.delta_;
     state_pub_->publish(message);
+
 
     broadcast_transform();
     
@@ -237,6 +272,11 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
     input_acc_ = msg->acc;
     input_delta_ = msg->delta;
     time_last_cmd_ = clock_->now();
+}
+
+void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    vehicle_dynamics_ = VehicleDynamics();
 }
 
 /**

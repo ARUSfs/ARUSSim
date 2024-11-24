@@ -8,9 +8,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
+#include "std_msgs/msg/float32.hpp"
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include "arussim_msgs/srv/set_timer.hpp"
 
 /**
  * @class Supervisor
@@ -42,14 +44,53 @@ private:
      */
     void hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr msg);
 
-    //Variables
+    /**
+     * @brief Callback for receiving reset commands.
+     * 
+     * This method resets the lap times.
+     * 
+     * @param msg The reset command message.
+     */
+    void reset_callback(const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
+     * @brief Service handler for setting the timer.
+     * 
+     * @param request 
+     * @param response 
+     */
+    void handle_set_timer(
+        const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+        std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
+
+    /**
+     * @brief Timer callback to update the timer.
+     * 
+     */
+    void timer_callback();
+
+
+
+    //Publishers and subscribers
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lap_time_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr hit_cones_pub_;
+    rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
+    rclcpp::TimerBase::SharedPtr timer_;
+
+
+    //Variables
+    double simulation_speed_multiplier = 1.0;
+    std::vector<double> speed_multiplier_list_;
+    double mean_;
 
     bool between_tpl_;
     bool started_;
     
     double prev_time_;
+
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

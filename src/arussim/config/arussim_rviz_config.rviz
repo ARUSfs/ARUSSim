@@ -142,7 +142,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        trajectory: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -151,24 +151,37 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /visualization/trajectory_optimized
       Value: true
-    - Class: rviz_default_plugins/MarkerArray
+    - Class: rviz_default_plugins/Marker
       Enabled: true
-      Name: MarkerArray
+      Name: Marker
       Namespaces:
-        edge: true
-        landmark: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
+        Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /graph_slam/marker
+        Value: /visualization/pursuit_point
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /visualization/trajectory
       Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
     Fixed Frame: arussim/world
-    Frame Rate: 240
+    Frame Rate: 120
   Name: root
   Tools:
     - Class: rviz_default_plugins/Interact
@@ -225,10 +238,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2266290783882141
+      Pitch: 0.356628954410553
       Target Frame: arussim/vehicle_cog
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 3.143784999847412
+      Yaw: 3.1137852668762207
     Saved: ~
 Window Geometry:
   Displays:

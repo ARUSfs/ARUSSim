@@ -13,6 +13,7 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
+#include "arussim_msgs/srv/set_timer.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
 
@@ -67,6 +68,7 @@ class Simulator : public rclcpp::Node
     double kSensorRate;
     double kNoisePerception;
     double kMinPerceptionX;
+    double kSimulationSpeedMultiplier;
 
     //Car boundaries
     double kCOGFrontDist;
@@ -130,6 +132,14 @@ class Simulator : public rclcpp::Node
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
     
+    /**
+     * @brief Callback for receiving reset commands.
+     * 
+     * This method resets the vehicle's state to the initial pose.
+     * 
+     * @param msg The reset command message.
+     */
+    void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
@@ -157,6 +167,18 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    /**
+     * @brief Service handler for setting the FOV.
+     * 
+     * This method updates the FOV parameter based on a service request.
+     * 
+     * @param request The service request message.
+     * @param response The service response message.
+     */
+    void handle_set_timer(
+      const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
+      std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
@@ -170,4 +192,6 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
 };
