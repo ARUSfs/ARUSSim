@@ -179,6 +179,12 @@ class Simulator : public rclcpp::Node
       const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
       std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
 
+    /**
+     * @brief Update the timers based on the simulation speed multiplier.
+     * 
+     */
+    void update_timers();
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
