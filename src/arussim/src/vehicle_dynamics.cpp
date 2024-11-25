@@ -1,4 +1,5 @@
 # include "arussim/vehicle_dynamics.hpp"
+#include <fstream>
 
 VehicleDynamics::VehicleDynamics(){
     x_ = 0;
@@ -23,32 +24,61 @@ void VehicleDynamics::update_simulation(double input_delta,
     input_acc_ = input_acc;
     dt_ = dt;
 
+    update_torque_cmd();
+
     calculate_dynamics();
     integrate_dynamics();
-}
+
+    }
 
 void VehicleDynamics::calculate_dynamics(){
     
     calculate_tire_slip();
     calculate_tire_loads();
-    double fy_front, fy_rear;
-    calculate_tire_forces(fy_front, fy_rear);
 
-    ax_ = (calculate_fx() - fy_front * std::sin(delta_)) / kMass ;
-    ay_ = (fy_front * std::cos(delta_) + fy_rear) / kMass;
+    Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_slip_.lambda_fl_, tire_loads_.fl_);
+    Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_);
+    Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_);
+    Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_);
+
+    force.fy = force_fl.fy;
+    force.fx = force_fl.fx;
+
+    double fy_front = force_fl.fy + force_fr.fy;
+    double fy_rear = force_rl.fy + force_rr.fy;
+
+    ax_ = calculate_fx(force_fl, force_fr, force_rl, force_rr) / kMass;
+    double total_fy = fy_front * std::cos(delta_) + fy_rear;
+    total_fy += (force_fl.fx + force_fr.fx) * std::sin(delta_);
+    ay_ = total_fy / kMass;
 
     x_dot_ = vx_ * std::cos(yaw_);
     y_dot_ = vx_ * std::sin(yaw_);
 
     vx_dot_ = ax_ + r_ * vy_;
     vy_dot_ = ay_ - r_ * vx_;
-    r_dot_ = (fy_front*std::cos(delta_)*kLf - fy_rear*kLr) / kIzz;
+
+    double mz_lateral = fy_front * std::cos(delta_) * kLf - fy_rear * kLr;
+    mz_lateral += (force_fl.fy - force_fr.fy) * std::sin(delta_) * kTrackWidth/2;
+    double mz_longitudinal = ((force_fr.fx - force_fl.fx) * std::cos(delta_) + force_rr.fx - force_rl.fx) * kTrackWidth/2;
+    mz_longitudinal += (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
+
+    double total_mz = mz_lateral + mz_longitudinal;
+
+    r_dot_ = total_mz / kIzz;
 
     delta_ = input_delta_;
+
+    // Tire angular acceleration
+    w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia;
+    w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia;
+    w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
+    w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
 }
 
 void VehicleDynamics::integrate_dynamics(){
 
+    // Simple Euler method for now
     x_ += x_dot_ * dt_;
     y_ += y_dot_ * dt_;
     yaw_ += r_ * dt_;
@@ -58,39 +88,107 @@ void VehicleDynamics::integrate_dynamics(){
 
     kinematic_correction();
 
+    wheel_speed_.fl_ += w_fl_dot_ * dt_;
+    wheel_speed_.fr_ += w_fr_dot_ * dt_;
+    wheel_speed_.rl_ += w_rl_dot_ * dt_;
+    wheel_speed_.rr_ += w_rr_dot_ * dt_;
+
     if(vx_ < 0){
         vx_ = 0;
     }
 }
 
-double VehicleDynamics::calculate_fx(){
-    double Drag = 0.5*kAirDensity*kCDA*pow(vx_,2);
-    double longitudinal_force = std::clamp(kMass * input_acc_, kMinFx, kMaxFx) - Drag - kRollingResistance;
+double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr){
+
+    double longitudinal_tire_force = (force_fl.fx + force_fr.fx) * std::cos(delta_) + force_rl.fx + force_rr.fx;
+    longitudinal_tire_force -= (force_fl.fy + force_fr.fy) * std::sin(delta_);
+
+    double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
+
+    double longitudinal_force = longitudinal_tire_force - aero_drag - kRollingResistance;
 
     return longitudinal_force;
 }
 
 void VehicleDynamics::calculate_tire_loads(){
-    double load_transfer_ay = kMass * kHCog * ay_ / kTrackWidth;
 
-    tire_loads_.fl_ = kStaticLoadFront - (1 - kMassDistributionRear) * load_transfer_ay;
-    tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay;
-    tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay;
-    tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay;
+    double load_transfer_ay = kMass * kHCog * ay_ / kTrackWidth;
+    double load_transfer_ax = kMass * kHCog * ax_ / kWheelBase;
+
+    tire_loads_.fl_ = kStaticLoadFront - (1 - kMassDistributionRear) * load_transfer_ay - load_transfer_ax/2;
+    tire_loads_.fr_ = kStaticLoadFront + (1 - kMassDistributionRear) * load_transfer_ay - load_transfer_ax/2;
+    tire_loads_.rl_ = kStaticLoadFront - kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
+    tire_loads_.rr_ = kStaticLoadFront + kMassDistributionRear * load_transfer_ay + load_transfer_ax/2;
+
+    double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
+    double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
+
+    tire_loads_.fl_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
+    tire_loads_.fr_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
+    tire_loads_.rl_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
+    tire_loads_.rr_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
+
+
+    if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
+    if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}
+    if(tire_loads_.rl_ < 0){tire_loads_.rl_ = 0;}
+    if(tire_loads_.rr_ < 0){tire_loads_.rr_ = 0;}
+
 }
 
 void VehicleDynamics::calculate_tire_slip(){
+    double vy_front = vy_ + kLf * r_;
+    double vy_rear = vy_ - kLr * r_;
+    double vx_left = vx_ - r_ * kTrackWidth / 2;
+    double vx_right = vx_ + r_ * kTrackWidth / 2;
+
     if(vx_ > 1){
-        tire_slip_.alpha_fl_ = std::atan((vy_ + kLf * r_)/(vx_ - r_ * kTrackWidth / 2)) - delta_;
-        tire_slip_.alpha_fr_ = std::atan((vy_ + kLf * r_)/(vx_ + r_ * kTrackWidth / 2)) - delta_;
-        tire_slip_.alpha_rl_ = std::atan((vy_ - kLr * r_)/(vx_ - r_ * kTrackWidth / 2));
-        tire_slip_.alpha_rr_ = std::atan((vy_ - kLr * r_)/(vx_ + r_ * kTrackWidth / 2));
+        tire_slip_.alpha_fl_ = std::atan(vy_front / vx_left) - delta_;
+        tire_slip_.alpha_fr_ = std::atan(vy_front / vx_right) - delta_;
+        tire_slip_.alpha_rl_ = std::atan(vy_rear / vx_left);
+        tire_slip_.alpha_rr_ = std::atan(vy_rear / vx_right);
     }
+
+    double vx_fl = std::sqrt(vy_front*vy_front + vx_left*vx_left) * std::cos(tire_slip_.alpha_fl_);
+    double vx_fr = std::sqrt(vy_front*vy_front + vx_right*vx_right) * std::cos(tire_slip_.alpha_fr_);
+    double vx_rl = std::sqrt(vy_rear*vy_rear + vx_left*vx_left) * std::cos(tire_slip_.alpha_rl_);
+    double vx_rr = std::sqrt(vy_rear*vy_rear + vx_right*vx_right) * std::cos(tire_slip_.alpha_rr_);
+
+    double eps = 0.01;
+
+    tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps) - 1;
+    tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps) - 1;
+    tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps) - 1;
+    tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps) - 1;
+
+    if(vx_ < 0.1){
+        tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps);
+        tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps);
+        tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps);
+        tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps);
+    }
+
 }
 
-void VehicleDynamics::calculate_tire_forces(double &fy_front, double &fy_rear){
-    fy_front = (tire_loads_.fl_ + tire_loads_.fr_) * kCamberStiffness * (tire_slip_.alpha_fl_ + tire_slip_.alpha_fr_)*0.5;
-    fy_rear = (tire_loads_.rl_ + tire_loads_.rr_) * kCamberStiffness * (tire_slip_.alpha_rr_ + tire_slip_.alpha_rl_)*0.5; 
+VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load){
+
+    // Combined slip
+    double alpha_star = slip_angle / pac_param_.kAlphaP;
+    double lambda_star = slip_ratio / pac_param_.kLambdaP;
+
+    double s_star = std::max(std::sqrt(alpha_star*alpha_star + lambda_star*lambda_star), 0.01);
+
+    slip_angle = s_star * pac_param_.kAlphaP;
+    slip_ratio = s_star * pac_param_.kLambdaP;
+
+    double fy_pure = tire_load * pac_param_.Dlat * std::sin(pac_param_.Clat * std::atan(pac_param_.Blat * slip_angle));
+    double fx_pure = tire_load * pac_param_.Dlon * std::sin(pac_param_.Clon * std::atan(pac_param_.Blon * slip_ratio));
+
+    Tire_force tire_force;
+    tire_force.fy = fy_pure * alpha_star / s_star;
+    tire_force.fx = fx_pure * lambda_star / s_star;
+
+    return tire_force;
 }
 
 void VehicleDynamics::kinematic_correction(){
@@ -100,4 +198,12 @@ void VehicleDynamics::kinematic_correction(){
 
     r_ = lambda * r_kinematic + (1 - lambda) * r_;
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
+}
+
+void VehicleDynamics::update_torque_cmd(){
+    double total_fx_cmd = input_acc_ * kMass;
+    torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
+    torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
+    torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
+    torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
 }

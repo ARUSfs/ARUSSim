@@ -39,6 +39,7 @@ private:
     double ax_ = 0;
     double ay_ = 0;
     double delta_ = 0;
+    arussim_msgs::msg::FourWheelDrive wheel_speed_;
 
     double speed_front_right_ = 0;
     double speed_front_left_ = 0;
