@@ -109,6 +109,9 @@ class VehicleDynamics
 
         Tire_force force;
 
+        // Control parameters
+        double kTVKp = 100;
+
         void calculate_dynamics();
         void integrate_dynamics();
 
