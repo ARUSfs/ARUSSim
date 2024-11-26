@@ -32,6 +32,13 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("wheel_speed.noise_wheel_speed_rear_left", 0.01);
     this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 100.0);
 
+    // Declare 4WD torque parameters
+    this->declare_parameter<double>("torque.noise_torque_front_right", 0.01);
+    this->declare_parameter<double>("torque.noise_torque_front_left", 0.01);
+    this->declare_parameter<double>("torque.noise_torque_rear_right", 0.01);
+    this->declare_parameter<double>("torque.noise_torque_rear_left", 0.01);
+    this->declare_parameter<double>("torque.torque_frequency", 100.0);
+    
     // Declare extensometer parameters
     this->declare_parameter<double>("extensometer.extensometer_frequency", 100.0);
     this->declare_parameter<double>("extensometer.noise_extensometer", 0.01);
@@ -49,6 +56,12 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("wheel_speed.noise_wheel_speed_rear_right", kNoiseWheelSpeedRearRight);
     this->get_parameter("wheel_speed.noise_wheel_speed_rear_left", kNoiseWheelSpeedRearLeft);
     this->get_parameter("wheel_speed.wheel_speed_frequency", kWheelSpeedFrequency);
+
+    this->get_parameter("torque.noise_torque_front_right", kNoiseTorqueFrontRight);
+    this->get_parameter("torque.noise_torque_front_left", kNoiseTorqueFrontLeft);
+    this->get_parameter("torque.noise_torque_rear_right", kNoiseTorqueRearRight);
+    this->get_parameter("torque.noise_torque_rear_left", kNoiseTorqueRearLeft);
+    this->get_parameter("torque.torque_frequency", kTorqueFrequency);
 
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
@@ -85,6 +98,14 @@ Sensors::Sensors() : Node("sensors")
         std::chrono::milliseconds((int)(1000/kExtensometerFrequency)),
         std::bind(&Sensors::extensometer_timer, this)
     );
+
+    // Torque cmd
+    torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque4WD", 10);
+
+    torque_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kTorqueFrequency)),
+        std::bind(&Sensors::torque_cmd_timer, this)
+    );
 }
 
 /**
@@ -104,7 +125,37 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     ax_ = msg->ax;
     ay_ = msg->ay;
     delta_ = msg->delta;
-    wheel_speed_ = msg->wheel_speeds;
+    wheel_speed = msg->wheel_speeds;
+    torque_cmd = msg->torque;
+}
+
+void Sensors::torque_cmd_timer(){
+    // Random noise generation with different noise for each wheel speed
+    std::random_device rd; 
+    std::mt19937 gen(rd());
+
+    // Corrected noise distributions
+    std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
+    std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
+    std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
+    std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
+
+    // Apply noise to the state variables
+    torque_cmd_.fr_ = torque_cmd.front_right + dist_fr(gen);
+    torque_cmd_.fl_ = torque_cmd.front_left + dist_fl(gen);
+    torque_cmd_.rr_ = torque_cmd.rear_right + dist_rr(gen);
+    torque_cmd_.rl_ = torque_cmd.rear_left + dist_rl(gen);
+
+    // Create the torque message
+    auto message = arussim_msgs::msg::FourWheelDrive();
+
+    message.front_right = torque_cmd_.fr_;    
+    message.front_left = torque_cmd_.fl_;      
+    message.rear_right = torque_cmd_.rr_;     
+    message.rear_left = torque_cmd_.rl_;     
+
+    // Publish the torque message
+    torque_pub_->publish(message);
 }
 
 /**
@@ -162,18 +213,18 @@ void Sensors::wheel_speed_timer()
     std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    speed_front_right_ = wheel_speed_.front_right * 0.202 + dist_front_right(gen);
-    speed_front_left_ = wheel_speed_.front_left * 0.202 + dist_front_left(gen);
-    speed_rear_right_ = wheel_speed_.rear_right * 0.202 + dist_rear_right(gen);
-    speed_rear_left_ = wheel_speed_.rear_left * 0.202 + dist_rear_left(gen);
+    wheel_speed_.fr_ = wheel_speed.front_right * 0.202 + dist_front_right(gen);
+    wheel_speed_.fl_ = wheel_speed.front_left * 0.202 + dist_front_left(gen);
+    wheel_speed_.rr_ = wheel_speed.rear_right * 0.202 + dist_rear_right(gen);
+    wheel_speed_.rl_ = wheel_speed.rear_left * 0.202 + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto message = arussim_msgs::msg::FourWheelDrive();
 
-    message.front_right = speed_front_right_;    
-    message.front_left = speed_front_left_;      
-    message.rear_right = speed_rear_right_;     
-    message.rear_left = speed_rear_left_;     
+    message.front_right = wheel_speed_.fr_;    
+    message.front_left = wheel_speed_.fl_;      
+    message.rear_right = wheel_speed_.rr_;     
+    message.rear_left = wheel_speed_.rl_;     
 
     // Publish the wheel speed message
     ws_pub_->publish(message);

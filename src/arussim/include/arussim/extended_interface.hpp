@@ -18,6 +18,7 @@
 #include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "arussim_msgs/msg/four_wheel_drive.hpp"
 
 class ExtendedInterface : public QWidget, public rclcpp::Node
 {
@@ -63,12 +64,13 @@ private:
 
     QProcess* simulation_process_ = nullptr;
 
-    double scale_factor_ = 100;
     double telemetry_container_height_;
     double window_width_ = QGuiApplication::primaryScreen()->availableGeometry().width() * 0.25;
     double window_height_ = QGuiApplication::primaryScreen()->availableGeometry().height();
     double window_position_x_ = QGuiApplication::primaryScreen()->availableGeometry().width() - window_width_;
     double max_bar_height_ = window_height_ * 0.15;
+    double max_param_value_ = 21.0;
+    double scale_factor_ = max_bar_height_ / max_param_value_;;
     double center_y_ = max_bar_height_ / 2;
     double margins_ = window_width_ * 0.05;
 
@@ -89,7 +91,7 @@ private:
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
 
-    rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;

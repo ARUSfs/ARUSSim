@@ -279,8 +279,15 @@ void Simulator::on_fast_timer()
     wheel_speeds.front_right = vehicle_dynamics_.wheel_speed_.fr_;
     wheel_speeds.rear_left = vehicle_dynamics_.wheel_speed_.rl_;
     wheel_speeds.rear_right = vehicle_dynamics_.wheel_speed_.rr_;
-
     message.wheel_speeds = wheel_speeds;
+
+    auto torque = arussim_msgs::msg::FourWheelDrive();
+    torque.front_left = vehicle_dynamics_.torque_cmd_.fl_;
+    torque.front_right = vehicle_dynamics_.torque_cmd_.fr_;
+    torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_;
+    torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
+    message.torque = torque;
+    
     state_pub_->publish(message);
 
 
