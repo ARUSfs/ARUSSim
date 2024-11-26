@@ -25,6 +25,13 @@ class VehicleDynamics
             double rr_ = 0;
         } wheel_speed_;
         
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } torque_cmd_;
+        
         double input_delta_;
         double input_acc_;
         double dt_;
@@ -72,13 +79,6 @@ class VehicleDynamics
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
 
         double kG = 9.81;
-
-        struct {
-            double fl_ = 0;
-            double fr_ = 0;
-            double rl_ = 0;
-            double rr_ = 0;
-        } torque_cmd_;
 
         struct {
             double alpha_fl_ = 0;
