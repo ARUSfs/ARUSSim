@@ -1,4 +1,4 @@
-# include "arussim/vehicle_dynamics.hpp"
+#include "arussim/vehicle_dynamics.hpp"
 #include <fstream>
 
 VehicleDynamics::VehicleDynamics(){
@@ -202,8 +202,22 @@ void VehicleDynamics::kinematic_correction(){
 
 void VehicleDynamics::update_torque_cmd(){
     double total_fx_cmd = input_acc_ * kMass;
-    torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
+
+    if(kTorqueVectoring){
+        double target_r = vx_ * std::tan(delta_) / kWheelBase;
+
+        double target_mz = kTVKp * (target_r - r_);
+
+        double fz_total = kMass * kG + 0.5 * kAirDensity * kCLA * vx_*vx_;
+
+        torque_cmd_.fl_ = kTireDynRadius * tire_loads_.fl_ / fz_total * (total_fx_cmd - 2*target_mz/kTrackWidth);
+        torque_cmd_.fr_ = kTireDynRadius * tire_loads_.fr_ / fz_total * (total_fx_cmd + 2*target_mz/kTrackWidth);
+        torque_cmd_.rl_ = kTireDynRadius * tire_loads_.rl_ / fz_total * (total_fx_cmd - 2*target_mz/kTrackWidth);
+        torque_cmd_.rr_ = kTireDynRadius * tire_loads_.rr_ / fz_total * (total_fx_cmd + 2*target_mz/kTrackWidth);
+    }else{
+        torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
+    }
 }

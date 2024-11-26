@@ -39,7 +39,7 @@ class VehicleDynamics
     private:
 
         double kMass = 270.0;
-        double kMassDistributionRear = 0.52;
+        double kMassDistributionRear = 0.5;
         double kWheelBase = 1.533;
         double kTrackWidth = 1.22;
         double kHCog = 0.28;
@@ -111,6 +111,7 @@ class VehicleDynamics
 
         // Control parameters
         double kTVKp = 100;
+        bool kTorqueVectoring = true;
 
         void calculate_dynamics();
         void integrate_dynamics();
