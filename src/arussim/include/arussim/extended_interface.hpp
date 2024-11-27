@@ -69,7 +69,7 @@ private:
     double window_height_ = QGuiApplication::primaryScreen()->availableGeometry().height();
     double window_position_x_ = QGuiApplication::primaryScreen()->availableGeometry().width() - window_width_;
     double max_bar_height_ = window_height_ * 0.15;
-    double max_param_value_ = 21.0;
+    double max_param_value_ = 252.0;
     double scale_factor_ = max_bar_height_ / max_param_value_;;
     double center_y_ = max_bar_height_ / 2;
     double margins_ = window_width_ * 0.05;
