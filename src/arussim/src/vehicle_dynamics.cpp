@@ -222,4 +222,10 @@ void VehicleDynamics::update_torque_cmd(){
         torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
         torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
     }
+
+    torque_cmd_.fl_ = std::clamp(torque_cmd_.fl_, kTorqueMin, kTorqueMax);
+    torque_cmd_.fr_ = std::clamp(torque_cmd_.fr_, kTorqueMin, kTorqueMax);
+    torque_cmd_.rl_ = std::clamp(torque_cmd_.rl_, kTorqueMin, kTorqueMax);
+    torque_cmd_.rr_ = std::clamp(torque_cmd_.rr_, kTorqueMin, kTorqueMax);
+
 }

@@ -112,6 +112,8 @@ class VehicleDynamics
         // Control parameters
         double kTVKp = 1000;
         bool kTorqueVectoring = true;
+        double kTorqueMax = 252;
+        double kTorqueMin = -252;
 
         void calculate_dynamics();
         void integrate_dynamics();
