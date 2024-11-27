@@ -110,7 +110,7 @@ class VehicleDynamics
         Tire_force force;
 
         // Control parameters
-        double kTVKp = 100;
+        double kTVKp = 1000;
         bool kTorqueVectoring = true;
 
         void calculate_dynamics();

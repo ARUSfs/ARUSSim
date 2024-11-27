@@ -209,11 +209,13 @@ void VehicleDynamics::update_torque_cmd(){
         double target_mz = kTVKp * (target_r - r_);
 
         double fz_total = kMass * kG + 0.5 * kAirDensity * kCLA * vx_*vx_;
+        double fz_front_mean = 0.5*(tire_loads_.fl_ + tire_loads_.fr_);
+        double fz_rear_mean = 0.5*(tire_loads_.rl_ + tire_loads_.rr_);
 
-        torque_cmd_.fl_ = kTireDynRadius * tire_loads_.fl_ / fz_total * (total_fx_cmd - 2*target_mz/kTrackWidth);
-        torque_cmd_.fr_ = kTireDynRadius * tire_loads_.fr_ / fz_total * (total_fx_cmd + 2*target_mz/kTrackWidth);
-        torque_cmd_.rl_ = kTireDynRadius * tire_loads_.rl_ / fz_total * (total_fx_cmd - 2*target_mz/kTrackWidth);
-        torque_cmd_.rr_ = kTireDynRadius * tire_loads_.rr_ / fz_total * (total_fx_cmd + 2*target_mz/kTrackWidth);
+        torque_cmd_.fl_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd - tire_loads_.fl_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.fr_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd + tire_loads_.fr_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.rl_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd - tire_loads_.rl_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.rr_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd + tire_loads_.rr_ * 2*target_mz/kTrackWidth);
     }else{
         torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
         torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
