@@ -49,8 +49,6 @@ class VehicleDynamics
 
         double kTireDynRadius = 0.202;
         double kTireInertia = 0.5;
-        double kCamberStiffnessLat = -100;
-        double kCamberStiffnessLong = 9;
 
         struct {
             double Dlat = -1.537;
@@ -64,9 +62,6 @@ class VehicleDynamics
             double kAlphaP = 0.1809;
             double kLambdaP = 0.1397;
         } pac_param_;
-
-        double kMinFx = -3500;
-        double kMaxFx = 2000;
 
         double kRollingResistance = 100;
         double kCDA = 1;
