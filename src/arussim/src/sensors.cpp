@@ -129,6 +129,10 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     torque_cmd = msg->torque;
 }
 
+/**
+ * @brief Timer function for the 4WD torque
+ * 
+ */
 void Sensors::torque_cmd_timer(){
     // Random noise generation with different noise for each wheel speed
     std::random_device rd; 
