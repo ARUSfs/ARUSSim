@@ -17,6 +17,7 @@ class VehicleDynamics
         double ax_;
         double ay_;
         double delta_;
+        double delta_v_;
 
         struct {
             double fl_ = 0;
@@ -39,7 +40,7 @@ class VehicleDynamics
     private:
 
         double kMass = 270.0;
-        double kMassDistributionRear = 0.5;
+        double kMassDistributionRear = 0.55;
         double kWheelBase = 1.533;
         double kTrackWidth = 1.22;
         double kHCog = 0.28;
@@ -72,6 +73,7 @@ class VehicleDynamics
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
+        double delta_dot_{0.0}, delta_v_dot_{0.0};
 
         double kG = 9.81;
 
@@ -109,6 +111,11 @@ class VehicleDynamics
         bool kTorqueVectoring = true;
         double kTorqueMax = 252;
         double kTorqueMin = -252;
+
+        // Steering dynamics
+        double kCoefDelta = 306.3;
+        double kCoefV = 25.69;
+        double kCoefInput = 307;
 
         void calculate_dynamics();
         void integrate_dynamics();

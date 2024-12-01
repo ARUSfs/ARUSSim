@@ -14,6 +14,9 @@ VehicleDynamics::VehicleDynamics(){
     
     input_delta_ = 0;
     input_acc_ = 0;
+
+    delta_ = 0;
+    delta_v_ = 0;
     dt_ = 0.001;
 }
 
@@ -67,13 +70,14 @@ void VehicleDynamics::calculate_dynamics(){
 
     r_dot_ = total_mz / kIzz;
 
-    delta_ = input_delta_;
-
     // Tire angular acceleration
     w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia;
     w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia;
     w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
     w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
+
+    delta_dot_ = delta_v_;
+    delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
 }
 
 void VehicleDynamics::integrate_dynamics(){
@@ -92,6 +96,9 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.fr_ += w_fr_dot_ * dt_;
     wheel_speed_.rl_ += w_rl_dot_ * dt_;
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
+
+    delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_v_ += delta_v_dot_ * dt_;
 
     if(vx_ < 0){
         vx_ = 0;
