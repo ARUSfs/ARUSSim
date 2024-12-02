@@ -31,6 +31,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
     this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
+    this->declare_parameter<bool>("vehicle.torque_vectoring", true);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("friction_coef", kFrictionCoef);
@@ -44,7 +45,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
     this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
-
+    this->get_parameter("vehicle.torque_vectoring", kTorqueVectoring);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -105,6 +106,9 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the track pointcloud
     load_track(track_);
+
+    // Set Torque Vectoring parameter 
+    vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
 }
 /**
  * @brief Destructor for the Simulator class.

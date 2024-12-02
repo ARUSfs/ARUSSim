@@ -75,6 +75,8 @@ class Simulator : public rclcpp::Node
     double kCOGBackDist;
     double kCarWidth;
 
+    bool kTorqueVectoring;
+
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
     double input_acc_;

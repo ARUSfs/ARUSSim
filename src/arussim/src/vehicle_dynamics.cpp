@@ -208,6 +208,11 @@ void VehicleDynamics::kinematic_correction(){
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
 }
 
+void VehicleDynamics::set_torque_vectoring(bool value)
+{
+    kTorqueVectoring = value;
+}
+
 void VehicleDynamics::update_torque_cmd(){
     double total_fx_cmd = input_acc_ * kMass;
 
