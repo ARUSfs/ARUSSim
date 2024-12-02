@@ -28,9 +28,9 @@ public:
     ExtendedInterface(QWidget* parent = nullptr);
 
 private:
+    QPushButton* launch_button_;
+    QPushButton* stop_button_;
     QPushButton* reset_button_;
-    QPushButton* a_button_;
-    QPushButton* b_button_;
 
     QLabel* last_lt_label_;
     QLabel* best_lt_label_;

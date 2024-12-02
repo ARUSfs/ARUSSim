@@ -122,11 +122,11 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // Launch button
     launch_button_position_y_ = telemetry_parameters_position_y_ + margins_ * 4;
 
-    reset_button_ = new QPushButton("Launch Simulation", this);
-    reset_button_->move(margins_, launch_button_position_y_);
-    reset_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
-    reset_button_->setFont(custom_font_);
-    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
+    launch_button_ = new QPushButton("Launch Simulation", this);
+    launch_button_->move(margins_, launch_button_position_y_);
+    launch_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
+    launch_button_->setFont(custom_font_);
+    connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
 
 
     // timer slider
@@ -173,18 +173,18 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     //Stop button
     ab_button_position_y_ = timer_setter_position_y_ + margins_ * 9;
 
-    a_button_ = new QPushButton("Stop Simulation", this);
-    a_button_->move(margins_, ab_button_position_y_);
-    a_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    a_button_->setFont(custom_font_);
-    connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
+    stop_button_ = new QPushButton("Stop Simulation", this);
+    stop_button_->move(margins_, ab_button_position_y_);
+    stop_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
+    stop_button_->setFont(custom_font_);
+    connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
 
     //Reset button
-    b_button_ = new QPushButton("Reset", this);
-    b_button_->move(window_width_ * 0.525, ab_button_position_y_);
-    b_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    b_button_->setFont(custom_font_);
-    connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
+    reset_button_ = new QPushButton("Reset", this);
+    reset_button_->move(window_width_ * 0.525, ab_button_position_y_);
+    reset_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
+    reset_button_->setFont(custom_font_);
+    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
 
 

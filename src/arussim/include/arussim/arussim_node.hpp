@@ -59,9 +59,7 @@ class Simulator : public rclcpp::Node
     VehicleDynamics vehicle_dynamics_;
 
     std::string kTrackName;
-    double kFrictionCoef;
     double kStateUpdateRate;
-    double kMass;
     double kWheelBase;
     double kFOV;
     double kPosLidarX;
@@ -69,13 +67,12 @@ class Simulator : public rclcpp::Node
     double kNoisePerception;
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
-
+    bool kTorqueVectoring;
+    
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
     double kCarWidth;
-
-    bool kTorqueVectoring;
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
