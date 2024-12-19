@@ -19,7 +19,7 @@
  */
 Simulator::Simulator() : Node("simulator")
 {   
-    this->declare_parameter<std::string>("track", "FSG.pcd");
+    this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
