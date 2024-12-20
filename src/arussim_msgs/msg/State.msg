@@ -10,3 +10,4 @@ float32 ax     # m/s²
 float32 ay     # m/s²
 float32 delta  # radians   
 arussim_msgs/FourWheelDrive wheel_speeds
+arussim_msgs/FourWheelDrive torque

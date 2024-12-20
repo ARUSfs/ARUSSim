@@ -39,12 +39,22 @@ private:
     double ax_ = 0;
     double ay_ = 0;
     double delta_ = 0;
-    arussim_msgs::msg::FourWheelDrive wheel_speed_;
+    arussim_msgs::msg::FourWheelDrive wheel_speed;
+    arussim_msgs::msg::FourWheelDrive torque_cmd;
 
-    double speed_front_right_ = 0;
-    double speed_front_left_ = 0;
-    double speed_rear_right_ = 0;
-    double speed_rear_left_ = 0;
+    struct {
+        double fl_ = 0;
+        double fr_ = 0;
+        double rl_ = 0;
+        double rr_ = 0;
+    } wheel_speed_;
+
+    struct {
+        double fl_ = 0;
+        double fr_ = 0;
+        double rl_ = 0;
+        double rr_ = 0;
+    } torque_cmd_;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;
@@ -54,6 +64,12 @@ private:
     double kNoiseWheelSpeedFrontLeft;
     double kNoiseWheelSpeedRearRight;
     double kNoiseWheelSpeedRearLeft;
+
+    double kTorqueFrequency;
+    double kNoiseTorqueFrontRight;
+    double kNoiseTorqueFrontLeft;
+    double kNoiseTorqueRearRight;
+    double kNoiseTorqueRearLeft;
 
     double kImuFrequency;
     double kNoiseImuX;
@@ -87,6 +103,12 @@ private:
      * 
      */
     void imu_timer();
+
+    /**
+     * @brief Timer function for the 4WD torque
+     * 
+     */
+    void torque_cmd_timer();
     
     
     // ROS Communication
@@ -98,7 +120,9 @@ private:
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
     rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Wheel speed publisher
-    rclcpp::TimerBase::SharedPtr ext_timer_; // Wheel speed timer
-};
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
+    rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
 
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
+    rclcpp::TimerBase::SharedPtr torque_timer_; // Torque timer
+};

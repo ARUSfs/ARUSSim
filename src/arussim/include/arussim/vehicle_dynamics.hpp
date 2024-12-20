@@ -7,6 +7,7 @@ class VehicleDynamics
     public:
         VehicleDynamics();
         void update_simulation(double input_delta, double input_acc, double dt);
+        void set_torque_vectoring(bool value);
 
         double x_;
         double y_;
@@ -17,6 +18,7 @@ class VehicleDynamics
         double ax_;
         double ay_;
         double delta_;
+        double delta_v_;
 
         struct {
             double fl_ = 0;
@@ -25,6 +27,13 @@ class VehicleDynamics
             double rr_ = 0;
         } wheel_speed_;
         
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } torque_cmd_;
+        
         double input_delta_;
         double input_acc_;
         double dt_;
@@ -32,7 +41,7 @@ class VehicleDynamics
     private:
 
         double kMass = 270.0;
-        double kMassDistributionRear = 0.52;
+        double kMassDistributionRear = 0.55;
         double kWheelBase = 1.533;
         double kTrackWidth = 1.22;
         double kHCog = 0.28;
@@ -42,8 +51,6 @@ class VehicleDynamics
 
         double kTireDynRadius = 0.202;
         double kTireInertia = 0.5;
-        double kCamberStiffnessLat = -100;
-        double kCamberStiffnessLong = 9;
 
         struct {
             double Dlat = -1.537;
@@ -58,9 +65,6 @@ class VehicleDynamics
             double kLambdaP = 0.1397;
         } pac_param_;
 
-        double kMinFx = -3500;
-        double kMaxFx = 2000;
-
         double kRollingResistance = 100;
         double kCDA = 1;
         double kCLA = 3.5;
@@ -70,15 +74,9 @@ class VehicleDynamics
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
+        double delta_dot_{0.0}, delta_v_dot_{0.0};
 
         double kG = 9.81;
-
-        struct {
-            double fl_ = 0;
-            double fr_ = 0;
-            double rl_ = 0;
-            double rr_ = 0;
-        } torque_cmd_;
 
         struct {
             double alpha_fl_ = 0;
@@ -108,6 +106,19 @@ class VehicleDynamics
         };
 
         Tire_force force;
+
+        // Control parameters
+        double kTVKp = 1000;
+        bool kTorqueVectoring = true;
+        double kTorqueMax = 252;
+        double kTorqueMin = -252;
+
+        // Steering dynamics
+        double kCoefDelta = 306.3;
+        double kCoefV = 25.69;
+        double kCoefInput = 307;
+        double kSteeringAMax = 125;
+        double kSteeringVMax = 125;
 
         void calculate_dynamics();
         void integrate_dynamics();

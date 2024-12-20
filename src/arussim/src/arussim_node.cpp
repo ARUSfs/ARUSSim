@@ -19,32 +19,31 @@
  */
 Simulator::Simulator() : Node("simulator")
 {   
-    this->declare_parameter<std::string>("track", "FSG.pcd");
-    this->declare_parameter<double>("friction_coef", 0.5);
+    this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
+    this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
+    this->declare_parameter<bool>("vehicle.torque_vectoring", true);
     this->declare_parameter<double>("sensor.fov_radius", 20);
-    this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
-    this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
+    this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
 
     this->get_parameter("track", kTrackName);
-    this->get_parameter("friction_coef", kFrictionCoef);
     this->get_parameter("state_update_rate", kStateUpdateRate);
+    this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
+    this->get_parameter("vehicle.torque_vectoring", kTorqueVectoring);
     this->get_parameter("sensor.fov_radius", kFOV);
-    this->get_parameter("sensor.position_lidar_x", kPosLidarX);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
-    this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
-
+    this->get_parameter("sensor.position_lidar_x", kPosLidarX);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -105,9 +104,12 @@ Simulator::Simulator() : Node("simulator")
 
     // Load the track pointcloud
     load_track(track_);
+
+    // Set Torque Vectoring parameter 
+    vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
 }
 /**
- * @brief Destructor for the Simulator class.
+ * @brief Function that updtates the timers based on the simulation speed multiplier.
  *
  * 
  */
@@ -279,8 +281,15 @@ void Simulator::on_fast_timer()
     wheel_speeds.front_right = vehicle_dynamics_.wheel_speed_.fr_;
     wheel_speeds.rear_left = vehicle_dynamics_.wheel_speed_.rl_;
     wheel_speeds.rear_right = vehicle_dynamics_.wheel_speed_.rr_;
-
     message.wheel_speeds = wheel_speeds;
+
+    auto torque = arussim_msgs::msg::FourWheelDrive();
+    torque.front_left = vehicle_dynamics_.torque_cmd_.fl_;
+    torque.front_right = vehicle_dynamics_.torque_cmd_.fr_;
+    torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_;
+    torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
+    message.torque = torque;
+    
     state_pub_->publish(message);
 
 

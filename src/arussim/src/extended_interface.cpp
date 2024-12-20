@@ -122,11 +122,11 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     // Launch button
     launch_button_position_y_ = telemetry_parameters_position_y_ + margins_ * 4;
 
-    reset_button_ = new QPushButton("Launch Simulation", this);
-    reset_button_->move(margins_, launch_button_position_y_);
-    reset_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
-    reset_button_->setFont(custom_font_);
-    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
+    launch_button_ = new QPushButton("Launch Simulation", this);
+    launch_button_->move(margins_, launch_button_position_y_);
+    launch_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
+    launch_button_->setFont(custom_font_);
+    connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
 
 
     // timer slider
@@ -173,18 +173,18 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     //Stop button
     ab_button_position_y_ = timer_setter_position_y_ + margins_ * 9;
 
-    a_button_ = new QPushButton("Stop Simulation", this);
-    a_button_->move(margins_, ab_button_position_y_);
-    a_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    a_button_->setFont(custom_font_);
-    connect(a_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
+    stop_button_ = new QPushButton("Stop Simulation", this);
+    stop_button_->move(margins_, ab_button_position_y_);
+    stop_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
+    stop_button_->setFont(custom_font_);
+    connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
 
     //Reset button
-    b_button_ = new QPushButton("Reset", this);
-    b_button_->move(window_width_ * 0.525, ab_button_position_y_);
-    b_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    b_button_->setFont(custom_font_);
-    connect(b_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
+    reset_button_ = new QPushButton("Reset", this);
+    reset_button_->move(window_width_ * 0.525, ab_button_position_y_);
+    reset_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
+    reset_button_->setFont(custom_font_);
+    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
 
 
 
@@ -193,11 +193,11 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("e
     reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
 
     // Subscriber
-    cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>(
-        "/arussim/cmd", 1, 
-        [this](const arussim_msgs::msg::Cmd::SharedPtr msg) { 
+    torque_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/torque4WD", 1, 
+        [this](const arussim_msgs::msg::FourWheelDrive::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                update_telemetry_bar(msg->acc, msg->acc, msg->acc, msg->acc);
+                update_telemetry_bar(msg->front_right, msg->front_left, msg->rear_right, msg->rear_left);
             }, Qt::QueuedConnection);
         }
     );
@@ -297,12 +297,8 @@ void ExtendedInterface::b_set(int value_) {
  * @param rl_param_ 
  * @param rr_param_ 
  */
-void ExtendedInterface::update_telemetry_bar(double fl_param_, double fr_param_, double rl_param_, double rr_param_)
+void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_)
 {
-    fr_param_ = fl_param_;
-    rl_param_ = fl_param_;
-    rr_param_ = fl_param_;
-
     // Front Left
     double height_fl = std::abs(fl_param_) * scale_factor_;
     height_fl = std::min(height_fl, max_bar_height_);

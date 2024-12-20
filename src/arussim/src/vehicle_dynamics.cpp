@@ -1,4 +1,4 @@
-# include "arussim/vehicle_dynamics.hpp"
+#include "arussim/vehicle_dynamics.hpp"
 #include <fstream>
 
 VehicleDynamics::VehicleDynamics(){
@@ -14,6 +14,9 @@ VehicleDynamics::VehicleDynamics(){
     
     input_delta_ = 0;
     input_acc_ = 0;
+
+    delta_ = 0;
+    delta_v_ = 0;
     dt_ = 0.001;
 }
 
@@ -67,13 +70,19 @@ void VehicleDynamics::calculate_dynamics(){
 
     r_dot_ = total_mz / kIzz;
 
-    delta_ = input_delta_;
-
     // Tire angular acceleration
     w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia;
     w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia;
     w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
     w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
+
+    if (kTorqueVectoring) {
+        delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
+        delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
+        delta_v_dot_ = std::clamp(delta_v_dot_, -kSteeringAMax, kSteeringAMax);
+    } else {
+        delta_ = input_delta_;
+    }
 }
 
 void VehicleDynamics::integrate_dynamics(){
@@ -92,6 +101,11 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.fr_ += w_fr_dot_ * dt_;
     wheel_speed_.rl_ += w_rl_dot_ * dt_;
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
+
+    if (kTorqueVectoring) {
+        delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+        delta_v_ += delta_v_dot_ * dt_;
+    }
 
     if(vx_ < 0){
         vx_ = 0;
@@ -200,10 +214,37 @@ void VehicleDynamics::kinematic_correction(){
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
 }
 
+void VehicleDynamics::set_torque_vectoring(bool value)
+{
+    kTorqueVectoring = value;
+}
+
 void VehicleDynamics::update_torque_cmd(){
     double total_fx_cmd = input_acc_ * kMass;
-    torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
-    torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
+
+    if(kTorqueVectoring){
+        double target_r = vx_ * std::tan(delta_) / kWheelBase;
+
+        double target_mz = kTVKp * (target_r - r_);
+
+        double fz_total = kMass * kG + 0.5 * kAirDensity * kCLA * vx_*vx_;
+        double fz_front_mean = 0.5*(tire_loads_.fl_ + tire_loads_.fr_);
+        double fz_rear_mean = 0.5*(tire_loads_.rl_ + tire_loads_.rr_);
+
+        torque_cmd_.fl_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd - tire_loads_.fl_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.fr_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd + tire_loads_.fr_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.rl_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd - tire_loads_.rl_ * 2*target_mz/kTrackWidth);
+        torque_cmd_.rr_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd + tire_loads_.rr_ * 2*target_mz/kTrackWidth);
+    }else{
+        torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
+        torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
+    }
+
+    torque_cmd_.fl_ = std::clamp(torque_cmd_.fl_, kTorqueMin, kTorqueMax);
+    torque_cmd_.fr_ = std::clamp(torque_cmd_.fr_, kTorqueMin, kTorqueMax);
+    torque_cmd_.rl_ = std::clamp(torque_cmd_.rl_, kTorqueMin, kTorqueMax);
+    torque_cmd_.rr_ = std::clamp(torque_cmd_.rr_, kTorqueMin, kTorqueMax);
+
 }
