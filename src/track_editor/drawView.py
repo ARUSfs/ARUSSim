@@ -536,17 +536,7 @@ class drawView(QGraphicsView):
     def updatePositions(self):
         for i in self.coneMap:
             worldPos = self.positionToWorld(i)
-            conePos = list(self.coneMap[i])
-            
-            # Convert conePos[0] to a numpy array
-            if isinstance(conePos[0], tuple):
-                conePos[0] = np.array(conePos[0])
-
-            conePos[0] = worldPos
-
-            self.coneMap[i] = tuple(conePos)
-
-
+            self.coneMap[i][0] = worldPos
 
     def resetLaneConnections(self):
         for i in self.leftLines:
