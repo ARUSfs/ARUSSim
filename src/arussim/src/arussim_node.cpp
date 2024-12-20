@@ -109,7 +109,7 @@ Simulator::Simulator() : Node("simulator")
     vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
 }
 /**
- * @brief Destructor for the Simulator class.
+ * @brief Function that updtates the timers based on the simulation speed multiplier.
  *
  * 
  */
