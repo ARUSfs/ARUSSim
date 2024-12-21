@@ -1,6 +1,7 @@
 from scipy.interpolate import splprep, splev
 import numpy as np
 import json
+import math
 
 
 def distance(point1, point2):
@@ -90,5 +91,65 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5):
             outer_cones.append(outer_point)
         if i == 0 or distance(inner_cones[-1], inner_point) >= min_distance:
             inner_cones.append(inner_point)
+
+    # Calculate json data for the circuit
+    acum = 0.0
+    s = [0.0]
+    xp, yp = [], []
+    for i in range(len(x_smooth) - 1):
+        dx = x_smooth[i+1] - x_smooth[i]
+        dy = y_smooth[i+1] - y_smooth[i]
+        dist = math.sqrt(dx*dx + dy*dy)
+        xp.append(dx)
+        yp.append(dy)
+        acum += dist
+        s.append(acum)
+    xp.append(xp[-1])
+    yp.append(yp[-1])
+
+    xpp, ypp = [], []
+    for i in range(len(xp) - 1):
+        xpp.append(xp[i+1] - xp[i])
+        ypp.append(yp[i+1] - yp[i])
+    xpp.append(xpp[-1])
+    ypp.append(ypp[-1])
+
+    k = []
+    for i in range(len(xpp)):
+        den = ((xp[i]**2 + yp[i]**2)**1.5)
+        val = 0 if den == 0 else (xp[i]*ypp[i] - xpp[i]*yp[i]) / den
+        k.append(val)
+
+    # Speed limits
+    AY_MAX, AX_MAX, V_MAX = 4.0, 5.0, 15.0
+    speed_profile = [0.0 for _ in s]
+    v_grip = [min(math.sqrt(AY_MAX / max(abs(val), 1e-4)), V_MAX) for val in k]
+    speed_profile[0] = 1.0
+
+    for j in range(1, len(speed_profile)):
+        ds = s[j] - s[j-1]
+        speed_profile[j] = math.sqrt(speed_profile[j-1]**2 + 2*AX_MAX*ds)
+        if speed_profile[j] > v_grip[j]:
+            speed_profile[j] = v_grip[j]
+    for j in range(len(speed_profile)-2, -1, -1):
+        ds = s[j+1] - s[j]
+        v_brake = math.sqrt(speed_profile[j+1]**2 + 2*AX_MAX*ds)
+        if speed_profile[j] > v_brake:
+            speed_profile[j] = v_brake
+
+    acc_profile = [0.0]*len(speed_profile)
+    for i in range(1, len(speed_profile)):
+        ds = s[i] - s[i-1]
+        if ds != 0:
+            acc_profile[i] = (speed_profile[i] - speed_profile[i-1]) / (ds/speed_profile[i])
+
+    trajectory_json_data = {
+        "x": list(x_smooth),
+        "y": list(y_smooth),
+        "s": s,
+        "k": k,
+        "speed_profile": speed_profile,
+        "acc_profile": acc_profile
+    }
 
     return outer_cones, inner_cones, trajectory_json_data
