@@ -427,10 +427,25 @@ class Ui_MainWindow(object):
       self.dist_cones.setValidator(QDoubleValidator())
       self.dist_cones.setValidator(QRegExpValidator(QRegExp("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")))
       self.dist_cones.setText(str())
+      self.v_max = QLineEdit()
+      self.v_max.setValidator(QDoubleValidator())
+      self.v_max.setValidator(QRegExpValidator(QRegExp("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")))
+      self.v_max.setText(str())
+      self.ax_max = QLineEdit()
+      self.ax_max.setValidator(QDoubleValidator())
+      self.ax_max.setValidator(QRegExpValidator(QRegExp("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")))
+      self.ax_max.setText(str())
+      self.ay_max = QLineEdit()
+      self.ay_max.setValidator(QDoubleValidator())
+      self.ay_max.setValidator(QRegExpValidator(QRegExp("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?")))
+      self.ay_max.setText(str())
 
       flo = QFormLayout()
       flo.addRow("Circuit width",self.width)
       flo.addRow("Distance between cones",self.dist_cones)
+      flo.addRow("Max speed",self.v_max)
+      flo.addRow("Max acceleration X",self.ax_max)
+      flo.addRow("Max acceleration Y",self.ay_max)
 
 
       button = QPushButton("Set")
@@ -445,6 +460,9 @@ class Ui_MainWindow(object):
         if not anyEmpty:
             self.guiLogic.width = self.width.text()
             self.guiLogic.dist_cones = self.dist_cones.text()
+            self.guiLogic.v_max = self.v_max.text()
+            self.guiLogic.ax_max = self.ax_max.text()
+            self.guiLogic.ay_max = self.ay_max.text()
             self.widget.close()
             self.deleteAndNewCircuit()
             self.widget = None
@@ -457,7 +475,7 @@ class Ui_MainWindow(object):
             cones = self.conesOnMap()
             self.graphicsView.removeAllCones()
 
-            outer_cones, inner_cones, trajectory_json_data = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*100, float(self.guiLogic.dist_cones))
+            outer_cones, inner_cones, trajectory_json_data = smooth_and_expand_points(cones, float(self.guiLogic.width), len(cones)*100, float(self.guiLogic.dist_cones), float(self.guiLogic.v_max), float(self.guiLogic.ax_max), float(self.guiLogic.ay_max))
             self.guiLogic.trajectory_json_data = trajectory_json_data
 
             for x, y in outer_cones:

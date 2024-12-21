@@ -41,7 +41,7 @@ def rotation(cone_list):
 
     return rotated_cones
 
-def smooth_and_expand_points(points, offset, num_points, min_distance=5):
+def smooth_and_expand_points(points, offset, num_points, min_distance=5, v_max=15.0, ax_max=5.0, ay_max=4.0):
     translated_points = translation(points)
     rotated_points = rotation(translated_points)
 
@@ -121,19 +121,18 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5):
         k.append(val)
 
     # Speed limits
-    AY_MAX, AX_MAX, V_MAX = 4.0, 5.0, 15.0
     speed_profile = [0.0 for _ in s]
-    v_grip = [min(math.sqrt(AY_MAX / max(abs(val), 1e-4)), V_MAX) for val in k]
+    v_grip = [min(math.sqrt(ay_max / max(abs(val), 1e-4)), v_max) for val in k]
     speed_profile[0] = 1.0
 
     for j in range(1, len(speed_profile)):
         ds = s[j] - s[j-1]
-        speed_profile[j] = math.sqrt(speed_profile[j-1]**2 + 2*AX_MAX*ds)
+        speed_profile[j] = math.sqrt(speed_profile[j-1]**2 + 2*ax_max*ds)
         if speed_profile[j] > v_grip[j]:
             speed_profile[j] = v_grip[j]
     for j in range(len(speed_profile)-2, -1, -1):
         ds = s[j+1] - s[j]
-        v_brake = math.sqrt(speed_profile[j+1]**2 + 2*AX_MAX*ds)
+        v_brake = math.sqrt(speed_profile[j+1]**2 + 2*ax_max*ds)
         if speed_profile[j] > v_brake:
             speed_profile[j] = v_brake
 
