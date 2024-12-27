@@ -37,6 +37,9 @@ class guiLogic():
     self.originENURotation = d2r * np.array([0,0,45])
     self.width = 0
     self.dist_cones = 0
+    self.v_max = 0
+    self.ax_max = 0
+    self.ay_max = 0
   # https://stackoverflow.com/questions/27161533/find-the-shortest-distance-between-a-point-and-line-segments-not-line
   def lineseg_dists(self, p, a, b):
       """Cartesian distance from point to line segment
