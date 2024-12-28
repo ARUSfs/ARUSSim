@@ -1,0 +1,6 @@
+automatic_simulations:
+  ros__parameters:
+    simulation_speed_multiplier: 1.0
+    iterations: 1.0
+    event: 'AutoX' # 'AutoX' or 'Endurance' or 'SkidPad' or 'Acceleration'
+    laps_target: 10.0

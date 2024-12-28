@@ -19,11 +19,6 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
     this->get_parameter("event", kEvent);
     this->get_parameter("laps_target", kLapsTarget);
 
-    RCLCPP_INFO(this->get_logger(), "Starting automatic simulations for %s", kEvent.c_str());
-    RCLCPP_INFO(this->get_logger(), "Simulation speed multiplier: %f", kSimulationSpeedMultiplier);
-    RCLCPP_INFO(this->get_logger(), "Iterations: %f", kIterations);
-    RCLCPP_INFO(this->get_logger(), "Laps target: %f", kLapsTarget);
-
     // Competition logic
     if (kEvent == "Trackdrive"){
         kLapsTarget = 10;
@@ -34,6 +29,11 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
     } else if (kEvent == "AutoX"){
         kLapsTarget = 1;
     }
+
+    RCLCPP_INFO(this->get_logger(), "Starting automatic simulations for %s", kEvent.c_str());
+    RCLCPP_INFO(this->get_logger(), "Simulation speed multiplier: %f", kSimulationSpeedMultiplier);
+    RCLCPP_INFO(this->get_logger(), "Iterations: %f", kIterations);
+    RCLCPP_INFO(this->get_logger(), "Laps target: %f", kLapsTarget);
 
     // Publishers
     reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
@@ -59,10 +59,10 @@ void AutomaticSimulations::lap_time_callback([[maybe_unused]]const std_msgs::msg
         reset_pub_->publish(message);
         current_iterations_++;
         current_laps_ = 0;
-        RCLCPP_INFO(this->get_logger(), "Iteration %d completed", current_iterations_);
+        RCLCPP_INFO(this->get_logger(), "%sIteration %d completed%s", blue.c_str(), current_iterations_, reset.c_str());
     }
     if (current_iterations_ >= kIterations){
-        RCLCPP_INFO(this->get_logger(), "All iterations completed");
+        RCLCPP_INFO(this->get_logger(), "%sAll iterations completed%s", cyan.c_str(), reset.c_str());
         rclcpp::shutdown();
         exit(0);
     }
