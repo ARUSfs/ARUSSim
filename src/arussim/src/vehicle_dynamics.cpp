@@ -76,13 +76,10 @@ void VehicleDynamics::calculate_dynamics(){
     w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
     w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
 
-    if (kTorqueVectoring) {
-        delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
-        delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
-        delta_v_dot_ = std::clamp(delta_v_dot_, -kSteeringAMax, kSteeringAMax);
-    } else {
-        delta_ = input_delta_;
-    }
+    delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
+    delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
+    delta_v_dot_ = std::clamp(delta_v_dot_, -kSteeringAMax, kSteeringAMax);
+
 }
 
 void VehicleDynamics::integrate_dynamics(){
@@ -102,10 +99,8 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.rl_ += w_rl_dot_ * dt_;
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
-    if (kTorqueVectoring) {
-        delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
-        delta_v_ += delta_v_dot_ * dt_;
-    }
+    delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_v_ += delta_v_dot_ * dt_;
 
     if(vx_ < 0){
         vx_ = 0;
