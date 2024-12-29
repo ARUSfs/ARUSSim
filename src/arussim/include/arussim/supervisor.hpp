@@ -13,6 +13,8 @@
 #include <vector>
 #include <utility>
 #include "arussim_msgs/srv/set_timer.hpp"
+#include "arussim/csv_generator.hpp"
+#include <memory>
 
 /**
  * @class Supervisor
@@ -91,6 +93,8 @@ private:
     
     double prev_time_;
 
+    std::unique_ptr<CSVGenerator> csv_generator_;
+    bool kCSV;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
