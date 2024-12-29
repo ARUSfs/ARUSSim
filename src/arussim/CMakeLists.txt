@@ -50,7 +50,7 @@ ament_target_dependencies(sensors_exec rclcpp
                             tf2)
 
 # generate executable for supervisor.cpp
-add_executable(supervisor_exec src/supervisor.cpp)
+add_executable(supervisor_exec src/supervisor.cpp src/csv_generator.cpp)
 ament_target_dependencies(supervisor_exec rclcpp 
                             std_msgs 
                             sensor_msgs 

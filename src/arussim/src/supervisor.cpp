@@ -127,6 +127,11 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. %sTOTAL HIT CONES: %zu%s", 
             green.c_str(), time_list_.size(), time_list_.back(), yellow.c_str(), n_total_cones_hit_, reset.c_str());
         }
+
+        std::vector<std::string> row_values;
+        row_values.push_back(std::to_string(lap_time_msg.data));
+        row_values.push_back(std::to_string(n_total_cones_hit_));
+        csv_generator_.write_row("supervisor", row_values);
     }
     prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
