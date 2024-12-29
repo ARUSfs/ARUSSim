@@ -53,7 +53,6 @@ CSVGenerator::CSVGenerator(const std::string &mode)
     } else {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "No se pudo crear el archivo CSV: %s", filename.c_str());
     }
-    header_written_ = false;
 }
 
 /**
@@ -63,14 +62,14 @@ CSVGenerator::CSVGenerator(const std::string &mode)
  */
 void CSVGenerator::write_row(const std::vector<std::string> &values)
 {
-    if (csv_mode_ == "supervisor" && !header_written_) {
-        out_file_ << "time per lap,hit_cones_acumulated\n";
-        header_written_ = true;
-    }
-
     if (!out_file_.is_open()) {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "El archivo CSV no está abierto para escritura.");
         return;
+    }
+
+    if (csv_mode_ == "supervisor" && !header_written_) {
+        out_file_ << "time per lap,hit_cones_acumulated\n";
+        header_written_ = true;
     }
 
     for (size_t i = 0; i < values.size(); i++)
