@@ -1,8 +1,18 @@
+/**
+ * @file csv_generator.hpp
+ * @author Rafael Guil Valero (rafaguilvalero@gmail.com)
+ * @version 0.1
+ * @date 2024-12-29
+ * 
+ */
 #include <vector>
 #include <string>
 #include <fstream>
 
-
+/**
+ * @class CSVGenerator
+ * 
+ */
 class CSVGenerator
 {
 public:

@@ -1,7 +1,18 @@
+/**
+ * @file csv_generator.cpp
+ * @author Rafael Guil Valero (rafaguilvalero@gmail.com)
+ * @version 0.1
+ * @date 2024-12-29
+ * 
+ */
 #include "arussim/csv_generator.hpp"
 #include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 
+/**
+ * @brief Constructor for the CSVGenerator class
+ * 
+ */
 CSVGenerator::CSVGenerator()
 {
     // Registrar la creación del CSVGenerator
@@ -42,6 +53,12 @@ CSVGenerator::CSVGenerator()
     header_written_ = false;
 }
 
+/**
+ * @brief CSV generator
+ * 
+ * @param mode param to specify the first row of the csv
+ * @param values params to write in the csv
+ */
 void CSVGenerator::write_row(std::string mode, const std::vector<std::string> &values)
 {
     if (mode == "supervisor" && !header_written_) {
