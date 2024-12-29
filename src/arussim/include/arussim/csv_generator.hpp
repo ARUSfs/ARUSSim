@@ -84,9 +84,6 @@ public:
         }
         out_file_ << "\n";
         out_file_.flush();
-    
-        // Registrar la escritura de una fila
-        std::cout << "Row written to CSV." << std::endl;
     }
 
 private:

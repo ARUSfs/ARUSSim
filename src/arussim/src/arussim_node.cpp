@@ -31,6 +31,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
     this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
+    this->declare_parameter<bool>("csv_state", false);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
@@ -44,6 +45,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
+    this->get_parameter("csv_state", kCSV);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -107,6 +109,11 @@ Simulator::Simulator() : Node("simulator")
 
     // Set Torque Vectoring parameter 
     vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
+
+    // Set CSV file
+    if (kCSV) {
+        csv_generator_ = std::make_unique<CSVGenerator>("State");
+    }
 }
 /**
  * @brief Function that updtates the timers based on the simulation speed multiplier.
@@ -289,6 +296,20 @@ void Simulator::on_fast_timer()
     torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_;
     torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
     message.torque = torque;
+
+    if (kCSV){
+        std::vector<std::string> row_values;
+        row_values.push_back(std::to_string(vehicle_dynamics_.x_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.y_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.yaw_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vx_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vy_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.r_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ax_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ay_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
+        csv_generator_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
+    }
     
     state_pub_->publish(message);
 

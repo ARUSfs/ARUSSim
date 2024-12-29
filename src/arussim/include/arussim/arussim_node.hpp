@@ -33,6 +33,7 @@
 #include "ConeXYZColorScore.h"
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include "arussim/csv_generator.hpp"
 
 /**
  * @class Simulator
@@ -95,6 +96,9 @@ class Simulator : public rclcpp::Node
 
     double mid_tpl_x_ = 0;
     double mid_tpl_y_ = 0;
+
+    std::shared_ptr<CSVGenerator> csv_generator_;
+    bool kCSV;
     
     /**
      * @brief Callback function for the slow timer.
