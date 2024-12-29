@@ -16,11 +16,12 @@
 class CSVGenerator
 {
 public:
-    CSVGenerator();
+    CSVGenerator(const std::string &mode);
 
-    void write_row(std::string mode, const std::vector<std::string> &values);
+    void write_row(const std::vector<std::string> &values);
 
 private:
     std::ofstream out_file_;
     bool header_written_ = false;
+    std::string csv_mode_;
 };

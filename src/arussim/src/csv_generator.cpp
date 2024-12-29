@@ -13,8 +13,9 @@
  * @brief Constructor for the CSVGenerator class
  * 
  */
-CSVGenerator::CSVGenerator()
+CSVGenerator::CSVGenerator(const std::string &mode)
 {
+    csv_mode_ = mode;
     // Registrar la creación del CSVGenerator
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Inicializando CSVGenerator");
 
@@ -36,11 +37,13 @@ CSVGenerator::CSVGenerator()
     int minute = time_info->tm_min;
     int second = time_info->tm_sec;
 
-    std::string filename = "ARUSSim/src/arussim/resources/csv/csv_" + std::to_string(day) + "-" 
+    std::string filename = "ARUSSim/src/arussim/resources/csv/" 
+                            + csv_mode_ + "_"
+                            + std::to_string(day) + "-" 
                             + std::to_string(month) + "-" 
                             + std::to_string(year) + "_"
-                            + std::to_string(hour) + "-"
-                            + std::to_string(minute) + "-"
+                            + std::to_string(hour) + ":"
+                            + std::to_string(minute) + ":"
                             + std::to_string(second)
                             + ".csv";
 
@@ -56,13 +59,12 @@ CSVGenerator::CSVGenerator()
 /**
  * @brief CSV generator
  * 
- * @param mode param to specify the first row of the csv
  * @param values params to write in the csv
  */
-void CSVGenerator::write_row(std::string mode, const std::vector<std::string> &values)
+void CSVGenerator::write_row(const std::vector<std::string> &values)
 {
-    if (mode == "supervisor" && !header_written_) {
-        out_file_ << "time per lap,hit_conos_acumulados\n";
+    if (csv_mode_ == "supervisor" && !header_written_) {
+        out_file_ << "time per lap,hit_cones_acumulated\n";
         header_written_ = true;
     }
 

@@ -92,7 +92,7 @@ private:
     
     double prev_time_;
 
-    CSVGenerator csv_generator_;
+    CSVGenerator csv_generator_{"supervisor"};
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

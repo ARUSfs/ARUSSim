@@ -131,7 +131,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         std::vector<std::string> row_values;
         row_values.push_back(std::to_string(lap_time_msg.data));
         row_values.push_back(std::to_string(n_total_cones_hit_));
-        csv_generator_.write_row("supervisor", row_values);
+        csv_generator_.write_row(row_values);
     }
     prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
