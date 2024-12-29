@@ -32,7 +32,8 @@ def generate_launch_description():
                     exec='sensors_exec',
                     config='sensors_config.yaml'),
         create_node(pkg='arussim',
-                    exec='supervisor_exec'),
+                    exec='supervisor_exec',
+                    config='supervisor_config.yaml'),
         auto_sim_node,
         RegisterEventHandler(
             OnProcessExit(
