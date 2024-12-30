@@ -1,6 +1,6 @@
 /**
  * @file arussim_node.cpp
- * @brief Simulator node for the ARUS Team (ARUSim)
+ * @brief Simulator node for the ARUS Team (ARUSsim)
  */
 
 #include "arussim/arussim_node.hpp"
