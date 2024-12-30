@@ -7,8 +7,6 @@
  * 
  */
 #include "arussim/supervisor.hpp"
-#include <random>
-
 
 /**
  * @class Supervisor

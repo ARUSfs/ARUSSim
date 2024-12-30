@@ -7,9 +7,6 @@
  * 
  */
 #include "arussim/sensors.hpp"
-#include <random>
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <tf2/LinearMath/Quaternion.h>
 
 /**
  * @class Sensors
