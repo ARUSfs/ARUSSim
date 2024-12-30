@@ -12,6 +12,7 @@
 #include <ctime>
 #include <rclcpp/rclcpp.hpp>
 #include <iostream>
+#include <cstdlib>  // Para getenv
 
 /**
  * @class CSVGenerator
@@ -26,12 +27,14 @@ public:
         // Registrar la creación del CSVGenerator
         std::cout << "Initializing CSVGenerator" << std::endl;
     
-        // Ensure the csv directory exists
-        if (!std::filesystem::exists("ARUSSim/src/arussim/resources/csv")) {
-            std::filesystem::create_directories("ARUSSim/src/arussim/resources/csv");
-            std::cout << "CSV directory created" << std::endl;
+        std::string homeDir = std::string(std::getenv("HOME"));
+        std::filesystem::path csvDir = std::filesystem::path(homeDir) / "Arus_logs" / "csv";
+        
+        if (!std::filesystem::exists(csvDir)) {
+            std::filesystem::create_directories(csvDir);
+            std::cout << "CSV directory created: " << csvDir << std::endl;
         } else {
-            std::cout << "CSV directory already exists" << std::endl;
+            std::cout << "CSV directory already exists: " << csvDir << std::endl;
         }
     
         time_t now = time(nullptr);
@@ -44,15 +47,14 @@ public:
         int minute = time_info->tm_min;
         int second = time_info->tm_sec;
     
-        std::string filename = "ARUSSim/src/arussim/resources/csv/" 
-                                + csv_mode_ + "_"
+        std::string filename = (csvDir / (csv_mode_ + "_" 
                                 + std::to_string(day) + "-" 
                                 + std::to_string(month) + "-" 
                                 + std::to_string(year) + "_"
                                 + std::to_string(hour) + ":"
                                 + std::to_string(minute) + ":"
                                 + std::to_string(second)
-                                + ".csv";
+                                + ".csv")).string();
     
         out_file_.open(filename);
         if (out_file_.is_open()) {
