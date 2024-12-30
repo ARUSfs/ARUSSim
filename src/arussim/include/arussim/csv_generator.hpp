@@ -13,10 +13,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include <iostream>
 #include <cstdlib>
+#pragma once
 
 /**
  * @class CSVGenerator
  * 
+ * @brief Class to generate CSV files for logging data.
  */
 class CSVGenerator
 {
@@ -24,7 +26,6 @@ public:
     CSVGenerator(const std::string &mode)
     {
         csv_mode_ = mode;
-        // Registrar la creación del CSVGenerator
         std::cout << "Initializing CSVGenerator" << std::endl;
     
         home_dir_ = std::string(std::getenv("HOME"));
@@ -64,6 +65,12 @@ public:
         }
     }
 
+    /**
+     * @brief Algorithm to write a row in the CSV file.
+     * 
+     * @param first_row First row of the CSV file.
+     * @param values Rest of the values to be written in each row.
+     */
     void write_row(const std::string &first_row, const std::vector<std::string> &values)
     {
         if (!out_file_.is_open()) {

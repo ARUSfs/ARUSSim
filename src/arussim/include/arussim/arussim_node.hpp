@@ -35,6 +35,11 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include "arussim/sensors.hpp"
+#include <random>
+#include <nlohmann/json.hpp>
+
 /**
  * @class Simulator
  * @brief The Simulator class is responsible for simulating the vehicle dynamics, 
@@ -97,9 +102,12 @@ class Simulator : public rclcpp::Node
     double mid_tpl_x_ = 0;
     double mid_tpl_y_ = 0;
 
-    std::shared_ptr<CSVGenerator> csv_generator_;
-    bool kCSV;
-    
+    bool kCSVVehicleDynamics;
+    std::shared_ptr<CSVGenerator> csv_generator_vehicle_dynamics_;
+
+    bool kCSVState;
+    std::shared_ptr<CSVGenerator> csv_generator_state_;
+
     /**
      * @brief Callback function for the slow timer.
      * 

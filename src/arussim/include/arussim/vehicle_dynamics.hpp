@@ -1,6 +1,8 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include "arussim/csv_generator.hpp"
+#include <fstream>
 
 class VehicleDynamics
 {
@@ -37,6 +39,11 @@ class VehicleDynamics
         double input_delta_;
         double input_acc_;
         double dt_;
+
+        void CSV_generator();
+        void set_csv_generator(std::shared_ptr<CSVGenerator> csvGen) {
+            csv_generator_vehicle_dynamics_ = csvGen;
+        }
     
     private:
 
@@ -130,4 +137,6 @@ class VehicleDynamics
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
         void kinematic_correction();
         void update_torque_cmd();
+
+        std::shared_ptr<CSVGenerator> csv_generator_vehicle_dynamics_;
 };
