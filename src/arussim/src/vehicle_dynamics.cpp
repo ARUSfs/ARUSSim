@@ -1,5 +1,4 @@
 #include "arussim/vehicle_dynamics.hpp"
-#include <fstream>
 
 VehicleDynamics::VehicleDynamics(){
     x_ = 0;
@@ -242,4 +241,57 @@ void VehicleDynamics::update_torque_cmd(){
     torque_cmd_.rl_ = std::clamp(torque_cmd_.rl_, kTorqueMin, kTorqueMax);
     torque_cmd_.rr_ = std::clamp(torque_cmd_.rr_, kTorqueMin, kTorqueMax);
 
+}
+
+void VehicleDynamics::write_csv_row(){
+    if(!csv_generator_vehicle_dynamics_){
+        RCLCPP_ERROR(rclcpp::get_logger("VehicleDynamics"), "CSVGenerator not initialized.");
+        return;
+    }
+    std::vector<std::string> row_values;
+    // Collect all member variables
+    row_values.push_back(std::to_string(x_));
+    row_values.push_back(std::to_string(y_));
+    row_values.push_back(std::to_string(yaw_));
+    row_values.push_back(std::to_string(vx_));
+    row_values.push_back(std::to_string(vy_));
+    row_values.push_back(std::to_string(r_));
+    row_values.push_back(std::to_string(ax_));
+    row_values.push_back(std::to_string(ay_));
+    row_values.push_back(std::to_string(delta_));
+    row_values.push_back(std::to_string(delta_v_));
+    // Wheel speeds
+    row_values.push_back(std::to_string(wheel_speed_.fl_));
+    row_values.push_back(std::to_string(wheel_speed_.fr_));
+    row_values.push_back(std::to_string(wheel_speed_.rl_));
+    row_values.push_back(std::to_string(wheel_speed_.rr_));
+    // Torque commands
+    row_values.push_back(std::to_string(torque_cmd_.fl_));
+    row_values.push_back(std::to_string(torque_cmd_.fr_));
+    row_values.push_back(std::to_string(torque_cmd_.rl_));
+    row_values.push_back(std::to_string(torque_cmd_.rr_));
+    // Inputs
+    row_values.push_back(std::to_string(input_delta_));
+    row_values.push_back(std::to_string(input_acc_));
+    row_values.push_back(std::to_string(dt_));
+    // Tire slip
+    row_values.push_back(std::to_string(tire_slip_.alpha_fl_));
+    row_values.push_back(std::to_string(tire_slip_.alpha_fr_));
+    row_values.push_back(std::to_string(tire_slip_.alpha_rl_));
+    row_values.push_back(std::to_string(tire_slip_.alpha_rr_));
+    row_values.push_back(std::to_string(tire_slip_.lambda_fl_));
+    row_values.push_back(std::to_string(tire_slip_.lambda_fr_));
+    row_values.push_back(std::to_string(tire_slip_.lambda_rl_));
+    row_values.push_back(std::to_string(tire_slip_.lambda_rr_));
+    // Tire loads
+    row_values.push_back(std::to_string(tire_loads_.fl_));
+    row_values.push_back(std::to_string(tire_loads_.fr_));
+    row_values.push_back(std::to_string(tire_loads_.rl_));
+    row_values.push_back(std::to_string(tire_loads_.rr_));
+    // Forces
+    row_values.push_back(std::to_string(force.fy));
+    row_values.push_back(std::to_string(force.fx));
+    // Write header and row
+    csv_generator_vehicle_dynamics_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta,delta_v,fl_wheel_speed,fr_wheel_speed,rl_wheel_speed,rr_wheel_speed,fl_torque,fr_torque,rl_torque,rr_torque,input_delta,input_acc,dt,alpha_fl,alpha_fr,alpha_rl,alpha_rr,lambda_fl,lambda_fr,lambda_rl,lambda_rr,fl_load,fr_load,rl_load,rr_load,force_fy,force_fx", 
+                                                row_values);
 }

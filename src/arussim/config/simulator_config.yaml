@@ -3,6 +3,8 @@ arussim:
     track: "FSG"
     state_update_rate: 1000.0      # Hz
     simulation_speed_multiplier: 1.0
+    csv_state: false               # bool   Save data to CSV file
+    csv_vehicle_dynamics: false    # bool   Save data to CSV file
 
     vehicle:
       COG_front_dist:     1.9     # m
