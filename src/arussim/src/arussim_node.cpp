@@ -300,20 +300,20 @@ void Simulator::on_fast_timer()
     message.torque = torque;
 
     if (kCSVState){
-        std::vector<std::string> row_values_;
-        row_values_.push_back(std::to_string(vehicle_dynamics_.x_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.y_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.yaw_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.vx_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.vy_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.r_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.ax_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.ay_));
-        row_values_.push_back(std::to_string(vehicle_dynamics_.delta_));
-        csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values_);
+        std::vector<std::string> row_values;
+        row_values.push_back(std::to_string(vehicle_dynamics_.x_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.y_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.yaw_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vx_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vy_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.r_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ax_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ay_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
+        csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
     }
     if (kCSVVehicleDynamics){
-        vehicle_dynamics_.CSV_generator();
+        vehicle_dynamics_.write_csv_row();
     }
     
     state_pub_->publish(message);

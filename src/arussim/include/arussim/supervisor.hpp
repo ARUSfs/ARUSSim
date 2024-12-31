@@ -94,7 +94,7 @@ private:
     double prev_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
-    bool kCSV;
+    bool kCSVSupervisor;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

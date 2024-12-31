@@ -23,45 +23,44 @@
 class CSVGenerator
 {
 public:
-    CSVGenerator(const std::string &mode)
+    CSVGenerator(const std::string &csv_mode)
     {
-        csv_mode_ = mode;
         std::cout << "Initializing CSVGenerator" << std::endl;
     
-        home_dir_ = std::string(std::getenv("HOME"));
-        csv_dir_ = std::filesystem::path(home_dir_) / "Arus_logs" / "csv";
+        std::string home_dir = std::string(std::getenv("HOME"));
+        std::filesystem::path csv_dir = std::filesystem::path(home_dir) / "ARUS_logs" / "csv";
         
-        if (!std::filesystem::exists(csv_dir_)) {
-            std::filesystem::create_directories(csv_dir_);
-            std::cout << "CSV directory created: " << csv_dir_ << std::endl;
+        if (!std::filesystem::exists(csv_dir)) {
+            std::filesystem::create_directories(csv_dir);
+            std::cout << "CSV directory created: " << csv_dir << std::endl;
         } else {
-            std::cout << "CSV directory already exists: " << csv_dir_ << std::endl;
+            std::cout << "CSV directory already exists: " << csv_dir << std::endl;
         }
     
-        now_ = time(nullptr);
+        time_t now_ = time(nullptr);
         tm *time_info = localtime(&now_);
     
-        year_ = time_info->tm_year + 1900;
-        month_ = time_info->tm_mon + 1;
-        day_ = time_info->tm_mday;
-        hour_ = time_info->tm_hour;
-        minute_ = time_info->tm_min;
-        second_ = time_info->tm_sec;
+        int year = time_info->tm_year + 1900;
+        int month = time_info->tm_mon + 1;
+        int day = time_info->tm_mday;
+        int hour = time_info->tm_hour;
+        int minute = time_info->tm_min;
+        int second = time_info->tm_sec;
     
-        filename_ = (csv_dir_ / (csv_mode_ + "_" 
-                                + std::to_string(day_) + "-" 
-                                + std::to_string(month_) + "-" 
-                                + std::to_string(year_) + "_"
-                                + std::to_string(hour_) + ":"
-                                + std::to_string(minute_) + ":"
-                                + std::to_string(second_)
+        std::string filename = (csv_dir / (csv_mode + "_" 
+                                + std::to_string(day) + "-" 
+                                + std::to_string(month) + "-" 
+                                + std::to_string(year) + "_"
+                                + std::to_string(hour) + ":"
+                                + std::to_string(minute) + ":"
+                                + std::to_string(second)
                                 + ".csv")).string();
     
-        out_file_.open(filename_);
+        out_file_.open(filename);
         if (out_file_.is_open()) {
-            std::cout << "CSV file created: " << filename_ << std::endl;
+            std::cout << "CSV file created: " << filename << std::endl;
         } else {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to create CSV file: %s", filename_.c_str());
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to create CSV file: %s", filename.c_str());
         }
     }
 
@@ -96,20 +95,7 @@ public:
     }
 
 private:
-    std::filesystem::path csv_dir_;
-    std::string home_dir_;
 
     std::ofstream out_file_;
     bool header_written_ = false;
-    std::string csv_mode_;
-
-    time_t now_;
-
-    std::string filename_;
-    int year_;
-    int month_;
-    int day_;
-    int hour_;
-    int minute_;
-    int second_;
 };

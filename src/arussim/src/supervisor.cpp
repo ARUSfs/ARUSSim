@@ -15,9 +15,9 @@
 Supervisor::Supervisor() : Node("Supervisor")
 {
     this->declare_parameter<bool>("csv_supervisor", false);
-    this->get_parameter("csv_supervisor", kCSV);
+    this->get_parameter("csv_supervisor", kCSVSupervisor);
 
-    if (kCSV) {
+    if (kCSVSupervisor) {
         csv_generator_ = std::make_unique<CSVGenerator>("supervisor");
     }
 
@@ -132,11 +132,11 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLAP %zu: %f. %sTOTAL HIT CONES: %zu%s", 
             green.c_str(), time_list_.size(), time_list_.back(), yellow.c_str(), n_total_cones_hit_, reset.c_str());
         }
-        if (kCSV){
+        if (kCSVSupervisor){
             std::vector<std::string> row_values;
             row_values.push_back(std::to_string(lap_time_msg.data));
             row_values.push_back(std::to_string(n_total_cones_hit_));
-            csv_generator_->write_row("time per lap,hit_cones_acumulated", row_values);
+            csv_generator_->write_row("lap_time,total_hit_cones", row_values);
         }
     }
     prev_time_ = this->get_clock()->now().seconds();

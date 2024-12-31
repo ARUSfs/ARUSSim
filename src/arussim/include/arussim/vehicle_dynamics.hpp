@@ -40,7 +40,7 @@ class VehicleDynamics
         double input_acc_;
         double dt_;
 
-        void CSV_generator();
+        void write_csv_row();
         void set_csv_generator(std::shared_ptr<CSVGenerator> csvGen) {
             csv_generator_vehicle_dynamics_ = csvGen;
         }
