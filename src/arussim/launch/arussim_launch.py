@@ -30,7 +30,7 @@ def generate_launch_description():
                     config='sensors_config.yaml'),
         create_node(pkg='arussim',
                     exec='supervisor_exec',
-                    config='supervisor_config.yaml'),
+                    config='supervisor_config.yaml')
     ])
 
 

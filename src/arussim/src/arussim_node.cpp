@@ -1,13 +1,9 @@
 /**
  * @file arussim_node.cpp
- * @brief Simulator node for the ARUS Team (ARUSim)
+ * @brief Simulator node for the ARUS Team (ARUSsim)
  */
 
 #include "arussim/arussim_node.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include "arussim/sensors.hpp"
-#include <random>
-#include <nlohmann/json.hpp>
 
 /**
  * @class Simulator
@@ -31,6 +27,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
     this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
+    this->declare_parameter<bool>("csv_state", false);
+    this->declare_parameter<bool>("csv_vehicle_dynamics", false);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
@@ -44,6 +42,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
+    this->get_parameter("csv_state", kCSVState);
+    this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -107,6 +107,15 @@ Simulator::Simulator() : Node("simulator")
 
     // Set Torque Vectoring parameter 
     vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
+
+    // Set CSV file
+    if (kCSVState) {
+        csv_generator_state_ = std::make_shared<CSVGenerator>("state");
+    }
+    if (kCSVVehicleDynamics) {
+        auto csv_gen = std::make_shared<CSVGenerator>("vehicle_dynamics");
+        vehicle_dynamics_.set_csv_generator(csv_gen);
+    }
 }
 /**
  * @brief Function that updtates the timers based on the simulation speed multiplier.
@@ -289,6 +298,23 @@ void Simulator::on_fast_timer()
     torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_;
     torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
     message.torque = torque;
+
+    if (kCSVState){
+        std::vector<std::string> row_values;
+        row_values.push_back(std::to_string(vehicle_dynamics_.x_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.y_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.yaw_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vx_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vy_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.r_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ax_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ay_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
+        csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
+    }
+    if (kCSVVehicleDynamics){
+        vehicle_dynamics_.write_csv_row();
+    }
     
     state_pub_->publish(message);
 
