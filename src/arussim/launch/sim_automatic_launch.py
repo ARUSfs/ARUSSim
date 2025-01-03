@@ -43,8 +43,8 @@ def generate_launch_description():
         pkg='automatic_simulations',
         config='automatic_simulations_config.yaml',
         params=[
-            {'event': event},
-            {'laps_target': laps_target}
+            {'event': event,
+            'laps_target': laps_target}
         ]
     )
 
