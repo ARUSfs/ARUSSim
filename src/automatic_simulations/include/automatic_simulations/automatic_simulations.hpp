@@ -22,7 +22,6 @@ public:
 private:
     std::string kEvent;
     double kSimulationSpeedMultiplier;
-    double kIterations;
     double kLapsTarget;
 
     int current_laps_ = 0;

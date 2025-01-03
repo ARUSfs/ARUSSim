@@ -9,13 +9,11 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
 {
     // Declare parameters
     this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
-    this->declare_parameter<double>("iterations", 1.0);
     this->declare_parameter<std::string>("event", "Trackdrive");
     this->declare_parameter<double>("laps_target", 1.0);
 
     // Get parameters
     this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
-    this->get_parameter("iterations", kIterations);
     this->get_parameter("event", kEvent);
     this->get_parameter("laps_target", kLapsTarget);
 
@@ -32,7 +30,6 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
 
     RCLCPP_INFO(this->get_logger(), "Starting automatic simulations for %s", kEvent.c_str());
     RCLCPP_INFO(this->get_logger(), "Simulation speed multiplier: %f", kSimulationSpeedMultiplier);
-    RCLCPP_INFO(this->get_logger(), "Iterations: %f", kIterations);
     RCLCPP_INFO(this->get_logger(), "Laps target: %f", kLapsTarget);
 
     // Publishers
@@ -54,15 +51,7 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
 void AutomaticSimulations::lap_time_callback([[maybe_unused]]const std_msgs::msg::Float32::SharedPtr msg){
     current_laps_ ++;
     if (current_laps_ >= kLapsTarget){
-        auto message = std_msgs::msg::Bool();
-        message.data = true;
-        reset_pub_->publish(message);
-        current_iterations_++;
-        current_laps_ = 0;
-        RCLCPP_INFO(this->get_logger(), "%sIteration %d completed%s", blue.c_str(), current_iterations_, reset.c_str());
-    }
-    if (current_iterations_ >= kIterations){
-        RCLCPP_INFO(this->get_logger(), "%sAll iterations completed%s", cyan.c_str(), reset.c_str());
+        RCLCPP_INFO(this->get_logger(), "%sAll laps completed%s", cyan.c_str(), reset.c_str());
         rclcpp::shutdown();
         exit(0);
     }
