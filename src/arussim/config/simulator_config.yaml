@@ -1,6 +1,6 @@
 arussim:
   ros__parameters:
-    track: "FSG"
+    track: "acceleration"
     state_update_rate: 1000.0      # Hz
     simulation_speed_multiplier: 1.0
     csv_state: false               # bool   Save data to CSV file
