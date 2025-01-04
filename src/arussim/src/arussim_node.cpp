@@ -364,6 +364,7 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     vehicle_dynamics_ = VehicleDynamics();
+    started_acc_ = false;
 }
 
 /**
