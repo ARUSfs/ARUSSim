@@ -137,10 +137,10 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5, v_max=1
             speed_profile[j] = v_brake
 
     acc_profile = [0.0]*len(speed_profile)
-    for i in range(1, len(speed_profile)):
-        ds = s[i] - s[i-1]
+    for i in range(len(speed_profile) - 1):
+        ds = s[i+1] - s[i]
         if ds != 0:
-            acc_profile[i] = (speed_profile[i] - speed_profile[i-1]) / (ds/speed_profile[i])
+            acc_profile[i] = (speed_profile[i+1]**2 - speed_profile[i]**2) / (2 * ds)
 
     trajectory_json_data = {
         "x": list(x_smooth),

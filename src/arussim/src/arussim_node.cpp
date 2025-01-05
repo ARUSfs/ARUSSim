@@ -191,6 +191,22 @@ void Simulator::check_lap() {
 }
 
 /**
+ * @brief Checks if car has started acc event
+ * 
+ */
+void Simulator::check_acc_start(){
+    double vx = vehicle_dynamics_.vx_;
+
+    if (vx > 0  && !started_acc_){
+        std_msgs::msg::Bool msg;
+        msg.data = true;
+        lap_signal_pub_->publish(msg);
+        started_acc_ = true;
+
+    }
+}
+
+/**
  * @brief Slow timer callback for sensor data updates.
  * 
  * This method updates the sensor data by publishing the track and generating 
@@ -273,6 +289,10 @@ void Simulator::on_fast_timer()
     if(use_tpl_){
         check_lap();
     }
+
+    if (kTrackName == "acceleration" and !started_acc_){
+        check_acc_start();
+    }
     
     auto message = arussim_msgs::msg::State();
     message.x = vehicle_dynamics_.x_;
@@ -344,6 +364,7 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     vehicle_dynamics_ = VehicleDynamics();
+    started_acc_ = false;
 }
 
 /**

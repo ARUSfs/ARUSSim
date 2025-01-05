@@ -93,6 +93,7 @@ class Simulator : public rclcpp::Node
     std::vector<std::pair<double, double>> tpl_cones_;
 
     bool use_tpl_ = false;
+    bool started_acc_ = false;
 
     double tpl_coef_a_ = 0;
     double tpl_coef_b_ = 0;
@@ -171,6 +172,12 @@ class Simulator : public rclcpp::Node
      * @brief Detects if the vehicle is between two TPLs.
      */
     void check_lap();
+
+    /**
+     * @brief Checks if car has started acc event
+     * 
+     */
+    void check_acc_start();
 
     /**
      * @brief Make a MarkerArray of all cones of the track

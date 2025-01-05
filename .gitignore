@@ -168,6 +168,7 @@ CMakeLists.txt.user
 srv/_*.py
 *.pcd
 *.pyc
+*.csv
 qtcreator-*
 *.user
 

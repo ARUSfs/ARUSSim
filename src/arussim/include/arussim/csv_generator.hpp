@@ -73,7 +73,6 @@ public:
     void write_row(const std::string &first_row, const std::vector<std::string> &values)
     {
         if (!out_file_.is_open()) {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "CSV file is not open for writing.");
             return;
         }
     
