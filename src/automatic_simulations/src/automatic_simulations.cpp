@@ -32,9 +32,6 @@ AutomaticSimulations::AutomaticSimulations() : Node("automatic_simulations")
     RCLCPP_INFO(this->get_logger(), "Simulation speed multiplier: %f", kSimulationSpeedMultiplier);
     RCLCPP_INFO(this->get_logger(), "Laps target: %f", kLapsTarget);
 
-    // Publishers
-    reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
-
     // Subscribers
     lap_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/lap_time", 1, 
