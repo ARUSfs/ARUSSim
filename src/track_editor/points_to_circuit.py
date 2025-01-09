@@ -222,6 +222,6 @@ def readPCD(fileName: str):
     
 
 if __name__ == "__main__":
-    circuit = "FSG24"
+    circuit = ""
     outer_cones, inner_cones = readPCD(circuit + ".pcd")
     circuit_to_midpoints(outer_cones, inner_cones, circuit + ".json")
