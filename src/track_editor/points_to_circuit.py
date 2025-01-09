@@ -92,7 +92,14 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5, v_max=1
         if i == 0 or distance(inner_cones[-1], inner_point) >= min_distance:
             inner_cones.append(inner_point)
 
-    # Calculate json data for the circuit
+    trajectory_json_data = profiles(x_smooth, y_smooth, v_max, ax_max, ay_max)
+
+    return outer_cones, inner_cones, trajectory_json_data
+
+def profiles(x_smooth, y_smooth, v_max=10.0, ax_max=5.0, ay_max=5.0):
+    '''
+    Calculate json data for the circuit
+    '''
     acum = 0.0
     s = [0.0]
     xp, yp = [], []
@@ -151,4 +158,70 @@ def smooth_and_expand_points(points, offset, num_points, min_distance=5, v_max=1
         "acc_profile": acc_profile
     }
 
-    return outer_cones, inner_cones, trajectory_json_data
+    return trajectory_json_data
+
+def circuit_to_midpoints(outer_cones: list, inner_cones: list, output_filename: str, num_points=1000):
+    '''
+    Receives a list of outer cones and a list of inner cones from pcd file and returns the midpoints between them
+    '''
+    midpoints = []
+    for out_cone in outer_cones:
+        in_cone = min(inner_cones, key=lambda in_cone: distance(out_cone, in_cone))
+        mx = (out_cone[0] + in_cone[0]) / 2
+        my = (out_cone[1] + in_cone[1]) / 2
+        midpoints.append((mx, my))
+
+    x = [m[0] for m in midpoints]
+    y = [m[1] for m in midpoints]
+
+    tck, u = splprep([x, y], s=1.0, per=1, k=3)
+    
+    u_new = np.linspace(0, 1, num_points)
+    x_smooth, y_smooth = splev(u_new, tck)
+
+    pr = profiles(x_smooth, y_smooth)
+    with open("ARUSSim/src/arussim/resources/tracks/" + output_filename, 'w') as outfile:
+        json.dump(pr, outfile, indent=2)
+
+def readPCD(fileName: str): 
+    with open("ARUSSim/src/arussim/resources/tracks/" + fileName, 'r') as f:
+        lines = f.readlines()
+
+    leftCones = []
+    rightCones = []
+    
+    data_section = False
+    
+    for line in lines:
+        line = line.strip()
+        
+        if line.startswith("#") or not line:
+            continue
+        
+        if line.startswith("DATA ascii"):
+            data_section = True
+            continue
+        
+        if data_section:
+            parts = line.split()
+            if len(parts) != 5:
+                continue
+            
+            position = (float(parts[0]), float(parts[1]))
+            cone_type = float(parts[3])
+            
+            if cone_type == 0:
+                leftCones.append(position)
+            elif cone_type == 1:
+                rightCones.append(position)
+
+    print("Left cones: ", len(leftCones))
+    print("Right cones: ", len(rightCones))
+
+    return (leftCones, rightCones)
+    
+
+if __name__ == "__main__":
+    circuit = "FSG24"
+    outer_cones, inner_cones = readPCD(circuit + ".pcd")
+    circuit_to_midpoints(outer_cones, inner_cones, circuit + ".json")
