@@ -28,7 +28,7 @@ public:
         std::cout << "Initializing CSVGenerator" << std::endl;
     
         std::string home_dir = std::string(std::getenv("HOME"));
-        std::filesystem::path csv_dir = std::filesystem::path(home_dir) / "logs_ARUS" / "csv";
+        std::filesystem::path csv_dir = std::filesystem::path(home_dir) / "ARUS_logs" / "csv";
         
         if (!std::filesystem::exists(csv_dir)) {
             std::filesystem::create_directories(csv_dir);
