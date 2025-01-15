@@ -50,4 +50,4 @@ Manages the loading and saving of circuit map files. It allows the user to save 
 
 ### `points_to_circuit.py`
 
-Contains a function that takes all the points through which our circuit will pass, translates and rotates them to position them at the origin (0,0), creates a curve with the points, calculates the tangents of each point and normalizes them, and places the internal and external cones of our circuit.
+Contains a function that takes all the points through which our circuit will pass, translates and rotates them to position them at the origin (0,0), creates a curve with the points, calculates the tangents of each point and normalizes them, and places the internal and external cones of our circuit. Also it contains a PCD lector (circuit file lector) that makes a .json file with car's speed_profile from .pcd data
