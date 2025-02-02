@@ -117,7 +117,10 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_; // IMU publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
-    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fr_pub_; // Wheel speed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fl_pub_; // Wheel speed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
     rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher

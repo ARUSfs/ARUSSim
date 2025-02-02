@@ -80,9 +80,15 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Wheel speed
-    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/wheel_speeds", 10);
-
+    ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/wheel_speed_fr", 10);
+    ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/wheel_speed_fl", 10);
+    ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/wheel_speed_rr", 10);
+    ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/wheel_speed_rl", 10);
+        
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
         std::bind(&Sensors::wheel_speed_timer, this)
@@ -220,15 +226,21 @@ void Sensors::wheel_speed_timer()
     wheel_speed_.rl_ = wheel_speed.rear_left * 0.202 + dist_rear_left(gen);
 
     // Create the wheel speed message
-    auto message = arussim_msgs::msg::FourWheelDrive();
+    auto msg_fr = std_msgs::msg::Float32();
+    auto msg_fl = std_msgs::msg::Float32();
+    auto msg_rr = std_msgs::msg::Float32();
+    auto msg_rl = std_msgs::msg::Float32();
 
-    message.front_right = wheel_speed_.fr_;    
-    message.front_left = wheel_speed_.fl_;      
-    message.rear_right = wheel_speed_.rr_;     
-    message.rear_left = wheel_speed_.rl_;     
+    msg_fr.data = wheel_speed_.fr_;    
+    msg_fl.data = wheel_speed_.fl_;
+    msg_rr.data = wheel_speed_.rr_;
+    msg_rl.data = wheel_speed_.rl_;
 
-    // Publish the wheel speed message
-    ws_pub_->publish(message);
+    // Publish the torque message
+    ws_fr_pub_->publish(msg_fr);
+    ws_fl_pub_->publish(msg_fl);
+    ws_rr_pub_->publish(msg_rr);
+    ws_rl_pub_->publish(msg_rl);
 }
 
 /**
