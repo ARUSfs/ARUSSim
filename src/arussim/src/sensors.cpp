@@ -69,9 +69,9 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // IMU
-    ax_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_ax", 10);
-    ay_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_ay", 10);
-    r_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_r", 10);
+    ax_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ax", 10);
+    ay_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ay", 10);
+    r_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/yaw_rate", 10);
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
@@ -80,13 +80,13 @@ Sensors::Sensors() : Node("sensors")
 
     // Wheel speed
     ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/wheel_speed_fr", 10);
+        "/arussim/fr_wheel_speed", 10);
     ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/wheel_speed_fl", 10);
+        "/arussim/fl_wheel_speed", 10);
     ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/wheel_speed_rr", 10);
+        "/arussim/rr_wheel_speed", 10);
     ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/wheel_speed_rl", 10);
+        "/arussim/rl_wheel_speed", 10);
         
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
