@@ -74,7 +74,6 @@ private:
     double kImuFrequency;
     double kNoiseImuX;
     double kNoiseImuY;
-    double kNoiseImuYaw;
     double kNoiseImuAx;
     double kNoiseImuAy;
     double kNoiseImuR;
@@ -114,7 +113,9 @@ private:
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
 
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_; // IMU publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ax_pub_; // ax publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ay_pub_; // ay publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fr_pub_; // Wheel speed publisher

@@ -16,7 +16,6 @@
 Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameters for each IMU variable
-    this->declare_parameter<double>("imu.noise_imu_yaw", 0.01);
     this->declare_parameter<double>("imu.noise_imu_ax", 0.01);
     this->declare_parameter<double>("imu.noise_imu_ay", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
@@ -42,7 +41,6 @@ Sensors::Sensors() : Node("sensors")
 
 
     // Get parameters
-    this->get_parameter("imu.noise_imu_yaw", kNoiseImuYaw);
     this->get_parameter("imu.noise_imu_ax", kNoiseImuAx);
     this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
@@ -71,8 +69,9 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // IMU
-    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(
-        "/arussim/imu", 10);
+    ax_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_ax", 10);
+    ay_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_ay", 10);
+    r_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/imu_r", 10);
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
@@ -175,34 +174,26 @@ void Sensors::imu_timer()
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::normal_distribution<> dist_yaw(0.0, kNoiseImuYaw);
     std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
     std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
-    // Create the IMU message
-    auto message = sensor_msgs::msg::Imu();
+    // Create IMU data messages
+    auto msg_ax = std_msgs::msg::Float32();
+    auto msg_ay = std_msgs::msg::Float32();
+    auto msg_r = std_msgs::msg::Float32();
 
-    // Convert yaw (Euler angle) to quaternion
-    tf2::Quaternion q;
-    q.setRPY(0, 0, yaw_ + dist_yaw(gen)); 
-    message.orientation.x = q.x();
-    message.orientation.y = q.y();
-    message.orientation.z = q.z();
-    message.orientation.w = q.w();
+    // Yaw rate
+    msg_r.data = r_ + dist_r(gen);  
 
-    // Fill in the angular velocity
-    message.angular_velocity.x = 0.0;  
-    message.angular_velocity.y = 0.0;  
-    message.angular_velocity.z = r_ + dist_r(gen);  
-
-    // Fill in the linear acceleration
-    message.linear_acceleration.x = ax_ + dist_ax(gen);  
-    message.linear_acceleration.y = ay_ + dist_ay(gen);  
-    message.linear_acceleration.z = 0.0;  
+    // Linear acceleration
+    msg_ax.data = ax_ + dist_ax(gen);  
+    msg_ay.data = ay_ + dist_ay(gen);  
 
     // Publish the IMU message
-    imu_pub_->publish(message);
+    ax_pub_->publish(msg_ax);
+    ay_pub_->publish(msg_ay);
+    r_pub_->publish(msg_r);
 }
 
 /**
