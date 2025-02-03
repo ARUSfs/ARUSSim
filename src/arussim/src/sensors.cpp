@@ -16,7 +16,6 @@
 Sensors::Sensors() : Node("sensors")
 {
     // Declare and get noise parameters for each IMU variable
-    this->declare_parameter<double>("imu.noise_imu_yaw", 0.01);
     this->declare_parameter<double>("imu.noise_imu_ax", 0.01);
     this->declare_parameter<double>("imu.noise_imu_ay", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
@@ -42,7 +41,6 @@ Sensors::Sensors() : Node("sensors")
 
 
     // Get parameters
-    this->get_parameter("imu.noise_imu_yaw", kNoiseImuYaw);
     this->get_parameter("imu.noise_imu_ax", kNoiseImuAx);
     this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
@@ -71,8 +69,9 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // IMU
-    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(
-        "/arussim/imu", 10);
+    ax_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ax", 10);
+    ay_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ay", 10);
+    r_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/yaw_rate", 10);
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
@@ -80,9 +79,15 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Wheel speed
-    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/wheel_speeds", 10);
-
+    ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/fr_wheel_speed", 10);
+    ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/fl_wheel_speed", 10);
+    ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/rr_wheel_speed", 10);
+    ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/rl_wheel_speed", 10);
+        
     ws_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
         std::bind(&Sensors::wheel_speed_timer, this)
@@ -169,34 +174,26 @@ void Sensors::imu_timer()
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::normal_distribution<> dist_yaw(0.0, kNoiseImuYaw);
     std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
     std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
-    // Create the IMU message
-    auto message = sensor_msgs::msg::Imu();
+    // Create IMU data messages
+    auto msg_ax = std_msgs::msg::Float32();
+    auto msg_ay = std_msgs::msg::Float32();
+    auto msg_r = std_msgs::msg::Float32();
 
-    // Convert yaw (Euler angle) to quaternion
-    tf2::Quaternion q;
-    q.setRPY(0, 0, yaw_ + dist_yaw(gen)); 
-    message.orientation.x = q.x();
-    message.orientation.y = q.y();
-    message.orientation.z = q.z();
-    message.orientation.w = q.w();
+    // Yaw rate
+    msg_r.data = r_ + dist_r(gen);  
 
-    // Fill in the angular velocity
-    message.angular_velocity.x = 0.0;  
-    message.angular_velocity.y = 0.0;  
-    message.angular_velocity.z = r_ + dist_r(gen);  
-
-    // Fill in the linear acceleration
-    message.linear_acceleration.x = ax_ + dist_ax(gen);  
-    message.linear_acceleration.y = ay_ + dist_ay(gen);  
-    message.linear_acceleration.z = 0.0;  
+    // Linear acceleration
+    msg_ax.data = ax_ + dist_ax(gen);  
+    msg_ay.data = ay_ + dist_ay(gen);  
 
     // Publish the IMU message
-    imu_pub_->publish(message);
+    ax_pub_->publish(msg_ax);
+    ay_pub_->publish(msg_ay);
+    r_pub_->publish(msg_r);
 }
 
 /**
@@ -220,15 +217,21 @@ void Sensors::wheel_speed_timer()
     wheel_speed_.rl_ = wheel_speed.rear_left * 0.202 + dist_rear_left(gen);
 
     // Create the wheel speed message
-    auto message = arussim_msgs::msg::FourWheelDrive();
+    auto msg_fr = std_msgs::msg::Float32();
+    auto msg_fl = std_msgs::msg::Float32();
+    auto msg_rr = std_msgs::msg::Float32();
+    auto msg_rl = std_msgs::msg::Float32();
 
-    message.front_right = wheel_speed_.fr_;    
-    message.front_left = wheel_speed_.fl_;      
-    message.rear_right = wheel_speed_.rr_;     
-    message.rear_left = wheel_speed_.rl_;     
+    msg_fr.data = wheel_speed_.fr_;    
+    msg_fl.data = wheel_speed_.fl_;
+    msg_rr.data = wheel_speed_.rr_;
+    msg_rl.data = wheel_speed_.rl_;
 
-    // Publish the wheel speed message
-    ws_pub_->publish(message);
+    // Publish the torque message
+    ws_fr_pub_->publish(msg_fr);
+    ws_fl_pub_->publish(msg_fl);
+    ws_rr_pub_->publish(msg_rr);
+    ws_rl_pub_->publish(msg_rl);
 }
 
 /**
