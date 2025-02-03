@@ -300,8 +300,8 @@ void Simulator::on_fast_timer()
     message.yaw = vehicle_dynamics_.yaw_;
     message.vx = vehicle_dynamics_.vx_;
     message.vy = vehicle_dynamics_.vy_;
-    message.r = vehicle_dynamics_.r_;
-    message.ax = vehicle_dynamics_.ax_;
+    message.r = - vehicle_dynamics_.r_;
+    message.ax = - vehicle_dynamics_.ax_;
     message.ay = vehicle_dynamics_.ay_;
     message.delta = vehicle_dynamics_.delta_;
 
