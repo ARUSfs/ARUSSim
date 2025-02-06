@@ -375,6 +375,15 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     fixed_trajectory_msg_.speed_profile.clear();
     fixed_trajectory_msg_.acc_profile.clear();
 
+    // Clear cone markers
+    visualization_msgs::msg::MarkerArray empty_markers;
+    cone_marker_pub_->publish(empty_markers);
+
+    for (auto &marker : current_cone_markers_.markers) {
+        marker.action = visualization_msgs::msg::Marker::DELETE;
+    }
+    cone_marker_pub_->publish(current_cone_markers_);
+    current_cone_markers_.markers.clear();
 }
 
 /**
@@ -593,6 +602,9 @@ void Simulator::cone_visualization(){
     }
 
     cone_marker_pub_->publish(cone_markers);
+
+    // Store them to delete later
+    current_cone_markers_ = cone_markers;
 }
 
 

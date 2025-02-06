@@ -110,6 +110,8 @@ class Simulator : public rclcpp::Node
     bool kCSVState;
     std::shared_ptr<CSVGenerator> csv_generator_state_;
 
+    visualization_msgs::msg::MarkerArray current_cone_markers_;
+
     /**
      * @brief Callback function for the slow timer.
      * 

@@ -11,7 +11,11 @@
 #include <QVector>
 #include <QPair>
 #include <QPixmap>
-#include <QComboBox>  // nuevo include
+#include <QComboBox>
+#include <QPainter>
+#include <QPen>
+#include <QPainterPath>
+#include <QDir>
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -61,7 +65,8 @@ protected:
   QVector<QPair<double, double>> vx_history_;
   QLabel* vx_graph_label_ = nullptr;
 
-  QComboBox* selection_box_ = nullptr;
+  QComboBox* circuit_select_ = nullptr;
+  QComboBox* launch_select_ = nullptr;
 
 private Q_SLOTS:
   void launch_button_clicked();

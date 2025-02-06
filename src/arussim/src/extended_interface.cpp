@@ -1,8 +1,4 @@
 #include <arussim/extended_interface.hpp>
-#include <QPainter>
-#include <QPen>
-#include <QPainterPath>
-#include <QDir>  // nueva inclusión
 
 namespace rviz_panel_tutorial
 {
@@ -65,7 +61,6 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   // Add the grid layout at the top of the main layout
   main_grid->addLayout(grid_layout, 0, 0);
 
-  // --- Nueva sección: Telemetry ---
   telemetry_label_ = new QLabel("Telemetry", this);
   telemetry_label_->setFont(QFont("Montserrat Regular", 13));
   telemetry_label_->setAlignment(Qt::AlignLeft);
@@ -74,9 +69,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   telemetry_container_fl_ = new QWidget(this);
   telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
   telemetry_container_fl_->setMinimumSize(100, max_bar_height_);
-  telemetry_bar_fl_ = new QWidget(telemetry_container_fl_); // now explicitly created
+  telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
   telemetry_bar_fl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-  telemetry_bar_fl_->move(0, center_y_); // initial placement
+  telemetry_bar_fl_->move(0, center_y_);
   telemetry_bar_fl_->setFixedWidth(telemetry_container_fl_->width());
 
   // Front Right container and bar
@@ -118,22 +113,19 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   telemetry_grid->addWidget(telemetry_container_rr_, 2, 1);
   main_grid->addLayout(telemetry_grid, 1, 0);
 
-  // Crear grid layout para las gráficas
   auto graph_grid = new QGridLayout();
   graph_grid->setContentsMargins(10,10,10,10);
   graph_grid->setSpacing(10);
   graph_grid->setAlignment(Qt::AlignTop);
 
-  // Crear y configurar el widget para la gráfica de vx
   vx_graph_label_ = new QLabel(this);
   vx_graph_label_->setFixedSize(800, 500);
   vx_graph_label_->setStyleSheet("border: 2px solid black;");
-  graph_grid->addWidget(vx_graph_label_, 0, 0);  // posición (0,0) en el grid de gráficas
+  graph_grid->addWidget(vx_graph_label_, 0, 0);
 
-  // Iniciar el timer para la gráfica
+  // Plot timer
   timer_.start();
 
-  // Agregar el graph_grid al main_grid en la posición (2, 0)
   main_grid->addLayout(graph_grid, 2, 0);
 
   // Buttons
@@ -146,7 +138,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   launch_button_ = new QPushButton("Launch Simulation", this);
   main_layout->addWidget(launch_button_);
   connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
-  button_grid->addWidget(launch_button_, 1, 0, 1, 2);
+  button_grid->addWidget(launch_button_, 1, 0);
 
   // Stop button
   stop_button_ = new QPushButton("Stop Simulation", this);
@@ -160,13 +152,22 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
   button_grid->addWidget(reset_button_, 2, 1);
 
-  // Nuevo seleccionable (QComboBox) con archivos .pcd
-  selection_box_ = new QComboBox(this);
-  QDir tracksDir("/home/rafaguil/Arus_ws/ARUSSim/src/arussim/resources/tracks");
-  QStringList pcdFiles = tracksDir.entryList(QStringList() << "*.pcd", QDir::Files);
-  selection_box_->addItems(pcdFiles);
-  connect(selection_box_, &QComboBox::currentTextChanged, this, &ExtendedInterface::circuit_selector);
-  button_grid->addWidget(selection_box_, 0, 0, 1, 2);
+  // Circuit selection
+  circuit_select_ = new QComboBox(this);
+  circuit_select_->setPlaceholderText("Choose a circuit");
+  QDir tracks_dir("ARUSSim/src/arussim/resources/tracks");
+  QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
+  circuit_select_->addItems(pcd_files);
+  connect(circuit_select_, &QComboBox::currentTextChanged, this, &ExtendedInterface::circuit_selector);
+  button_grid->addWidget(circuit_select_, 1, 1);
+
+  // Launch selection
+  launch_select_ = new QComboBox(this);
+  QDir launch_dir("DRIVERLESS2/src/common/common_meta/launch");
+  QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
+  launch_select_->addItems(launch_files);
+  launch_select_->setCurrentText("simulation_launch.py");
+  button_grid->addWidget(launch_select_, 0, 0, 1, 2);
 
   main_grid->addLayout(button_grid, 3, 0);
 
@@ -188,6 +189,7 @@ void ExtendedInterface::onInitialize()
   // Publishers
   reset_pub_ = node->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
   circuit_pub_ = node->create_publisher<std_msgs::msg::String>("/arussim/circuit", 1);
+
 
   // Subscribers
   torque_sub_ = node->create_subscription<arussim_msgs::msg::FourWheelDrive>(
@@ -328,19 +330,19 @@ void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_,
  */
 void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
 {
-  // Recoge el tiempo transcurrido en segundos desde el inicio
+  // Get the elapsed time in seconds from the start
   double current_time = timer_.elapsed() / 1000.0;
 
-  // Agregar el nuevo punto
+  // Add the new data point
   vx_history_.append(qMakePair(current_time, vx_));
 
-  // Eliminar puntos con más de 10 segundos de antigüedad
+  // Remove points older than 10 seconds
   while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0))
   {
       vx_history_.removeFirst();
   }
 
-  // Configurar dimensiones de la gráfica
+  // Configure graph dimensions
   int pixmap_width = vx_graph_label_->width();
   int pixmap_height = vx_graph_label_->height();
   QPixmap pixmap(pixmap_width, pixmap_height);
@@ -349,25 +351,39 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   QPainter painter(&pixmap);
   painter.setRenderHint(QPainter::Antialiasing);
 
-  // Dibujar ejes
+  // Draw axes
   painter.setPen(Qt::black);
   painter.drawLine(0, pixmap_height-1, pixmap_width, pixmap_height-1); // eje x
   painter.drawLine(0, 0, 0, pixmap_height); // eje y
+
+  // Draw grid lines
+  int num_rows = 5;
+  double step_y = pixmap_height / static_cast<double>(num_rows);
+  painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
+  for (int j = 1; j < num_rows; ++j) {
+      painter.drawLine(0, j * step_y, pixmap_width, j * step_y);
+  }
+
+  // Draw numbers 5, 10, 15, 20, 25 at the same height as each row of the grid
+  painter.setPen(Qt::black);
+  for (int j = 1; j <= num_rows; ++j) {
+      painter.drawText(0, pixmap_height - j * step_y, QString::number(j * 5));
+  }
 
   if(vx_history_.isEmpty()){
       vx_graph_label_->setPixmap(pixmap);
       return;
   }
 
-  // Dibujar la línea de la gráfica
+  // Draw the graph line
   painter.setPen(QPen(Qt::blue, 5));
   QPainterPath path;
   bool first_point = true;
   for (const auto &point: vx_history_)
   {
-      // Calcula la posición en eje X en base al tiempo (últimos 10s)
+      // Calculate the X coordinate based on time (last 10s)
       double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
-      // Normaliza vx para el eje Y (invertido, ya que 0 está arriba)
+      // Normalize vx for the Y-axis (inverted, since 0 is at the top)
       double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
       double y = pixmap_height - (norm * pixmap_height);
       if(first_point)
@@ -380,7 +396,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   }
   painter.drawPath(path);
 
-  // Actualizar el widget de la gráfica
+  // Update the graph widget
   vx_graph_label_->setPixmap(pixmap);
 }
 
@@ -391,9 +407,10 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
 void ExtendedInterface::launch_button_clicked()
 {
     simulation_process_ = new QProcess(this);
-    QStringList arguments;
-    arguments << "launch" << "common_meta" << "simulation_launch.py";
-    simulation_process_->start("ros2", arguments);
+    QString launch_file = launch_select_->currentText();
+    QStringList args;
+    args << "launch" << "common_meta" << launch_file;
+    simulation_process_->start("ros2", args);
 }
 
 /**
