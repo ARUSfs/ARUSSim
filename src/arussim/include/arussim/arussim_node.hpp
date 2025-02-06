@@ -39,6 +39,7 @@
 #include "arussim/sensors.hpp"
 #include <random>
 #include <nlohmann/json.hpp>
+#include "std_msgs/msg/string.hpp"
 
 /**
  * @class Simulator
@@ -164,9 +165,9 @@ class Simulator : public rclcpp::Node
     /**
      * @brief Loads the track and the fixed path from resources.
      * 
-     * @param track 
+     * @param track_msg Mensaje que contiene el nombre del track.
      */
-    void load_track(const pcl::PointCloud<ConeXYZColorScore>& track);
+    void load_track(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
      * @brief Detects if the vehicle is between two TPLs.
@@ -218,4 +219,5 @@ class Simulator : public rclcpp::Node
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
 };

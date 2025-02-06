@@ -41,6 +41,7 @@ target_include_directories(extended_interface_exec PUBLIC
 ament_target_dependencies(extended_interface_exec
   pluginlib
   rviz_common
+  arussim_msgs
 )
 install(TARGETS extended_interface_exec
         EXPORT export_rviz_panel_tutorial

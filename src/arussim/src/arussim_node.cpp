@@ -74,6 +74,8 @@ Simulator::Simulator() : Node("simulator")
 
     cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
+        std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
     
@@ -102,9 +104,6 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    // Load the track pointcloud
-    load_track(track_);
-
     // Set Torque Vectoring parameter 
     vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
 
@@ -116,6 +115,11 @@ Simulator::Simulator() : Node("simulator")
         auto csv_gen = std::make_shared<CSVGenerator>("vehicle_dynamics");
         vehicle_dynamics_.set_csv_generator(csv_gen);
     }
+
+    // Call load_track with kTrackName
+    auto track_msg = std::make_shared<std_msgs::msg::String>();
+    track_msg->data = kTrackName+".pcd";
+    load_track(track_msg);
 }
 /**
  * @brief Function that updtates the timers based on the simulation speed multiplier.
@@ -365,6 +369,12 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 {
     vehicle_dynamics_ = VehicleDynamics();
     started_acc_ = false;
+    fixed_trajectory_msg_.points.clear();
+    fixed_trajectory_msg_.s.clear();
+    fixed_trajectory_msg_.k.clear();
+    fixed_trajectory_msg_.speed_profile.clear();
+    fixed_trajectory_msg_.acc_profile.clear();
+
 }
 
 /**
@@ -428,10 +438,17 @@ void Simulator::broadcast_transform()
  * 
  * @param track 
  */
-void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
+void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
 {   
+    // Extract and remove the ".pcd" suffix if present
+    std::string track_name_ = track_msg->data;
+    if(track_name_.size() >= 4 && track_name_.substr(track_name_.size()-4) == ".pcd"){
+        track_name_.resize(track_name_.size()-4);
+    }
+
+    // Load the track point cloud using the .pcd extension
     std::string package_path = ament_index_cpp::get_package_share_directory("arussim");
-    std::string filename = package_path+"/resources/tracks/"+kTrackName+".pcd";
+    std::string filename = package_path + "/resources/tracks/" + track_name_ + ".pcd";
     if (pcl::io::loadPCDFile<ConeXYZColorScore>(filename, track_) == -1)
     {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't read file %s", filename.c_str());
@@ -440,8 +457,11 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
                 track_.points.size(), filename.c_str());
 
+    // Clear previous TPL cones
+    tpl_cones_.clear();
+
     // Extract the TPLs
-    for (const auto& point : track.points)
+    for (const auto& point : track_.points)
     {
         if (point.color == 4)
         {
@@ -458,27 +478,26 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
                     tpl_cones_[0].first, tpl_cones_[0].second, tpl_cones_[1].first, tpl_cones_[1].second);
         use_tpl_ = true;
 
-        // Coordinates of the two cones (tpl_cones)
+        // Coordinates of the two cones
         double x1 = tpl_cones_[0].first;
         double y1 = tpl_cones_[0].second;
         double x2 = tpl_cones_[1].first;
         double y2 = tpl_cones_[1].second;
 
-        // Calculate the slope (a) and y-intercept (b)
-        tpl_coef_a_ = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero in case of vertically aligned cones
+        // Calculate slope (a) and y-intercept (b)
+        tpl_coef_a_ = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero
         tpl_coef_b_ = y1 - tpl_coef_a_ * x1;
 
-        // Calculate the midpoint between the two cones
+        // Calculate midpoint between the two cones
         mid_tpl_x_ = (x1 + x2) / 2.0;
         mid_tpl_y_ = (y1 + y2) / 2.0;
     }
 
-
-    // Extract the fixed trajectory
-    std::string json_filename = package_path+"/resources/tracks/"+kTrackName+".json";
+    // Extract the fixed trajectory using the .json extension
+    std::string json_filename = package_path + "/resources/tracks/" + track_name_ + ".json";
     std::ifstream tray_json(json_filename);
     if (!tray_json.is_open()) {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trayectory file %s", json_filename.c_str());
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trajectory file %s", json_filename.c_str());
         return;
     }
 
@@ -493,7 +512,7 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
     std::vector<float> traj_speed_profile = tray_data["speed_profile"].get<std::vector<float>>();
     std::vector<float> traj_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
 
-    if(traj_x.size() == traj_y.size() && traj_x.size() > 0) {
+    if (traj_x.size() == traj_y.size() && traj_x.size() > 0) {
         for (size_t i = 0; i < traj_x.size(); i++) {
             arussim_msgs::msg::PointXY point;
             point.x = traj_x[i];
@@ -502,20 +521,20 @@ void Simulator::load_track(const pcl::PointCloud<ConeXYZColorScore>& track)
         }
     }
 
-    if(traj_s.size() == traj_k.size() && traj_s.size() > 0) {
+    if (traj_s.size() == traj_k.size() && traj_s.size() > 0) {
         for (size_t i = 0; i < traj_s.size(); i++) {
             fixed_trajectory_msg_.s.push_back(traj_s[i]);
             fixed_trajectory_msg_.k.push_back(traj_k[i]);
         }
     }
 
-    if(traj_speed_profile.size() > 0) {
+    if (traj_speed_profile.size() > 0) {
         for (size_t i = 0; i < traj_speed_profile.size(); i++) {
             fixed_trajectory_msg_.speed_profile.push_back(traj_speed_profile[i]);
         }
     }
 
-    if(traj_acc_profile.size() > 0) {
+    if (traj_acc_profile.size() > 0) {
         for (size_t i = 0; i < traj_acc_profile.size(); i++) {
             fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
         }
