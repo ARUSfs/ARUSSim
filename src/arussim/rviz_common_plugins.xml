@@ -1,0 +1,5 @@
+<library path="extended_interface_exec">
+  <class type="rviz_panel_tutorial::ExtendedInterface" base_class_type="rviz_common::Panel">
+    <description>ARUSsim extended interface</description>
+  </class>
+</library>

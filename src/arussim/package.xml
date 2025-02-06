@@ -20,6 +20,8 @@
   <depend>PCL</depend>
   <depend>pcl_conversions</depend>
   <depend>Qt5Widgets</depend>
+  <depend>pluginlib</depend>
+  <depend>rviz_common</depend>
   
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

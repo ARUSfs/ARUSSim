@@ -19,11 +19,40 @@ find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-qt5_wrap_cpp(MOC_SOURCES include/arussim/extended_interface.hpp)
+find_package(rviz_common REQUIRED)
+find_package(ament_cmake_ros REQUIRED)
+find_package(pluginlib REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
+qt5_wrap_cpp(MOC_FILES
+  include/arussim/extended_interface.hpp
+)
 
 include_directories(
   include
   ${PCL_INCLUDE_DIRS}
+)
+
+add_library(extended_interface_exec src/extended_interface.cpp ${MOC_FILES})
+target_include_directories(extended_interface_exec PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(extended_interface_exec
+  pluginlib
+  rviz_common
+)
+install(TARGETS extended_interface_exec
+        EXPORT export_rviz_panel_tutorial
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+install(DIRECTORY include/
+        DESTINATION include
+)
+install(FILES rviz_common_plugins.xml
+        DESTINATION share/${PROJECT_NAME}
 )
 
 # generate executable for arussim_node.cpp
@@ -58,19 +87,11 @@ ament_target_dependencies(supervisor_exec rclcpp
                             tf2_ros
                             tf2)
 
-# generate executable for extended_interface.cpp
-add_executable(extended_interface_exec src/extended_interface.cpp ${MOC_SOURCES})
-ament_target_dependencies(extended_interface_exec rclcpp 
-                            Qt5Widgets
-                            std_msgs
-                            arussim_msgs)
-
 # Install both executables
 install(TARGETS
   arussim_exec
   sensors_exec
   supervisor_exec
-  extended_interface_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location
@@ -81,5 +102,9 @@ install(DIRECTORY config
 install(DIRECTORY resources
   DESTINATION share/${PROJECT_NAME})
 
+
+ament_export_include_directories(include)
+ament_export_targets(export_rviz_panel_tutorial)
+pluginlib_export_plugin_description_file(rviz_common rviz_common_plugins.xml)
 
 ament_package()
