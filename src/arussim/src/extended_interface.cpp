@@ -119,9 +119,14 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   graph_grid->setAlignment(Qt::AlignTop);
 
   speed_graph_label_ = new QLabel(this);
-  speed_graph_label_->setFixedSize(1000, 750);
+  speed_graph_label_->setFixedSize(1000, 400);
   speed_graph_label_->setStyleSheet("border: 2px solid black;");
   graph_grid->addWidget(speed_graph_label_, 0, 0);
+
+  gg_graph_label_ = new QLabel(this);
+  gg_graph_label_->setFixedSize(1000, 400);
+  gg_graph_label_->setStyleSheet("border: 2px solid black;");
+  graph_grid->addWidget(gg_graph_label_, 1, 0);
 
   // Plot timer
   timer_.start();
@@ -345,6 +350,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   // Add the new data point
   vx_history_.append(qMakePair(current_time, vx_));
   target_speed_history_.append(qMakePair(current_time, target_speed_));
+  gg_vector_.append(qMakePair(ay_, ax_));
 
   // Remove points older than 10 seconds
   while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0) && (current_time - target_speed_history_.first().first > 10.0))
@@ -353,7 +359,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
     target_speed_history_.removeFirst();
   }
 
-  // Configure graph dimensions
+  // Configure plot dimensions
   int pixmap_width = speed_graph_label_->width();
   int pixmap_height = speed_graph_label_->height();
   QPixmap pixmap(pixmap_width, pixmap_height);
@@ -364,18 +370,18 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
 
   // Draw axes
   painter.setPen(Qt::black);
-  painter.drawLine(0, pixmap_height-1, pixmap_width, pixmap_height-1); // eje x
-  painter.drawLine(0, 0, 0, pixmap_height); // eje y
+  painter.drawLine(0, pixmap_height-1, pixmap_width, pixmap_height-1); // x-axis
+  painter.drawLine(0, 0, 0, pixmap_height); // y-axis
 
   // Draw grid lines
-  int num_rows = 5;
+  int num_rows = 4;
   double step_y = pixmap_height / static_cast<double>(num_rows);
   painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
   for (int j = 1; j < num_rows; ++j) {
       painter.drawLine(0, j * step_y, pixmap_width, j * step_y);
   }
 
-  // Draw numbers 5, 10, 15, 20, 25 at the same height as each row of the grid
+  // Draw numbers 5, 10, 15, 20 at the same height as each row of the grid
   painter.setPen(Qt::black);
   for (int j = 1; j <= num_rows; ++j) {
       painter.drawText(0, pixmap_height - j * step_y, QString::number(j * 5));
@@ -422,7 +428,92 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   }
   painter.drawPath(vx_path);
 
+  // draw legend
+  // Semi-transparent background for the legend
+  QRect legend_rect(10, 10, 250, 60);
+  painter.setPen(Qt::black);
+  painter.setBrush(QColor(255, 255, 255, 200));
+  painter.drawRect(legend_rect);
+
+  // Legend for Target Speed (blue)
+  painter.setPen(QPen(Qt::blue, 4));
+  painter.drawLine(20, 25, 60, 25);
+  painter.setPen(Qt::black);
+  painter.drawText(70, 35, "Target Speed");
+
+  // Legend for Vx (red)
+  painter.setPen(QPen(Qt::red, 5));
+  painter.drawLine(20, 55, 60, 55);
+  painter.setPen(Qt::black);
+  painter.drawText(70, 65, "Vx");
+
   speed_graph_label_->setPixmap(pixmap);
+
+  // Llamar a update_gg_graph para refrescar la gráfica GG
+  update_gg_graph();
+}
+
+void ExtendedInterface::update_gg_graph()
+{
+  if (!gg_graph_label_) return;
+
+  int pixmap_width = gg_graph_label_->width();
+  int pixmap_height = gg_graph_label_->height();
+  QPixmap pixmap(pixmap_width, pixmap_height);
+  pixmap.fill(Qt::white);
+
+  QPainter painter(&pixmap);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  // main axes with color
+  int cx = pixmap_width / 2;
+  int cy = pixmap_height / 2;
+
+  // Centered axes
+  painter.setPen(QPen(Qt::black, 3));
+  painter.drawLine(0, cy, pixmap_width, cy); // x-axis
+  painter.drawLine(cx, 0, cx, pixmap_height);  // y-axis
+
+  // Draw grid for integers from -12 to 12 (skip 0, already drawn by the axis)
+  painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
+  for (int i = -12; i <= 12; i++)
+  {
+    if(i == 0) continue; // Skip the axis
+    double x = (i + 12.0) / 24.0 * pixmap_width;
+    double y = pixmap_height - ((i + 12.0) / 24.0 * pixmap_height);
+
+    // Vertical line
+    painter.drawLine(x, 0, x, pixmap_height);
+
+    // Horizontal line
+    painter.drawLine(0, y, pixmap_width, y);
+
+    // Labels (optional), every 2 units
+    if (i % 2 == 0) {
+        painter.setPen(Qt::black);
+        painter.drawText(QPointF(x + 2, pixmap_height - 2), QString::number(i)); // x-axis label
+        painter.drawText(QPointF(2, y - 2), QString::number(i));              // y-axis label
+        painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
+    }
+  }
+
+  // draw GG legend
+  QRect legend_gg_rect(25, 10, 200, 30);
+  painter.setPen(Qt::black);
+  painter.setBrush(QColor(255, 255, 255, 200));
+  painter.drawRect(legend_gg_rect);
+  painter.setPen(Qt::black);
+  painter.drawText(30, 35, "GG diagram");
+
+  // Draw points from gg_vector_ with new scaling for range -12 to 12
+  painter.setPen(QPen(Qt::blue, 5));
+  for (auto &p : gg_vector_) {
+    double x = (p.first + 12.0) / 24.0 * pixmap_width;
+    double y = pixmap_height - ((p.second + 12.0) / 24.0 * pixmap_height);
+    painter.drawPoint(QPointF(x, y));
+  }
+
+  gg_graph_label_->setPixmap(pixmap);
 }
 
 /**
@@ -473,6 +564,13 @@ void ExtendedInterface::reset_button_clicked()
     hit_cones_label_->setText("Hit cones: 0");
     lap_label_->setText("Lap: 0");
 
+    // reset graphs
+    vx_history_.clear();
+    target_speed_history_.clear();
+    gg_vector_.clear();
+    speed_graph_label_->clear();
+    gg_graph_label_->clear();
+
     RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
@@ -490,6 +588,13 @@ void ExtendedInterface::circuit_selector(const QString & option)
   auto msg_reset = std_msgs::msg::Bool();
   msg_reset.data = true;
   reset_pub_->publish(msg_reset);
+
+  // reset graphs when switching circuit
+  vx_history_.clear();
+  target_speed_history_.clear();
+  gg_vector_.clear();
+  speed_graph_label_->clear();
+  gg_graph_label_->clear();
 
   RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
 

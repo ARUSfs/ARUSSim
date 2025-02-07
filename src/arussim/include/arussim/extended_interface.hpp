@@ -66,6 +66,9 @@ protected:
   QVector<QPair<double, double>> target_speed_history_;
   QLabel* speed_graph_label_ = nullptr;
 
+  QVector<QPair<double, double>> gg_vector_;
+  QLabel* gg_graph_label_ = nullptr;
+
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
 
@@ -77,6 +80,7 @@ private Q_SLOTS:
   void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
   void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
   void circuit_selector(const QString & option);
+  void update_gg_graph();
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
@@ -99,7 +103,7 @@ private:
   double center_y_ = max_bar_height_ / 2;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 25.0;
+  double max_vx_ = 20.0;
 
   double target_speed_;
   double vx_;
