@@ -116,9 +116,11 @@ Simulator::Simulator() : Node("simulator")
         vehicle_dynamics_.set_csv_generator(csv_gen);
     }
 
+    prev_circuit_ = kTrackName;
+
     // Call load_track with kTrackName
     auto track_msg = std::make_shared<std_msgs::msg::String>();
-    track_msg->data = kTrackName+".pcd";
+    track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 }
 /**
@@ -369,11 +371,16 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 {
     vehicle_dynamics_ = VehicleDynamics();
     started_acc_ = false;
-    fixed_trajectory_msg_.points.clear();
-    fixed_trajectory_msg_.s.clear();
-    fixed_trajectory_msg_.k.clear();
-    fixed_trajectory_msg_.speed_profile.clear();
-    fixed_trajectory_msg_.acc_profile.clear();
+    if (prev_circuit_ != track_name_){
+        fixed_trajectory_msg_.points.clear();
+        fixed_trajectory_msg_.s.clear();
+        fixed_trajectory_msg_.k.clear();
+        fixed_trajectory_msg_.speed_profile.clear();
+        fixed_trajectory_msg_.acc_profile.clear();
+        auto track_msg = std::make_shared<std_msgs::msg::String>();
+        track_msg->data = track_name_ + ".pcd";
+        load_track(track_msg);
+    }
 
     // Clear cone markers
     visualization_msgs::msg::MarkerArray empty_markers;
@@ -450,7 +457,7 @@ void Simulator::broadcast_transform()
 void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
 {   
     // Extract and remove the ".pcd" suffix if present
-    std::string track_name_ = track_msg->data;
+    track_name_ = track_msg->data;
     if(track_name_.size() >= 4 && track_name_.substr(track_name_.size()-4) == ".pcd"){
         track_name_.resize(track_name_.size()-4);
     }

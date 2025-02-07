@@ -63,7 +63,8 @@ protected:
 
   QElapsedTimer timer_;
   QVector<QPair<double, double>> vx_history_;
-  QLabel* vx_graph_label_ = nullptr;
+  QVector<QPair<double, double>> target_speed_history_;
+  QLabel* speed_graph_label_ = nullptr;
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
@@ -85,6 +86,7 @@ private:
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;
 
   double best_lap_time_ = 9999.99;
   double last_lap_time_ = 9999.99;
@@ -98,6 +100,9 @@ private:
 
   double min_vx_ = 0.0;
   double max_vx_ = 25.0;
+
+  double target_speed_;
+  double vx_;
 
 
   //Loginfo colors

@@ -89,6 +89,8 @@ class Simulator : public rclcpp::Node
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
     arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
+    std::string prev_circuit_;
+    std::string track_name_;
 
 
     std::vector<std::pair<double, double>> tpl_cones_;
@@ -187,6 +189,13 @@ class Simulator : public rclcpp::Node
      * 
      */
     void cone_visualization();
+
+    /**
+     * @brief Load the fixed trajectory from a JSON file.
+     * 
+     * @param track_msg 
+     */
+    void load_fixed_trajectory(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
      * @brief Service handler for setting the FOV.

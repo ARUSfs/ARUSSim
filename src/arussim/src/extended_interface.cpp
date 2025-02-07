@@ -118,10 +118,10 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   graph_grid->setSpacing(10);
   graph_grid->setAlignment(Qt::AlignTop);
 
-  vx_graph_label_ = new QLabel(this);
-  vx_graph_label_->setFixedSize(800, 500);
-  vx_graph_label_->setStyleSheet("border: 2px solid black;");
-  graph_grid->addWidget(vx_graph_label_, 0, 0);
+  speed_graph_label_ = new QLabel(this);
+  speed_graph_label_->setFixedSize(1000, 750);
+  speed_graph_label_->setStyleSheet("border: 2px solid black;");
+  graph_grid->addWidget(speed_graph_label_, 0, 0);
 
   // Plot timer
   timer_.start();
@@ -230,6 +230,15 @@ void ExtendedInterface::onInitialize()
           }
       }
   );
+
+  target_speed_sub_ = node->create_subscription<std_msgs::msg::Float32>(
+      "/controller/target_speed", 1,
+      [this](const std_msgs::msg::Float32::SharedPtr msg) {
+          QMetaObject::invokeMethod(this, [this, msg]() {
+              target_speed_ = msg->data;
+          }, Qt::QueuedConnection);
+      }
+  );
 }
 
 /**
@@ -335,16 +344,18 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
 
   // Add the new data point
   vx_history_.append(qMakePair(current_time, vx_));
+  target_speed_history_.append(qMakePair(current_time, target_speed_));
 
   // Remove points older than 10 seconds
-  while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0))
+  while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0) && (current_time - target_speed_history_.first().first > 10.0))
   {
-      vx_history_.removeFirst();
+    vx_history_.removeFirst();
+    target_speed_history_.removeFirst();
   }
 
   // Configure graph dimensions
-  int pixmap_width = vx_graph_label_->width();
-  int pixmap_height = vx_graph_label_->height();
+  int pixmap_width = speed_graph_label_->width();
+  int pixmap_height = speed_graph_label_->height();
   QPixmap pixmap(pixmap_width, pixmap_height);
   pixmap.fill(Qt::white);
 
@@ -371,33 +382,47 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   }
 
   if(vx_history_.isEmpty()){
-      vx_graph_label_->setPixmap(pixmap);
+      speed_graph_label_->setPixmap(pixmap);
       return;
   }
 
-  // Draw the graph line
-  painter.setPen(QPen(Qt::blue, 5));
-  QPainterPath path;
-  bool first_point = true;
-  for (const auto &point: vx_history_)
+  // Draw target speed line in blue
+  painter.setPen(QPen(Qt::blue, 4));
+  QPainterPath ts_path;
+  bool first_ts_point = true;
+  for (const auto &point : target_speed_history_)
   {
-      // Calculate the X coordinate based on time (last 10s)
       double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
-      // Normalize vx for the Y-axis (inverted, since 0 is at the top)
       double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
       double y = pixmap_height - (norm * pixmap_height);
-      if(first_point)
-      {
-          path.moveTo(x, y);
-          first_point = false;
+      if(first_ts_point) {
+          ts_path.moveTo(x, y);
+          first_ts_point = false;
+      } else {
+          ts_path.lineTo(x, y);
       }
-      else
-          path.lineTo(x, y);
   }
-  painter.drawPath(path);
+  painter.drawPath(ts_path);
 
-  // Update the graph widget
-  vx_graph_label_->setPixmap(pixmap);
+  // Draw vx line in red
+  painter.setPen(QPen(Qt::red, 5));
+  QPainterPath vx_path;
+  bool first_vx_point = true;
+  for (const auto &point : vx_history_)
+  {
+      double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
+      double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
+      double y = pixmap_height - (norm * pixmap_height);
+      if(first_vx_point) {
+          vx_path.moveTo(x, y);
+          first_vx_point = false;
+      } else {
+          vx_path.lineTo(x, y);
+      }
+  }
+  painter.drawPath(vx_path);
+
+  speed_graph_label_->setPixmap(pixmap);
 }
 
 /**
@@ -458,13 +483,13 @@ void ExtendedInterface::reset_button_clicked()
  */
 void ExtendedInterface::circuit_selector(const QString & option)
 {
-  auto msg_reset = std_msgs::msg::Bool();
-  msg_reset.data = true;
-  reset_pub_->publish(msg_reset);
-
   auto msg_circuit = std_msgs::msg::String();
   msg_circuit.data = option.toStdString();
   circuit_pub_->publish(msg_circuit);
+
+  auto msg_reset = std_msgs::msg::Bool();
+  msg_reset.data = true;
+  reset_pub_->publish(msg_reset);
 
   RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
 
