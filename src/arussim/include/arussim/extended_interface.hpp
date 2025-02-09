@@ -16,6 +16,9 @@
 #include <QPen>
 #include <QPainterPath>
 #include <QDir>
+#include <QGuiApplication>
+#include <QScreen>
+
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -67,6 +70,14 @@ protected:
 
   QVector<QPair<double, double>> gg_vector_;
   QLabel* gg_graph_label_ = nullptr;
+
+  QLabel* vx_label_;
+  QLabel* vy_label_;
+  QLabel* r_label_;
+  QLabel* ax_label_;
+  QLabel* ay_label_;  
+  QLabel* delta_label_;
+
   QSize screen_size_;
 
   QComboBox* circuit_select_ = nullptr;
@@ -78,9 +89,11 @@ private Q_SLOTS:
   void reset_button_clicked();
   void update_lap_time_labels(double lap_time_);
   void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
-  void update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
+  void update_vx_target_graph(double vx, double vy);
   void circuit_selector(const QString & option);
-  void update_gg_graph();
+  void update_gg_graph(double ax, double ay);
+  void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+  void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
@@ -114,7 +127,6 @@ private:
   double max_vx_ = 20.0;
 
   double target_speed_;
-  double vx_;
 
 
   //Loginfo colors

@@ -1,6 +1,4 @@
 #include <arussim/extended_interface.hpp>
-#include <QGuiApplication>
-#include <QScreen>
 
 namespace rviz_panel_tutorial
 {
@@ -15,7 +13,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   rviz_height_ = screen_size_.height();
   rviz_size_ = std::sqrt(rviz_width_ * rviz_width_ + rviz_height_ * rviz_height_);
 
-  bar_size_ = rviz_height_ * 0.075;
+  bar_size_ = rviz_height_ * 0.07;
   scale_factor_ = bar_size_ / max_torque_value_;
   center_y_ = bar_size_ / 2;
 
@@ -133,17 +131,43 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   speed_graph_label_ = new QLabel(this);
   speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
-  speed_graph_label_->setFixedHeight(rviz_height_ * 0.15);
+  speed_graph_label_->setFixedHeight(rviz_height_ * 0.14);
   speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   speed_graph_label_->setStyleSheet("border: 2px solid black;");
   graph_grid->addWidget(speed_graph_label_, 0, 0);
 
   gg_graph_label_ = new QLabel(this);
   gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
-  gg_graph_label_->setFixedHeight(rviz_height_ * 0.15);
+  gg_graph_label_->setFixedHeight(rviz_height_ * 0.14);
   gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   gg_graph_label_->setStyleSheet("border: 2px solid black;");
   graph_grid->addWidget(gg_graph_label_, 1, 0);
+
+  auto telemetry_labels_grid = new QGridLayout();
+  telemetry_labels_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  telemetry_labels_grid->setSpacing(grid_margin_);
+  telemetry_labels_grid->setAlignment(Qt::AlignTop);
+
+  vx_label_ = new QLabel("Vx: 0", this);
+  telemetry_labels_grid->addWidget(vx_label_, 0, 0);
+
+  vy_label_ = new QLabel("Vy: 0", this);
+  telemetry_labels_grid->addWidget(vy_label_, 0, 1);
+
+  ax_label_ = new QLabel("Ax: 0", this);
+  telemetry_labels_grid->addWidget(ax_label_, 1, 0);
+
+  ay_label_ = new QLabel("Ay: 0", this);
+  telemetry_labels_grid->addWidget(ay_label_, 1, 1);
+
+  r_label_ = new QLabel("r: 0", this);
+  telemetry_labels_grid->addWidget(r_label_, 2, 0);
+
+  delta_label_ = new QLabel("Delta: 0", this);
+  telemetry_labels_grid->addWidget(delta_label_, 2, 1);
+
+  graph_grid->addLayout(telemetry_labels_grid, 2, 0);
+
 
   // Plot timer
   timer_.start();
@@ -227,7 +251,7 @@ void ExtendedInterface::onInitialize()
       "/arussim/state", 1, 
       [this](const arussim_msgs::msg::State::SharedPtr msg) { 
           QMetaObject::invokeMethod(this, [this, msg]() {
-              update_telemetry_labels(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+            state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
           }, Qt::QueuedConnection);
       }
   );
@@ -359,15 +383,21 @@ void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_,
  * @param ay_ 
  * @param delta_ 
  */
-void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+void ExtendedInterface::state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+{
+    update_vx_target_graph(vx_, vy_);
+    update_gg_graph(ax_, ay_);
+    update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
+}
+
+void ExtendedInterface::update_vx_target_graph(double vx, double vy)
 {
   // Get the elapsed time in seconds from the start
   double current_time = timer_.elapsed() / 1000.0;
 
   // Add the new data point
-  vx_history_.append(qMakePair(current_time, vx_));
+  vx_history_.append(qMakePair(current_time, vx));
   target_speed_history_.append(qMakePair(current_time, target_speed_));
-  gg_vector_.append(qMakePair(ay_, ax_));
 
   // Remove points older than 10 seconds
   while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0) && (current_time - target_speed_history_.first().first > 10.0))
@@ -476,13 +506,12 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   painter.drawText(legend_rect.left() + 10 + line_length + 10, y_vx + 5, "Vx");
 
   speed_graph_label_->setPixmap(pixmap);
-
-  // Llamar a update_gg_graph para refrescar la gráfica GG
-  update_gg_graph();
 }
 
-void ExtendedInterface::update_gg_graph()
+void ExtendedInterface::update_gg_graph(double ax, double ay)
 {
+  gg_vector_.append(qMakePair(ay, ax));
+
   if (!gg_graph_label_) return;
 
   int pixmap_width = gg_graph_label_->width();
@@ -542,6 +571,16 @@ void ExtendedInterface::update_gg_graph()
   }
 
   gg_graph_label_->setPixmap(pixmap);
+}
+
+void ExtendedInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
+{
+    vx_label_->setText("Vx: " + QString::number(vx, 'f', 2));
+    vy_label_->setText("Vy: " + QString::number(vy, 'f', 2));
+    r_label_->setText("r: " + QString::number(r, 'f', 2));
+    ax_label_->setText("Ax: " + QString::number(ax, 'f', 2));
+    ay_label_->setText("Ay: " + QString::number(ay, 'f', 2));
+    delta_label_->setText("Delta: " + QString::number(delta, 'f', 2));
 }
 
 /**
