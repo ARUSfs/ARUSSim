@@ -49,7 +49,6 @@ protected:
   QPushButton* stop_button_;
   QPushButton* reset_button_;
 
-  QLabel* telemetry_label_;
   QWidget* telemetry_container_fl_;
   QWidget* telemetry_bar_fl_;
   QWidget* telemetry_container_fr_;
@@ -68,6 +67,7 @@ protected:
 
   QVector<QPair<double, double>> gg_vector_;
   QLabel* gg_graph_label_ = nullptr;
+  QSize screen_size_;
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
@@ -97,10 +97,18 @@ private:
   int hit_cones_counter_ = 0;
   int lap_counter_ = 0;
 
-  double max_bar_height_ = 300;
+  double bar_size_;
   double max_torque_value_ = 90.0;
-  double scale_factor_ = max_bar_height_ / max_torque_value_;
-  double center_y_ = max_bar_height_ / 2;
+  double scale_factor_;
+  double center_y_;
+
+  double rviz_width_;
+  double rviz_height_;
+  double rviz_size_;
+  
+  double grid_margin_;
+  double graph_grid_width_;
+  double pen_size_;
 
   double min_vx_ = 0.0;
   double max_vx_ = 20.0;

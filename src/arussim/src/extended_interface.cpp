@@ -1,32 +1,45 @@
 #include <arussim/extended_interface.hpp>
+#include <QGuiApplication>
+#include <QScreen>
 
 namespace rviz_panel_tutorial
 {
 
 ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 {
-  QFont custom_font_("Montserrat Regular", 13);
-  QFont bold_font_ = custom_font_;
-  bold_font_.setBold(true);
+  // Detect screen size to adapt every item to the screen
+  QScreen* screen = this->screen();
+  screen_size_ = screen->size();
+
+  rviz_width_ = screen_size_.width();
+  rviz_height_ = screen_size_.height();
+  rviz_size_ = std::sqrt(rviz_width_ * rviz_width_ + rviz_height_ * rviz_height_);
+
+  bar_size_ = rviz_height_ * 0.075;
+  scale_factor_ = bar_size_ / max_torque_value_;
+  center_y_ = bar_size_ / 2;
+
+  grid_margin_ = rviz_size_ * 0.003;
+  graph_grid_width_ = rviz_size_ * 0.001;
+  pen_size_ = rviz_size_ * 0.0015;
 
   // Main vertical layout
   auto main_layout = new QVBoxLayout(this);
 
   // Main grid layout
   auto main_grid = new QGridLayout();
-  main_grid->setContentsMargins(10,10,10,10);
-  main_grid->setSpacing(10);
+  main_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  main_grid->setSpacing(grid_margin_);
   main_grid->setAlignment(Qt::AlignTop);
 
   // Create a grid layout for the labels with vertical and horizontal separators
   auto grid_layout = new QGridLayout();
-  grid_layout->setContentsMargins(10,10,10,10);
-  grid_layout->setSpacing(10);
+  grid_layout->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  grid_layout->setSpacing(grid_margin_);
   grid_layout->setAlignment(Qt::AlignTop);
 
   // Row 0: First row labels with vertical separator
   last_lt_label_ = new QLabel("Last Lap Time: 0s", this);
-  last_lt_label_->setFont(bold_font_);
   grid_layout->addWidget(last_lt_label_, 0, 0);
 
   auto separator1 = new QFrame(this);
@@ -35,7 +48,6 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   grid_layout->addWidget(separator1, 0, 1);
 
   lap_label_ = new QLabel("Lap: 0", this);
-  lap_label_->setFont(bold_font_);
   grid_layout->addWidget(lap_label_, 0, 2);
 
   // Row 1: Horizontal separator spanning all columns
@@ -46,7 +58,6 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Row 2: Second row labels with vertical separator
   best_lt_label_ = new QLabel("Best Lap Time: 0s", this);
-  best_lt_label_->setFont(bold_font_);
   grid_layout->addWidget(best_lt_label_, 2, 0);
 
   auto separator2 = new QFrame(this);
@@ -55,20 +66,17 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   grid_layout->addWidget(separator2, 2, 1);
 
   hit_cones_label_ = new QLabel("Hit cones: 0", this);
-  hit_cones_label_->setFont(bold_font_);
   grid_layout->addWidget(hit_cones_label_, 2, 2);
 
   // Add the grid layout at the top of the main layout
   main_grid->addLayout(grid_layout, 0, 0);
 
-  telemetry_label_ = new QLabel("Telemetry", this);
-  telemetry_label_->setFont(QFont("Montserrat Regular", 13));
-  telemetry_label_->setAlignment(Qt::AlignLeft);
-
   // Front Left container and bar without extra block
   telemetry_container_fl_ = new QWidget(this);
   telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
-  telemetry_container_fl_->setMinimumSize(100, max_bar_height_);
+  telemetry_container_fl_->setMinimumWidth(bar_size_);
+  telemetry_container_fl_->setFixedHeight(bar_size_);
+  telemetry_container_fl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
   telemetry_bar_fl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_fl_->move(0, center_y_);
@@ -77,7 +85,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   // Front Right container and bar
   telemetry_container_fr_ = new QWidget(this);
   telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
-  telemetry_container_fr_->setMinimumSize(100, max_bar_height_);
+  telemetry_container_fr_->setMinimumWidth(bar_size_);
+  telemetry_container_fr_->setFixedHeight(bar_size_);
+  telemetry_container_fr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
   telemetry_bar_fr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_fr_->move(0, center_y_);
@@ -86,7 +96,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   // Rear Left container and bar
   telemetry_container_rl_ = new QWidget(this);
   telemetry_container_rl_->setStyleSheet("background-color: lightgray;");
-  telemetry_container_rl_->setMinimumSize(100, max_bar_height_);
+  telemetry_container_rl_->setMinimumWidth(bar_size_);
+  telemetry_container_rl_->setFixedHeight(bar_size_);
+  telemetry_container_rl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
   telemetry_bar_rl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_rl_->move(0, center_y_);
@@ -95,7 +107,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   // Rear Right container and bar
   telemetry_container_rr_ = new QWidget(this);
   telemetry_container_rr_->setStyleSheet("background-color: lightgray;");
-  telemetry_container_rr_->setMinimumSize(100, max_bar_height_);
+  telemetry_container_rr_->setMinimumWidth(bar_size_);
+  telemetry_container_rr_->setFixedHeight(bar_size_);
+  telemetry_container_rr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
   telemetry_bar_rr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   telemetry_bar_rr_->move(0, center_y_);
@@ -103,28 +117,31 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Create telemetry grid and add containers
   auto telemetry_grid = new QGridLayout();
-  telemetry_grid->setContentsMargins(10,10,10,10);
-  telemetry_grid->setSpacing(10);
+  telemetry_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  telemetry_grid->setSpacing(grid_margin_);
   telemetry_grid->setAlignment(Qt::AlignTop);
-  telemetry_grid->addWidget(telemetry_label_, 0, 0);
-  telemetry_grid->addWidget(telemetry_container_fl_, 1, 0);
-  telemetry_grid->addWidget(telemetry_container_fr_, 1, 1);
-  telemetry_grid->addWidget(telemetry_container_rl_, 2, 0);
-  telemetry_grid->addWidget(telemetry_container_rr_, 2, 1);
+  telemetry_grid->addWidget(telemetry_container_fl_, 0, 0);
+  telemetry_grid->addWidget(telemetry_container_fr_, 0, 1);
+  telemetry_grid->addWidget(telemetry_container_rl_, 1, 0);
+  telemetry_grid->addWidget(telemetry_container_rr_, 1, 1);
   main_grid->addLayout(telemetry_grid, 1, 0);
 
   auto graph_grid = new QGridLayout();
-  graph_grid->setContentsMargins(10,10,10,10);
-  graph_grid->setSpacing(10);
+  graph_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  graph_grid->setSpacing(grid_margin_);
   graph_grid->setAlignment(Qt::AlignTop);
 
   speed_graph_label_ = new QLabel(this);
-  speed_graph_label_->setFixedSize(1000, 400);
+  speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
+  speed_graph_label_->setFixedHeight(rviz_height_ * 0.15);
+  speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   speed_graph_label_->setStyleSheet("border: 2px solid black;");
   graph_grid->addWidget(speed_graph_label_, 0, 0);
 
   gg_graph_label_ = new QLabel(this);
-  gg_graph_label_->setFixedSize(1000, 400);
+  gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
+  gg_graph_label_->setFixedHeight(rviz_height_ * 0.15);
+  gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   gg_graph_label_->setStyleSheet("border: 2px solid black;");
   graph_grid->addWidget(gg_graph_label_, 1, 0);
 
@@ -135,8 +152,8 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Buttons
   auto button_grid = new QGridLayout();
-  button_grid->setContentsMargins(10,10,10,10);
-  button_grid->setSpacing(10);
+  button_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  button_grid->setSpacing(grid_margin_);
   button_grid->setAlignment(Qt::AlignTop);
 
   // Launch button
@@ -376,7 +393,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   // Draw grid lines
   int num_rows = 4;
   double step_y = pixmap_height / static_cast<double>(num_rows);
-  painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
+  painter.setPen(QPen(Qt::lightGray, graph_grid_width_, Qt::DashLine));
   for (int j = 1; j < num_rows; ++j) {
       painter.drawLine(0, j * step_y, pixmap_width, j * step_y);
   }
@@ -393,7 +410,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   }
 
   // Draw target speed line in blue
-  painter.setPen(QPen(Qt::blue, 4));
+  painter.setPen(QPen(Qt::blue, pen_size_));
   QPainterPath ts_path;
   bool first_ts_point = true;
   for (const auto &point : target_speed_history_)
@@ -411,7 +428,7 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   painter.drawPath(ts_path);
 
   // Draw vx line in red
-  painter.setPen(QPen(Qt::red, 5));
+  painter.setPen(QPen(Qt::red, pen_size_));
   QPainterPath vx_path;
   bool first_vx_point = true;
   for (const auto &point : vx_history_)
@@ -429,23 +446,34 @@ void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r
   painter.drawPath(vx_path);
 
   // draw legend
-  // Semi-transparent background for the legend
-  QRect legend_rect(10, 10, 250, 60);
+  // Adaptable legend for speed graph
+  int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
+  int legend_height = std::min(pixmap_height * 0.225, rviz_size_ * 0.06);
+  QRect legend_rect(20, 10, legend_width, legend_height);
   painter.setPen(Qt::black);
   painter.setBrush(QColor(255, 255, 255, 200));
   painter.drawRect(legend_rect);
+  
+  int line_length = legend_width / 4;
+  int y_target = legend_rect.top() + legend_height / 3;
+  int y_vx = legend_rect.top() + 2 * legend_height / 3;
 
+  // Legend font size
+  QFont legend_font = painter.font();
+  legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
+  painter.setFont(legend_font);
+  
   // Legend for Target Speed (blue)
-  painter.setPen(QPen(Qt::blue, 4));
-  painter.drawLine(20, 25, 60, 25);
+  painter.setPen(QPen(Qt::blue, pen_size_*0.9));
+  painter.drawLine(legend_rect.left() + 10, y_target, legend_rect.left() + 10 + line_length, y_target);
   painter.setPen(Qt::black);
-  painter.drawText(70, 35, "Target Speed");
-
+  painter.drawText(legend_rect.left() + 10 + line_length + 10, y_target + 5, "Target");
+  
   // Legend for Vx (red)
-  painter.setPen(QPen(Qt::red, 5));
-  painter.drawLine(20, 55, 60, 55);
+  painter.setPen(QPen(Qt::red, pen_size_));
+  painter.drawLine(legend_rect.left() + 10, y_vx, legend_rect.left() + 10 + line_length, y_vx);
   painter.setPen(Qt::black);
-  painter.drawText(70, 65, "Vx");
+  painter.drawText(legend_rect.left() + 10 + line_length + 10, y_vx + 5, "Vx");
 
   speed_graph_label_->setPixmap(pixmap);
 
@@ -469,16 +497,15 @@ void ExtendedInterface::update_gg_graph()
   int cx = pixmap_width / 2;
   int cy = pixmap_height / 2;
 
-  // Centered axes
-  painter.setPen(QPen(Qt::black, 3));
-  painter.drawLine(0, cy, pixmap_width, cy); // x-axis
-  painter.drawLine(cx, 0, cx, pixmap_height);  // y-axis
-
   // Draw grid for integers from -12 to 12 (skip 0, already drawn by the axis)
-  painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
   for (int i = -12; i <= 12; i++)
   {
     if(i == 0) continue; // Skip the axis
+    if (i % 2 == 0) {
+        painter.setPen(QPen(Qt::lightGray, graph_grid_width_));
+    } else {
+        painter.setPen(QPen(Qt::lightGray, graph_grid_width_/2));
+    }
     double x = (i + 12.0) / 24.0 * pixmap_width;
     double y = pixmap_height - ((i + 12.0) / 24.0 * pixmap_height);
 
@@ -487,26 +514,27 @@ void ExtendedInterface::update_gg_graph()
 
     // Horizontal line
     painter.drawLine(0, y, pixmap_width, y);
-
-    // Labels (optional), every 2 units
-    if (i % 2 == 0) {
-        painter.setPen(Qt::black);
-        painter.drawText(QPointF(x + 2, pixmap_height - 2), QString::number(i)); // x-axis label
-        painter.drawText(QPointF(2, y - 2), QString::number(i));              // y-axis label
-        painter.setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
-    }
   }
 
+  // Centered axes
+  painter.setPen(QPen(Qt::black, graph_grid_width_*2));
+  painter.drawLine(0, cy, pixmap_width, cy); // x-axis
+  painter.drawLine(cx, 0, cx, pixmap_height);  // y-axis
+
   // draw GG legend
-  QRect legend_gg_rect(25, 10, 200, 30);
+  int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
+  int legend_height = std::min(pixmap_height * 0.15, rviz_size_ * 0.05);
+  QRect legend_gg_rect(10, 10, legend_width, legend_height);
   painter.setPen(Qt::black);
   painter.setBrush(QColor(255, 255, 255, 200));
   painter.drawRect(legend_gg_rect);
-  painter.setPen(Qt::black);
-  painter.drawText(30, 35, "GG diagram");
+  QFont legend_font = painter.font();
+  legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
+  painter.setFont(legend_font);
+  painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), "GG diagram");
 
   // Draw points from gg_vector_ with new scaling for range -12 to 12
-  painter.setPen(QPen(Qt::blue, 5));
+  painter.setPen(QPen(Qt::blue, pen_size_));
   for (auto &p : gg_vector_) {
     double x = (p.first + 12.0) / 24.0 * pixmap_width;
     double y = pixmap_height - ((p.second + 12.0) / 24.0 * pixmap_height);
@@ -522,11 +550,13 @@ void ExtendedInterface::update_gg_graph()
  */
 void ExtendedInterface::launch_button_clicked()
 {
-    simulation_process_ = new QProcess(this);
-    QString launch_file = launch_select_->currentText();
-    QStringList args;
-    args << "launch" << "common_meta" << launch_file;
-    simulation_process_->start("ros2", args);
+    if (simulation_process_ == nullptr) {
+        simulation_process_ = new QProcess(this);
+        QString launch_file = launch_select_->currentText();
+        QStringList args;
+        args << "launch" << "common_meta" << launch_file;
+        simulation_process_->start("ros2", args);
+    }
 }
 
 /**
