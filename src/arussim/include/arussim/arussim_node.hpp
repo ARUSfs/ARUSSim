@@ -39,6 +39,7 @@
 #include "arussim/sensors.hpp"
 #include <random>
 #include <nlohmann/json.hpp>
+#include "std_msgs/msg/string.hpp"
 
 /**
  * @class Simulator
@@ -88,6 +89,8 @@ class Simulator : public rclcpp::Node
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
     arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
+    std::string prev_circuit_;
+    std::string track_name_;
 
 
     std::vector<std::pair<double, double>> tpl_cones_;
@@ -108,6 +111,8 @@ class Simulator : public rclcpp::Node
 
     bool kCSVState;
     std::shared_ptr<CSVGenerator> csv_generator_state_;
+
+    visualization_msgs::msg::MarkerArray current_cone_markers_;
 
     /**
      * @brief Callback function for the slow timer.
@@ -164,9 +169,9 @@ class Simulator : public rclcpp::Node
     /**
      * @brief Loads the track and the fixed path from resources.
      * 
-     * @param track 
+     * @param track_msg Mensaje que contiene el nombre del track.
      */
-    void load_track(const pcl::PointCloud<ConeXYZColorScore>& track);
+    void load_track(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
      * @brief Detects if the vehicle is between two TPLs.
@@ -184,6 +189,13 @@ class Simulator : public rclcpp::Node
      * 
      */
     void cone_visualization();
+
+    /**
+     * @brief Load the fixed trajectory from a JSON file.
+     * 
+     * @param track_msg 
+     */
+    void load_fixed_trajectory(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
      * @brief Service handler for setting the FOV.
@@ -218,4 +230,5 @@ class Simulator : public rclcpp::Node
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
 };

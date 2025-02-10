@@ -1,371 +1,290 @@
-/**
- * @file extended_interface.cpp
- * @author Rafael Guil (rafaguilvalero@gmail.com)
- * @brief Extended interface with some controls and car data.
- * @version 0.1
- * @date 2024-11-11
- */
-#include "arussim/extended_interface.hpp"
+#include <arussim/extended_interface.hpp>
 
-
-/**
- * @brief Construct a new Extended Interface:: Extended Interface object
- * 
- * @param parent 
- */
-ExtendedInterface::ExtendedInterface(QWidget* parent) : QWidget(parent), Node("extended_interface") {
-    // Set window size
-    setFixedWidth(window_width_);
-    setFixedHeight(window_height_);
-
-    // Set font
-    QFont custom_font_("Montserrat Regular", 13);
-    QFont bold_font_ = custom_font_;
-    bold_font_.setBold(true);
-
-    // Set icon
-    setWindowIcon(QIcon("ARUSSim/src/track_editor/icons/icon.png"));
-
-    //Time per lap labels
-    last_lt_label_ = new QLabel("Last Lap Time: 0s", this);
-    last_lt_label_->setFont(bold_font_);
-    last_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
-    last_lt_label_->move(margins_, margins_);
-
-    lap_label_ = new QLabel("Lap: 0", this);
-    lap_label_->setFont(bold_font_);
-    lap_label_->setFixedSize(window_width_ * 0.55, margins_);
-    lap_label_->move(window_width_ * 0.55, margins_);
-
-    best_lt_label_ = new QLabel("Best Lap Time: 0s", this);
-    best_lt_label_->setFont(bold_font_);
-    best_lt_label_->setFixedSize(window_width_ * 0.55, margins_);
-    best_lt_label_->move(margins_, margins_*2);
-
-    hit_cones_label_ = new QLabel("Hit cones: 0", this);
-    hit_cones_label_->setFont(bold_font_);
-    hit_cones_label_->setFixedSize(window_width_ * 0.55, margins_);
-    hit_cones_label_->move(window_width_ * 0.55, margins_*2);
-
-    // Telemetry bars
-    telemetry_label_ = new QLabel("Telemetry", this);
-    telemetry_label_->setFont(custom_font_);
-    telemetry_label_->move(margins_ * 0.95, margins_*4);
-
-    telemetry_container_fl_ = new QWidget(this);
-    telemetry_container_fl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
-    telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fl_->move(margins_, margins_ * 5);
-    telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
-    telemetry_bar_fl_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_fl_->move(0, center_y_);
-
-    telemetry_container_fr_ = new QWidget(this);
-    telemetry_container_fr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
-    telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_fr_->move(window_width_ * 0.525, margins_ * 5);
-    telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
-    telemetry_bar_fr_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_fr_->move(0, center_y_);
-
-    telemetry_rear_container_position_y_ = window_height_ * 0.15 + margins_ * 6;
-
-    telemetry_container_rl_ = new QWidget(this);
-    telemetry_container_rl_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
-    telemetry_container_rl_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_rl_->move(margins_, telemetry_rear_container_position_y_);
-    telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
-    telemetry_bar_rl_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_rl_->move(0, center_y_);
-
-    telemetry_container_rr_ = new QWidget(this);
-    telemetry_container_rr_->setFixedSize(window_width_ * 0.425, window_height_ * 0.15);
-    telemetry_container_rr_->setStyleSheet("background-color: lightgray;");
-    telemetry_container_rr_->move(window_width_ * 0.525, telemetry_rear_container_position_y_);
-    telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
-    telemetry_bar_rr_->setFixedWidth(window_width_ * 0.425);
-    telemetry_bar_rr_->move(0, center_y_);
-
-    // Telemetry labels
-    telemetry_parameters_position_y_ = telemetry_rear_container_position_y_ + window_height_ * 0.15 + margins_;
-
-    vx_label_ = new QLabel("vx: 0 m/s", this);
-    vx_label_->setFont(custom_font_);
-    vx_label_->setFixedSize(window_width_ * 0.425, margins_);
-    vx_label_->move(margins_, telemetry_parameters_position_y_);
-
-    vy_label_ = new QLabel("vy: 0 m/s", this);
-    vy_label_->setFont(custom_font_);
-    vy_label_->setFixedSize(window_width_ * 0.425, margins_);
-    vy_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_);
-    
-    ax_label_ = new QLabel("ax: 0 m/s^2", this);
-    ax_label_->setFont(custom_font_);
-    ax_label_->setFixedSize(window_width_ * 0.425, margins_);
-    ax_label_->move(margins_, telemetry_parameters_position_y_ + margins_);
-
-    ay_label_ = new QLabel("ay: 0 m/s^2", this);
-    ay_label_->setFont(custom_font_);
-    ay_label_->setFixedSize(window_width_ * 0.425, margins_);
-    ay_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_);
-
-    r_label_ = new QLabel("r: 0 rad/s", this);
-    r_label_->setFont(custom_font_);
-    r_label_->setFixedSize(window_width_ * 0.425, margins_);
-    r_label_->move(margins_, telemetry_parameters_position_y_ + margins_ * 2);
-    
-    delta_label_ = new QLabel("delta: 0º", this);
-    delta_label_->setFont(custom_font_);
-    delta_label_->setFixedSize(window_width_ * 0.425, margins_);
-    delta_label_->move(window_width_ * 0.525, telemetry_parameters_position_y_ + margins_ * 2);
-
-    // Launch button
-    launch_button_position_y_ = telemetry_parameters_position_y_ + margins_ * 4;
-
-    launch_button_ = new QPushButton("Launch Simulation", this);
-    launch_button_->move(margins_, launch_button_position_y_);
-    launch_button_->setFixedSize(window_width_ * 0.9, window_height_ * 0.05);
-    launch_button_->setFont(custom_font_);
-    connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
-
-
-    // timer slider
-    timer_setter_position_y_ = launch_button_position_y_ + window_height_ * 0.05 + margins_;
-
-    timer_label_ = new QLabel("Automatic Simulation: x" + QString::number(simulation_speed_multiplier, 'f', 1), this);
-    timer_label_->setFont(custom_font_);
-    timer_label_->setFixedSize(window_width_*0.9, margins_);
-    timer_label_->move(margins_, timer_setter_position_y_);
-
-    timer_setter_ = new QSlider(Qt::Horizontal, this);
-    timer_setter_->setRange(0, 100);
-    timer_setter_->setValue(static_cast<int>(simulation_speed_multiplier * 10));
-    timer_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_, window_width_ * 0.9, margins_);
-    timer_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(timer_setter_, &QSlider::valueChanged, this, &ExtendedInterface::timer_set);
-
-    // Slider 1
-    a_label_ = new QLabel("a: 0", this);
-    a_label_->setFont(custom_font_);
-    a_label_->setFixedSize(window_width_*0.9, margins_);
-    a_label_->move(margins_, timer_setter_position_y_ + margins_ * 3);
-
-    a_setter_ = new QSlider(Qt::Horizontal, this);
-    a_setter_->setRange(0, 100);
-    a_setter_->setValue(static_cast<int>(kA));
-    a_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_*4, window_width_ * 0.9, margins_);
-    a_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(a_setter_, &QSlider::valueChanged, this, &ExtendedInterface::a_set);
-
-    // Slider 2
-    b_label_ = new QLabel("b: 0", this);
-    b_label_->setFont(custom_font_);
-    b_label_->setFixedSize(window_width_*0.9, margins_);
-    b_label_->move(margins_, timer_setter_position_y_ + margins_ * 6);
-
-    b_setter_ = new QSlider(Qt::Horizontal, this);
-    b_setter_->setRange(0, 100);
-    b_setter_->setValue(static_cast<int>(kB));
-    b_setter_->setGeometry(margins_, timer_setter_position_y_ + margins_*7, window_width_ * 0.9, margins_);
-    b_setter_->setStyleSheet("QSlider::handle { background: blue; }");
-    connect(b_setter_, &QSlider::valueChanged, this, &ExtendedInterface::b_set);
-
-    //Stop button
-    ab_button_position_y_ = timer_setter_position_y_ + margins_ * 9;
-
-    stop_button_ = new QPushButton("Stop Simulation", this);
-    stop_button_->move(margins_, ab_button_position_y_);
-    stop_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    stop_button_->setFont(custom_font_);
-    connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
-
-    //Reset button
-    reset_button_ = new QPushButton("Reset", this);
-    reset_button_->move(window_width_ * 0.525, ab_button_position_y_);
-    reset_button_->setFixedSize(window_width_ * 0.425, window_height_ * 0.05);
-    reset_button_->setFont(custom_font_);
-    connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
-
-
-
-
-    // Publisher
-    reset_pub_ = this->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
-
-    // Subscriber
-    torque_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/torque4WD", 1, 
-        [this](const arussim_msgs::msg::FourWheelDrive::SharedPtr msg) { 
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                update_telemetry_bar(msg->front_right, msg->front_left, msg->rear_right, msg->rear_left);
-            }, Qt::QueuedConnection);
-        }
-    );
-
-    state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
-        "/arussim/state", 1, 
-        [this](const arussim_msgs::msg::State::SharedPtr msg) { 
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                update_telemetry_labels(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
-            }, Qt::QueuedConnection);
-        }
-    );
-
-    lap_time_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/lap_time", 1, 
-        [this](const std_msgs::msg::Float32::SharedPtr msg) { 
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                update_lap_time_labels(msg->data);
-            }, Qt::QueuedConnection);
-        }
-    );
-
-    hit_cones_bool_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/arussim/hit_cones_bool", 1,
-        [this](const std_msgs::msg::Bool::SharedPtr msg) {
-            if (msg->data) {
-                QMetaObject::invokeMethod(this, [this]() {
-                    hit_cones_counter_++;
-                    hit_cones_label_->setText("Hit cones: " + QString::number(hit_cones_counter_));
-                }, Qt::QueuedConnection);
-            }
-        }
-    );
-
-
-    // Client
-    timer_client_ = this->create_client<arussim_msgs::srv::SetTimer>("arussim/set_timer");
-
-    // Activate window
-    QTimer::singleShot(3000, [this]() {
-        raise();
-        activateWindow();
-    });
-
-    // Move the window to the right side of the screen
-    move(window_position_x_, 0);
-}
-
-/**
- * @brief setter for the timer parameter
- * 
- * @param value_ 
- */
-void ExtendedInterface::timer_set(int value) {
-    double timer_value = value / 10.0;
-    timer_label_->setText("Automatic Simulation: x" + QString::number(timer_value, 'f', 1));
-
-    auto request = std::make_shared<arussim_msgs::srv::SetTimer::Request>();
-    request->timer = timer_value;
-
-    auto future = timer_client_->async_send_request(
-        request,
-        [this](rclcpp::Client<arussim_msgs::srv::SetTimer>::SharedFuture future) {
-            auto result = future.get();
-            if (!result->success) {
-                RCLCPP_ERROR(this->get_logger(), "Failed to set timer: %s", result->message.c_str());
-            }
-        }
-    );
-}
-
-/**
- * @brief setter for the a parameter
- * 
- * @param value_ 
- */
-void ExtendedInterface::a_set(int value_) {
-    kA = static_cast<double>(value_);
-    a_label_->setText("a: " + QString::number(value_));
-}
-
-/**
- * @brief setter for the b parameter
- * 
- * @param value_ 
- */
-void ExtendedInterface::b_set(int value_) {
-    kB = static_cast<double>(value_);
-    b_label_->setText("b: " + QString::number(value_));
-}
-
-/**
- * @brief Update the telemetry bars
- * 
- * @param fl_param_ 
- * @param fr_param_ 
- * @param rl_param_ 
- * @param rr_param_ 
- */
-void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_)
+namespace rviz_panel_tutorial
 {
-    // Front Left
-    double height_fl = std::abs(fl_param_) * scale_factor_;
-    height_fl = std::min(height_fl, max_bar_height_);
-    telemetry_bar_fl_->setFixedHeight(static_cast<int>(height_fl));
-    if (fl_param_ >= 0) {
-        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_ - height_fl);
-        telemetry_bar_fl_->setStyleSheet("background-color: green;");
-    } else {
-        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_);
-        telemetry_bar_fl_->setStyleSheet("background-color: red;");
-    }
 
-    // Front Right
-    double height_fr = std::abs(fr_param_) * scale_factor_;
-    height_fr = std::min(height_fr, max_bar_height_);
-    telemetry_bar_fr_->setFixedHeight(static_cast<int>(height_fr));
-    if (fr_param_ >= 0) {
-        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_ - height_fr);
-        telemetry_bar_fr_->setStyleSheet("background-color: green;");
-    } else {
-        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_);
-        telemetry_bar_fr_->setStyleSheet("background-color: red;");
-    }
+ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
+{
+  // Detect screen size to adapt every item to the screen
+  QScreen* screen = this->screen();
+  screen_size_ = screen->size();
 
-    // Rear Left
-    double height_rl = std::abs(rl_param_) * scale_factor_;
-    height_rl = std::min(height_rl, max_bar_height_);
-    telemetry_bar_rl_->setFixedHeight(static_cast<int>(height_rl));
-    if (rl_param_ >= 0) {
-        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_ - height_rl);
-        telemetry_bar_rl_->setStyleSheet("background-color: green;");
-    } else {
-        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_);
-        telemetry_bar_rl_->setStyleSheet("background-color: red;");
-    }
+  rviz_width_ = screen_size_.width();
+  rviz_height_ = screen_size_.height();
+  rviz_size_ = std::sqrt(rviz_width_ * rviz_width_ + rviz_height_ * rviz_height_);
 
-    // Rear Right
-    double height_rr = std::abs(rr_param_) * scale_factor_;
-    height_rr = std::min(height_rr, max_bar_height_);
-    telemetry_bar_rr_->setFixedHeight(static_cast<int>(height_rr));
-    if (rr_param_ >= 0) {
-        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_ - height_rr);
-        telemetry_bar_rr_->setStyleSheet("background-color: green;");
-    } else {
-        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_);
-        telemetry_bar_rr_->setStyleSheet("background-color: red;");
-    }
+  bar_size_ = rviz_height_ * 0.07;
+  scale_factor_ = bar_size_ / max_torque_value_;
+  center_y_ = bar_size_ / 2;
+
+  grid_margin_ = rviz_size_ * 0.003;
+  graph_grid_width_ = rviz_size_ * 0.001;
+  pen_size_ = rviz_size_ * 0.0015;
+
+  // Main vertical layout
+  auto main_layout = new QVBoxLayout(this);
+
+  // Main grid layout
+  auto main_grid = new QGridLayout();
+  main_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  main_grid->setSpacing(grid_margin_);
+  main_grid->setAlignment(Qt::AlignTop);
+
+  // Create a grid layout for the labels with vertical and horizontal separators
+  auto grid_layout = new QGridLayout();
+  grid_layout->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  grid_layout->setSpacing(grid_margin_);
+  grid_layout->setAlignment(Qt::AlignTop);
+
+  // Row 0: First row labels with vertical separator
+  last_lt_label_ = new QLabel("Last Lap Time: 0s", this);
+  grid_layout->addWidget(last_lt_label_, 0, 0);
+
+  auto separator1 = new QFrame(this);
+  separator1->setFrameShape(QFrame::VLine);
+  separator1->setFrameShadow(QFrame::Sunken);
+  grid_layout->addWidget(separator1, 0, 1);
+
+  lap_label_ = new QLabel("Lap: 0", this);
+  grid_layout->addWidget(lap_label_, 0, 2);
+
+  // Row 1: Horizontal separator spanning all columns
+  auto h_separator = new QFrame(this);
+  h_separator->setFrameShape(QFrame::HLine);
+  h_separator->setFrameShadow(QFrame::Sunken);
+  grid_layout->addWidget(h_separator, 1, 0, 1, 3); // span 3 columns
+
+  // Row 2: Second row labels with vertical separator
+  best_lt_label_ = new QLabel("Best Lap Time: 0s", this);
+  grid_layout->addWidget(best_lt_label_, 2, 0);
+
+  auto separator2 = new QFrame(this);
+  separator2->setFrameShape(QFrame::VLine);
+  separator2->setFrameShadow(QFrame::Sunken);
+  grid_layout->addWidget(separator2, 2, 1);
+
+  hit_cones_label_ = new QLabel("Hit cones: 0", this);
+  grid_layout->addWidget(hit_cones_label_, 2, 2);
+
+  // Add the grid layout at the top of the main layout
+  main_grid->addLayout(grid_layout, 0, 0);
+
+  // Front Left container and bar without extra block
+  telemetry_container_fl_ = new QWidget(this);
+  telemetry_container_fl_->setStyleSheet("background-color: lightgray;");
+  telemetry_container_fl_->setMinimumWidth(bar_size_);
+  telemetry_container_fl_->setFixedHeight(bar_size_);
+  telemetry_container_fl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_fl_ = new QWidget(telemetry_container_fl_);
+  telemetry_bar_fl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_fl_->move(0, center_y_);
+  telemetry_bar_fl_->setFixedWidth(telemetry_container_fl_->width());
+
+  // Front Right container and bar
+  telemetry_container_fr_ = new QWidget(this);
+  telemetry_container_fr_->setStyleSheet("background-color: lightgray;");
+  telemetry_container_fr_->setMinimumWidth(bar_size_);
+  telemetry_container_fr_->setFixedHeight(bar_size_);
+  telemetry_container_fr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_fr_ = new QWidget(telemetry_container_fr_);
+  telemetry_bar_fr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_fr_->move(0, center_y_);
+  telemetry_bar_fr_->setFixedWidth(telemetry_container_fr_->width());
+
+  // Rear Left container and bar
+  telemetry_container_rl_ = new QWidget(this);
+  telemetry_container_rl_->setStyleSheet("background-color: lightgray;");
+  telemetry_container_rl_->setMinimumWidth(bar_size_);
+  telemetry_container_rl_->setFixedHeight(bar_size_);
+  telemetry_container_rl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_rl_ = new QWidget(telemetry_container_rl_);
+  telemetry_bar_rl_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_rl_->move(0, center_y_);
+  telemetry_bar_rl_->setFixedWidth(telemetry_container_rl_->width());
+
+  // Rear Right container and bar
+  telemetry_container_rr_ = new QWidget(this);
+  telemetry_container_rr_->setStyleSheet("background-color: lightgray;");
+  telemetry_container_rr_->setMinimumWidth(bar_size_);
+  telemetry_container_rr_->setFixedHeight(bar_size_);
+  telemetry_container_rr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_rr_ = new QWidget(telemetry_container_rr_);
+  telemetry_bar_rr_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  telemetry_bar_rr_->move(0, center_y_);
+  telemetry_bar_rr_->setFixedWidth(telemetry_container_rr_->width());
+
+  // Create telemetry grid and add containers
+  auto telemetry_grid = new QGridLayout();
+  telemetry_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  telemetry_grid->setSpacing(grid_margin_);
+  telemetry_grid->setAlignment(Qt::AlignTop);
+  telemetry_grid->addWidget(telemetry_container_fl_, 0, 0);
+  telemetry_grid->addWidget(telemetry_container_fr_, 0, 1);
+  telemetry_grid->addWidget(telemetry_container_rl_, 1, 0);
+  telemetry_grid->addWidget(telemetry_container_rr_, 1, 1);
+  main_grid->addLayout(telemetry_grid, 1, 0);
+
+  auto graph_grid = new QGridLayout();
+  graph_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  graph_grid->setSpacing(grid_margin_);
+  graph_grid->setAlignment(Qt::AlignTop);
+
+  speed_graph_label_ = new QLabel(this);
+  speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
+  speed_graph_label_->setFixedHeight(rviz_height_ * 0.14);
+  speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  speed_graph_label_->setStyleSheet("border: 2px solid black;");
+  graph_grid->addWidget(speed_graph_label_, 0, 0);
+
+  gg_graph_label_ = new QLabel(this);
+  gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
+  gg_graph_label_->setFixedHeight(rviz_height_ * 0.14);
+  gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  gg_graph_label_->setStyleSheet("border: 2px solid black;");
+  graph_grid->addWidget(gg_graph_label_, 1, 0);
+
+  auto telemetry_labels_grid = new QGridLayout();
+  telemetry_labels_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  telemetry_labels_grid->setSpacing(grid_margin_);
+  telemetry_labels_grid->setAlignment(Qt::AlignTop);
+
+  vx_label_ = new QLabel("Vx: 0", this);
+  telemetry_labels_grid->addWidget(vx_label_, 0, 0);
+
+  vy_label_ = new QLabel("Vy: 0", this);
+  telemetry_labels_grid->addWidget(vy_label_, 0, 1);
+
+  ax_label_ = new QLabel("Ax: 0", this);
+  telemetry_labels_grid->addWidget(ax_label_, 1, 0);
+
+  ay_label_ = new QLabel("Ay: 0", this);
+  telemetry_labels_grid->addWidget(ay_label_, 1, 1);
+
+  r_label_ = new QLabel("r: 0", this);
+  telemetry_labels_grid->addWidget(r_label_, 2, 0);
+
+  delta_label_ = new QLabel("Delta: 0", this);
+  telemetry_labels_grid->addWidget(delta_label_, 2, 1);
+
+  graph_grid->addLayout(telemetry_labels_grid, 2, 0);
+
+
+  // Plot timer
+  timer_.start();
+
+  main_grid->addLayout(graph_grid, 2, 0);
+
+  // Buttons
+  auto button_grid = new QGridLayout();
+  button_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
+  button_grid->setSpacing(grid_margin_);
+  button_grid->setAlignment(Qt::AlignTop);
+
+  // Launch button
+  launch_button_ = new QPushButton("Launch Simulation", this);
+  main_layout->addWidget(launch_button_);
+  connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
+  button_grid->addWidget(launch_button_, 1, 0);
+
+  // Stop button
+  stop_button_ = new QPushButton("Stop Simulation", this);
+  main_layout->addWidget(stop_button_);
+  connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
+  button_grid->addWidget(stop_button_, 2, 0);
+
+  // Reset button
+  reset_button_ = new QPushButton("Reset Simulation", this);
+  main_layout->addWidget(reset_button_);
+  connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
+  button_grid->addWidget(reset_button_, 2, 1);
+
+  // Circuit selection
+  circuit_select_ = new QComboBox(this);
+  circuit_select_->setPlaceholderText("Choose a circuit");
+  QDir tracks_dir("ARUSSim/src/arussim/resources/tracks");
+  QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
+  circuit_select_->addItems(pcd_files);
+  connect(circuit_select_, &QComboBox::currentTextChanged, this, &ExtendedInterface::circuit_selector);
+  button_grid->addWidget(circuit_select_, 1, 1);
+
+  // Launch selection
+  launch_select_ = new QComboBox(this);
+  QDir launch_dir("DRIVERLESS2/src/common/common_meta/launch");
+  QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
+  launch_select_->addItems(launch_files);
+  launch_select_->setCurrentText("simulation_launch.py");
+  button_grid->addWidget(launch_select_, 0, 0, 1, 2);
+
+  main_grid->addLayout(button_grid, 3, 0);
+
+  main_layout->addLayout(main_grid);
 }
 
-/**
- * @brief Update the telemetry labels
- * 
- * @param vx_ 
- * @param vy_ 
- * @param r_ 
- * @param ax_ 
- * @param ay_ 
- * @param delta_ 
- */
-void ExtendedInterface::update_telemetry_labels(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+ExtendedInterface::~ExtendedInterface() = default;
+
+void ExtendedInterface::onInitialize()
 {
-    vx_label_->setText("vx: " + QString::number(vx_, 'f', 3) + " m/s");
-    vy_label_->setText("vy: " + QString::number(vy_, 'f', 3) + " m/s");
-    ax_label_->setText("ax: " + QString::number(ax_, 'f', 3) + " m/s^2");
-    ay_label_->setText("ay: " + QString::number(ay_, 'f', 3) + " m/s^2");
-    r_label_->setText("r: " + QString::number(r_, 'f', 3) + " rad/s");
-    delta_label_->setText("delta: " + QString::number(delta_ * 180.0 / M_PI, 'f', 3) + "º");
+  // Access the abstract ROS Node and
+  // in the process lock it for exclusive use until the method is done.
+  node_ptr_ = getDisplayContext()->getRosNodeAbstraction().lock();
+
+  // Get a pointer to the familiar rclcpp::Node for making subscriptions/publishers
+  // (as per normal rclcpp code)
+  rclcpp::Node::SharedPtr node = node_ptr_->get_raw_node();
+
+  // Publishers
+  reset_pub_ = node->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
+  circuit_pub_ = node->create_publisher<std_msgs::msg::String>("/arussim/circuit", 1);
+
+
+  // Subscribers
+  torque_sub_ = node->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+      "/arussim/torque4WD", 1, 
+      [this](const arussim_msgs::msg::FourWheelDrive::SharedPtr msg) { 
+          QMetaObject::invokeMethod(this, [this, msg]() {
+              update_telemetry_bar(msg->front_right, msg->front_left, msg->rear_right, msg->rear_left);
+          }, Qt::QueuedConnection);
+      }
+  );
+
+  state_sub_ = node->create_subscription<arussim_msgs::msg::State>(
+      "/arussim/state", 1, 
+      [this](const arussim_msgs::msg::State::SharedPtr msg) { 
+          QMetaObject::invokeMethod(this, [this, msg]() {
+            state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+          }, Qt::QueuedConnection);
+      }
+  );
+
+  lap_time_sub_ = node->create_subscription<std_msgs::msg::Float32>(
+      "/arussim/lap_time", 1, 
+      [this](const std_msgs::msg::Float32::SharedPtr msg) { 
+          QMetaObject::invokeMethod(this, [this, msg]() {
+              update_lap_time_labels(msg->data);
+          }, Qt::QueuedConnection);
+      }
+  );
+
+  hit_cones_bool_sub_ = node->create_subscription<std_msgs::msg::Bool>(
+      "/arussim/hit_cones_bool", 1,
+      [this](const std_msgs::msg::Bool::SharedPtr msg) {
+          if (msg->data) {
+              QMetaObject::invokeMethod(this, [this]() {
+                  hit_cones_counter_++;
+                  hit_cones_label_->setText("Hit cones: " + QString::number(hit_cones_counter_));
+              }, Qt::QueuedConnection);
+          }
+      }
+  );
+
+  target_speed_sub_ = node->create_subscription<std_msgs::msg::Float32>(
+      "/controller/target_speed", 1,
+      [this](const std_msgs::msg::Float32::SharedPtr msg) {
+          QMetaObject::invokeMethod(this, [this, msg]() {
+              target_speed_ = msg->data;
+          }, Qt::QueuedConnection);
+      }
+  );
 }
 
 /**
@@ -392,6 +311,309 @@ void ExtendedInterface::update_lap_time_labels(double lap_time_)
 }
 
 /**
+ * @brief Update the telemetry bars
+ * 
+ * @param fl_param_ 
+ * @param fr_param_ 
+ * @param rl_param_ 
+ * @param rr_param_ 
+ */
+void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_)
+{
+    // Front Left
+    double height_fl = std::abs(fl_param_) * scale_factor_;
+    height_fl = std::min(height_fl, static_cast<double>(telemetry_container_fl_->height()));
+    telemetry_bar_fl_->setFixedHeight(static_cast<int>(height_fl));
+    telemetry_bar_fl_->setFixedWidth(telemetry_container_fl_->width());
+    if (fl_param_ >= 0) {
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_ - height_fl);
+        telemetry_bar_fl_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_fl_->move(telemetry_bar_fl_->x(), center_y_);
+        telemetry_bar_fl_->setStyleSheet("background-color: red;");
+    }
+
+    // Front Right
+    double height_fr = std::abs(fr_param_) * scale_factor_;
+    height_fr = std::min(height_fr, static_cast<double>(telemetry_container_fl_->height()));
+    telemetry_bar_fr_->setFixedHeight(static_cast<int>(height_fr));
+    telemetry_bar_fr_->setFixedWidth(telemetry_container_fr_->width());
+    if (fr_param_ >= 0) {
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_ - height_fr);
+        telemetry_bar_fr_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_fr_->move(telemetry_bar_fr_->x(), center_y_);
+        telemetry_bar_fr_->setStyleSheet("background-color: red;");
+    }
+
+    // Rear Left
+    double height_rl = std::abs(rl_param_) * scale_factor_;
+    height_rl = std::min(height_rl, static_cast<double>(telemetry_container_fl_->height()));
+    telemetry_bar_rl_->setFixedHeight(static_cast<int>(height_rl));
+    telemetry_bar_rl_->setFixedWidth(telemetry_container_rl_->width());
+    if (rl_param_ >= 0) {
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_ - height_rl);
+        telemetry_bar_rl_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_rl_->move(telemetry_bar_rl_->x(), center_y_);
+        telemetry_bar_rl_->setStyleSheet("background-color: red;");
+    }
+
+    // Rear Right
+    double height_rr = std::abs(rr_param_) * scale_factor_;
+    height_rr = std::min(height_rr, static_cast<double>(telemetry_container_fl_->height()));
+    telemetry_bar_rr_->setFixedHeight(static_cast<int>(height_rr));
+    telemetry_bar_rr_->setFixedWidth(telemetry_container_rr_->width());
+    if (rr_param_ >= 0) {
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_ - height_rr);
+        telemetry_bar_rr_->setStyleSheet("background-color: green;");
+    } else {
+        telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_);
+        telemetry_bar_rr_->setStyleSheet("background-color: red;");
+    }
+}
+
+/**
+ * @brief Update the telemetry labels
+ * 
+ * @param vx_ 
+ * @param vy_ 
+ * @param r_ 
+ * @param ax_ 
+ * @param ay_ 
+ * @param delta_ 
+ */
+void ExtendedInterface::state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+{
+    update_vx_target_graph(vx_, vy_);
+    update_gg_graph(ax_, ay_);
+    update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
+}
+
+void ExtendedInterface::update_vx_target_graph(double vx, double vy)
+{
+  // Get the elapsed time in seconds from the start
+  double current_time = timer_.elapsed() / 1000.0;
+
+  // Add the new data point
+  vx_history_.append(qMakePair(current_time, vx));
+  target_speed_history_.append(qMakePair(current_time, target_speed_));
+
+  // Remove points older than 10 seconds
+  while (!vx_history_.isEmpty() && (current_time - vx_history_.first().first > 10.0) && (current_time - target_speed_history_.first().first > 10.0))
+  {
+    vx_history_.removeFirst();
+    target_speed_history_.removeFirst();
+  }
+
+  // Configure plot dimensions
+  int pixmap_width = speed_graph_label_->width();
+  int pixmap_height = speed_graph_label_->height();
+  QPixmap pixmap(pixmap_width, pixmap_height);
+  pixmap.fill(Qt::white);
+
+  QPainter painter(&pixmap);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  // Draw axes
+  painter.setPen(Qt::black);
+  painter.drawLine(0, pixmap_height-1, pixmap_width, pixmap_height-1); // x-axis
+  painter.drawLine(0, 0, 0, pixmap_height); // y-axis
+
+  // Draw grid lines
+  int num_rows = 4;
+  double step_y = pixmap_height / static_cast<double>(num_rows);
+  painter.setPen(QPen(Qt::lightGray, graph_grid_width_, Qt::DashLine));
+  for (int j = 1; j < num_rows; ++j) {
+      painter.drawLine(0, j * step_y, pixmap_width, j * step_y);
+  }
+
+  // Draw numbers 5, 10, 15, 20 at the same height as each row of the grid
+  painter.setPen(Qt::black);
+  for (int j = 1; j <= num_rows; ++j) {
+      painter.drawText(0, pixmap_height - j * step_y, QString::number(j * 5));
+  }
+
+  if(vx_history_.isEmpty()){
+      speed_graph_label_->setPixmap(pixmap);
+      return;
+  }
+
+  // Draw target speed line in blue
+  painter.setPen(QPen(Qt::blue, pen_size_));
+  QPainterPath ts_path;
+  bool first_ts_point = true;
+  for (const auto &point : target_speed_history_)
+  {
+      double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
+      double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
+      double y = pixmap_height - (norm * pixmap_height);
+      if(first_ts_point) {
+          ts_path.moveTo(x, y);
+          first_ts_point = false;
+      } else {
+          ts_path.lineTo(x, y);
+      }
+  }
+  painter.drawPath(ts_path);
+
+  // Draw vx line in red
+  painter.setPen(QPen(Qt::red, pen_size_));
+  QPainterPath vx_path;
+  bool first_vx_point = true;
+  for (const auto &point : vx_history_)
+  {
+      double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
+      double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
+      double y = pixmap_height - (norm * pixmap_height);
+      if(first_vx_point) {
+          vx_path.moveTo(x, y);
+          first_vx_point = false;
+      } else {
+          vx_path.lineTo(x, y);
+      }
+  }
+  painter.drawPath(vx_path);
+
+  // draw legend
+  // Adaptable legend for speed graph
+  int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
+  int legend_height = std::min(pixmap_height * 0.225, rviz_size_ * 0.06);
+  QRect legend_rect(20, 10, legend_width, legend_height);
+  painter.setPen(Qt::black);
+  painter.setBrush(QColor(255, 255, 255, 200));
+  painter.drawRect(legend_rect);
+  
+  int line_length = legend_width / 4;
+  int y_target = legend_rect.top() + legend_height / 3;
+  int y_vx = legend_rect.top() + 2 * legend_height / 3;
+
+  // Legend font size
+  QFont legend_font = painter.font();
+  legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
+  painter.setFont(legend_font);
+  
+  // Legend for Target Speed (blue)
+  painter.setPen(QPen(Qt::blue, pen_size_*0.9));
+  painter.drawLine(legend_rect.left() + 10, y_target, legend_rect.left() + 10 + line_length, y_target);
+  painter.setPen(Qt::black);
+  painter.drawText(legend_rect.left() + 10 + line_length + 10, y_target + 5, "Target");
+  
+  // Legend for Vx (red)
+  painter.setPen(QPen(Qt::red, pen_size_));
+  painter.drawLine(legend_rect.left() + 10, y_vx, legend_rect.left() + 10 + line_length, y_vx);
+  painter.setPen(Qt::black);
+  painter.drawText(legend_rect.left() + 10 + line_length + 10, y_vx + 5, "Vx");
+
+  speed_graph_label_->setPixmap(pixmap);
+}
+
+void ExtendedInterface::update_gg_graph(double ax, double ay)
+{
+  gg_vector_.append(qMakePair(ay, ax));
+
+  if (!gg_graph_label_) return;
+
+  int pixmap_width = gg_graph_label_->width();
+  int pixmap_height = gg_graph_label_->height();
+  QPixmap pixmap(pixmap_width, pixmap_height);
+  pixmap.fill(Qt::white);
+
+  QPainter painter(&pixmap);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  // main axes with color
+  int cx = pixmap_width / 2;
+  int cy = pixmap_height / 2;
+
+  // Draw grid for integers from -12 to 12 (skip 0, already drawn by the axis)
+  for (int i = -12; i <= 12; i++)
+  {
+    if(i == 0) continue; // Skip the axis
+    if (i % 2 == 0) {
+        painter.setPen(QPen(Qt::lightGray, graph_grid_width_));
+    } else {
+        painter.setPen(QPen(Qt::lightGray, graph_grid_width_/2));
+    }
+    double x = (i + 12.0) / 24.0 * pixmap_width;
+    double y = pixmap_height - ((i + 12.0) / 24.0 * pixmap_height);
+
+    // Vertical line
+    painter.drawLine(x, 0, x, pixmap_height);
+
+    // Horizontal line
+    painter.drawLine(0, y, pixmap_width, y);
+  }
+
+  // Centered axes
+  painter.setPen(QPen(Qt::black, graph_grid_width_*2));
+  painter.drawLine(0, cy, pixmap_width, cy); // x-axis
+  painter.drawLine(cx, 0, cx, pixmap_height);  // y-axis
+
+  // draw GG legend
+  int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
+  int legend_height = std::min(pixmap_height * 0.15, rviz_size_ * 0.05);
+  QRect legend_gg_rect(10, 10, legend_width, legend_height);
+  painter.setPen(Qt::black);
+  painter.setBrush(QColor(255, 255, 255, 200));
+  painter.drawRect(legend_gg_rect);
+  QFont legend_font = painter.font();
+  legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
+  painter.setFont(legend_font);
+  painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), "GG diagram");
+
+  // Draw points from gg_vector_ with new scaling for range -12 to 12
+  painter.setPen(QPen(Qt::blue, pen_size_));
+  for (auto &p : gg_vector_) {
+    double x = (p.first + 12.0) / 24.0 * pixmap_width;
+    double y = pixmap_height - ((p.second + 12.0) / 24.0 * pixmap_height);
+    painter.drawPoint(QPointF(x, y));
+  }
+
+  gg_graph_label_->setPixmap(pixmap);
+}
+
+void ExtendedInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
+{
+    vx_label_->setText("Vx: " + QString::number(vx, 'f', 2));
+    vy_label_->setText("Vy: " + QString::number(vy, 'f', 2));
+    r_label_->setText("r: " + QString::number(r, 'f', 2));
+    ax_label_->setText("Ax: " + QString::number(ax, 'f', 2));
+    ay_label_->setText("Ay: " + QString::number(ay, 'f', 2));
+    delta_label_->setText("Delta: " + QString::number(delta, 'f', 2));
+}
+
+/**
+ * @brief Callback for the launch button
+ * 
+ */
+void ExtendedInterface::launch_button_clicked()
+{
+    if (simulation_process_ == nullptr) {
+        simulation_process_ = new QProcess(this);
+        QString launch_file = launch_select_->currentText();
+        QStringList args;
+        args << "launch" << "common_meta" << launch_file;
+        simulation_process_->start("ros2", args);
+    }
+}
+
+/**
+ * @brief Callback for the stop button
+ * 
+ */
+void ExtendedInterface::stop_button_clicked()
+{
+    if (simulation_process_) {
+        kill(static_cast<pid_t>(simulation_process_->processId()), SIGINT);
+        simulation_process_->waitForFinished();
+        simulation_process_->deleteLater();
+        simulation_process_ = nullptr;
+        RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sSimulation stopped%s", red.c_str(), reset.c_str());
+    }
+}
+
+/**
  * @brief Callback for the reset button
  * 
  */
@@ -411,69 +633,44 @@ void ExtendedInterface::reset_button_clicked()
     hit_cones_label_->setText("Hit cones: 0");
     lap_label_->setText("Lap: 0");
 
-    RCLCPP_INFO(this->get_logger(), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
+    // reset graphs
+    vx_history_.clear();
+    target_speed_history_.clear();
+    gg_vector_.clear();
+    speed_graph_label_->clear();
+    gg_graph_label_->clear();
+
+    RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
 /**
- * @brief Callback for the a button
+ * @brief Callback for the circuit selector
  * 
+ * @param option 
  */
-void ExtendedInterface::launch_button_clicked()
+void ExtendedInterface::circuit_selector(const QString & option)
 {
-    simulation_process_ = new QProcess(this);
-    QStringList arguments;
-    arguments << "launch" << "common_meta" << "simulation_launch.py";
-    simulation_process_->start("ros2", arguments);
+  auto msg_circuit = std_msgs::msg::String();
+  msg_circuit.data = option.toStdString();
+  circuit_pub_->publish(msg_circuit);
+
+  auto msg_reset = std_msgs::msg::Bool();
+  msg_reset.data = true;
+  reset_pub_->publish(msg_reset);
+
+  // reset graphs when switching circuit
+  vx_history_.clear();
+  target_speed_history_.clear();
+  gg_vector_.clear();
+  speed_graph_label_->clear();
+  gg_graph_label_->clear();
+
+  RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
+
 }
 
-/**
- * @brief Callback for the b button
- * 
- */
-void ExtendedInterface::stop_button_clicked()
-{
-    if (simulation_process_) {
-        kill(static_cast<pid_t>(simulation_process_->processId()), SIGINT);
-        simulation_process_->waitForFinished();
-        simulation_process_->deleteLater();
-        simulation_process_ = nullptr;
-        RCLCPP_INFO(this->get_logger(), "%sSimulation stopped%s", red.c_str(), reset.c_str());
-    }
-}
+}  // namespace rviz_panel_tutorial
 
-/**
- * @brief Main function
- * 
- * This initializes the ROS 2 system and starts spinning the Extended Interface node.
- * 
- * @param argc Number of command line arguments.
- * @param argv Array of command line arguments.
- * @return int Exit status of the application. 
- */
-int main(int argc, char * argv[])
-{
-    QApplication app(argc, argv);
-    rclcpp::init(argc, argv);
+#include <pluginlib/class_list_macros.hpp>
 
-    auto node = std::make_shared<ExtendedInterface>();
-    node->show();
-
-    QTimer rosShutdownTimer;
-    QObject::connect(&rosShutdownTimer, &QTimer::timeout, [&]() {
-        if (!rclcpp::ok()) {
-            app.quit();
-        }
-    });
-    rosShutdownTimer.start(100);
-
-    std::thread rclcpp_thread([&]() {
-        rclcpp::spin(node);
-        rclcpp::shutdown();
-        app.quit();
-    });
-
-    int result = app.exec();
-    rclcpp_thread.join();
-
-    return result;
-}
+PLUGINLIB_EXPORT_CLASS(rviz_panel_tutorial::ExtendedInterface, rviz_common::Panel)
