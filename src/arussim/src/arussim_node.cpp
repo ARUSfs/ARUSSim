@@ -26,7 +26,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
-    this->declare_parameter<double>("sensor.position_lidar_x", 1.8);
+    this->declare_parameter<double>("sensor.position_lidar_x", 1.5);
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
 
@@ -239,7 +239,7 @@ void Simulator::on_slow_timer()
         if (d < kFOV)
         {
             ConeXYZColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen);
+            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen) - kPosLidarX;
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist(gen);
             p.z = 0.0;
             p.color = point.color;
@@ -300,8 +300,8 @@ void Simulator::on_fast_timer()
     message.yaw = vehicle_dynamics_.yaw_;
     message.vx = vehicle_dynamics_.vx_;
     message.vy = vehicle_dynamics_.vy_;
-    message.r = - vehicle_dynamics_.r_;
-    message.ax = - vehicle_dynamics_.ax_;
+    message.r = vehicle_dynamics_.r_;
+    message.ax = vehicle_dynamics_.ax_;
     message.ay = vehicle_dynamics_.ay_;
     message.delta = vehicle_dynamics_.delta_;
 
