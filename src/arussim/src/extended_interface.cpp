@@ -213,7 +213,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   circuit_select_ = new QComboBox(this);
   circuit_select_->setFixedHeight(rviz_height_ * 0.025);
   circuit_select_->setPlaceholderText("Choose a circuit");
-  QDir tracks_dir("ARUSSim/src/arussim/resources/tracks");
+  std::string package_path_arussim = ament_index_cpp::get_package_share_directory("arussim");
+  QString tracks_path = QString::fromStdString(package_path_arussim + "/resources/tracks/");
+  QDir tracks_dir(tracks_path);
   QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
   circuit_select_->addItems(pcd_files);
   connect(circuit_select_, &QComboBox::currentTextChanged, this, &ExtendedInterface::circuit_selector);
@@ -222,7 +224,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   // Launch selection
   launch_select_ = new QComboBox(this);
   launch_select_->setFixedHeight(rviz_height_ * 0.025);
-  QDir launch_dir("DRIVERLESS2/src/common/common_meta/launch");
+  std::string package_path_launch = ament_index_cpp::get_package_share_directory("common_meta");
+  QString launch_path = QString::fromStdString(package_path_launch + "/launch/");
+  QDir launch_dir(launch_path);
   QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
   launch_select_->addItems(launch_files);
   launch_select_->setCurrentText("simulation_launch.py");
