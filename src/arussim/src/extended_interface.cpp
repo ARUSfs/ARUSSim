@@ -148,23 +148,31 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   telemetry_labels_grid->setSpacing(grid_margin_);
   telemetry_labels_grid->setAlignment(Qt::AlignTop);
 
-  vx_label_ = new QLabel("Vx: 0", this);
-  telemetry_labels_grid->addWidget(vx_label_, 0, 0);
+    vx_label_ = new QLabel("Vx: 0", this);
+    QFont font = vx_label_->font();
+    font.setPointSize(std::min(rviz_height_ * 0.015, 12.0));
+    vx_label_->setFont(font);
+    telemetry_labels_grid->addWidget(vx_label_, 0, 0);
 
-  vy_label_ = new QLabel("Vy: 0", this);
-  telemetry_labels_grid->addWidget(vy_label_, 0, 1);
+    vy_label_ = new QLabel("Vy: 0", this);
+    vy_label_->setFont(font);
+    telemetry_labels_grid->addWidget(vy_label_, 0, 1);
 
-  ax_label_ = new QLabel("Ax: 0", this);
-  telemetry_labels_grid->addWidget(ax_label_, 1, 0);
+    ax_label_ = new QLabel("Ax: 0", this);
+    ax_label_->setFont(font);
+    telemetry_labels_grid->addWidget(ax_label_, 1, 0);
 
-  ay_label_ = new QLabel("Ay: 0", this);
-  telemetry_labels_grid->addWidget(ay_label_, 1, 1);
+    ay_label_ = new QLabel("Ay: 0", this);
+    ay_label_->setFont(font);
+    telemetry_labels_grid->addWidget(ay_label_, 1, 1);
 
-  r_label_ = new QLabel("r: 0", this);
-  telemetry_labels_grid->addWidget(r_label_, 2, 0);
+    r_label_ = new QLabel("r: 0", this);
+    r_label_->setFont(font);
+    telemetry_labels_grid->addWidget(r_label_, 2, 0);
 
-  delta_label_ = new QLabel("Delta: 0", this);
-  telemetry_labels_grid->addWidget(delta_label_, 2, 1);
+    delta_label_ = new QLabel("Delta: 0", this);
+    delta_label_->setFont(font);
+    telemetry_labels_grid->addWidget(delta_label_, 2, 1);
 
   graph_grid->addLayout(telemetry_labels_grid, 2, 0);
 
@@ -182,24 +190,28 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Launch button
   launch_button_ = new QPushButton("Launch Simulation", this);
+  launch_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(launch_button_);
   connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
   button_grid->addWidget(launch_button_, 1, 0);
 
   // Stop button
   stop_button_ = new QPushButton("Stop Simulation", this);
+  stop_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(stop_button_);
   connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
   button_grid->addWidget(stop_button_, 2, 0);
 
   // Reset button
   reset_button_ = new QPushButton("Reset Simulation", this);
+  reset_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(reset_button_);
   connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
   button_grid->addWidget(reset_button_, 2, 1);
 
   // Circuit selection
   circuit_select_ = new QComboBox(this);
+  circuit_select_->setFixedHeight(rviz_height_ * 0.025);
   circuit_select_->setPlaceholderText("Choose a circuit");
   QDir tracks_dir("ARUSSim/src/arussim/resources/tracks");
   QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
@@ -209,6 +221,7 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Launch selection
   launch_select_ = new QComboBox(this);
+  launch_select_->setFixedHeight(rviz_height_ * 0.025);
   QDir launch_dir("DRIVERLESS2/src/common/common_meta/launch");
   QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
   launch_select_->addItems(launch_files);
