@@ -296,7 +296,7 @@ void Simulator::on_fast_timer()
         check_lap();
     }
 
-    if (kTrackName == "acceleration" and !started_acc_){
+    if ((kTrackName == "acceleration" && !started_acc_) || (track_name_ == "acceleration" && !started_acc_)){
         check_acc_start();
     }
     

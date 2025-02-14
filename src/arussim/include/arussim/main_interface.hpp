@@ -1,4 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include <rviz_common/panel.hpp>
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <rviz_common/display_context.hpp>
@@ -27,14 +29,14 @@
 #include "arussim_msgs/msg/state.hpp"
 
 
-namespace rviz_panel_tutorial
+namespace main_interface
 {
-class ExtendedInterface : public rviz_common::Panel
+class MainInterface : public rviz_common::Panel
 {
   Q_OBJECT
 public:
-  explicit ExtendedInterface(QWidget * parent = 0);
-  ~ExtendedInterface() override;
+  explicit MainInterface(QWidget * parent = 0);
+  ~MainInterface() override;
 
   void onInitialize() override;
 
@@ -138,4 +140,4 @@ private:
   const std::string cyan = "\033[1;36m";
   const std::string reset = "\033[0m";
 };
-}  // namespace rviz_panel_tutorial
+}  // namespace main_interface

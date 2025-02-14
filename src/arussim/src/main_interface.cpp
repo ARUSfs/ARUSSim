@@ -1,9 +1,9 @@
-#include <arussim/extended_interface.hpp>
+#include <arussim/main_interface.hpp>
 
-namespace rviz_panel_tutorial
+namespace main_interface
 {
 
-ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
+MainInterface::MainInterface(QWidget* parent) : Panel(parent)
 {
   // Detect screen size to adapt every item to the screen
   QScreen* screen = this->screen();
@@ -148,23 +148,31 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   telemetry_labels_grid->setSpacing(grid_margin_);
   telemetry_labels_grid->setAlignment(Qt::AlignTop);
 
-  vx_label_ = new QLabel("Vx: 0", this);
-  telemetry_labels_grid->addWidget(vx_label_, 0, 0);
+    vx_label_ = new QLabel("Vx: 0", this);
+    QFont font = vx_label_->font();
+    font.setPointSize(std::min(rviz_height_ * 0.015, 12.0));
+    vx_label_->setFont(font);
+    telemetry_labels_grid->addWidget(vx_label_, 0, 0);
 
-  vy_label_ = new QLabel("Vy: 0", this);
-  telemetry_labels_grid->addWidget(vy_label_, 0, 1);
+    vy_label_ = new QLabel("Vy: 0", this);
+    vy_label_->setFont(font);
+    telemetry_labels_grid->addWidget(vy_label_, 0, 1);
 
-  ax_label_ = new QLabel("Ax: 0", this);
-  telemetry_labels_grid->addWidget(ax_label_, 1, 0);
+    ax_label_ = new QLabel("Ax: 0", this);
+    ax_label_->setFont(font);
+    telemetry_labels_grid->addWidget(ax_label_, 1, 0);
 
-  ay_label_ = new QLabel("Ay: 0", this);
-  telemetry_labels_grid->addWidget(ay_label_, 1, 1);
+    ay_label_ = new QLabel("Ay: 0", this);
+    ay_label_->setFont(font);
+    telemetry_labels_grid->addWidget(ay_label_, 1, 1);
 
-  r_label_ = new QLabel("r: 0", this);
-  telemetry_labels_grid->addWidget(r_label_, 2, 0);
+    r_label_ = new QLabel("r: 0", this);
+    r_label_->setFont(font);
+    telemetry_labels_grid->addWidget(r_label_, 2, 0);
 
-  delta_label_ = new QLabel("Delta: 0", this);
-  telemetry_labels_grid->addWidget(delta_label_, 2, 1);
+    delta_label_ = new QLabel("Delta: 0", this);
+    delta_label_->setFont(font);
+    telemetry_labels_grid->addWidget(delta_label_, 2, 1);
 
   graph_grid->addLayout(telemetry_labels_grid, 2, 0);
 
@@ -182,34 +190,43 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
 
   // Launch button
   launch_button_ = new QPushButton("Launch Simulation", this);
+  launch_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(launch_button_);
-  connect(launch_button_, &QPushButton::clicked, this, &ExtendedInterface::launch_button_clicked);
+  connect(launch_button_, &QPushButton::clicked, this, &MainInterface::launch_button_clicked);
   button_grid->addWidget(launch_button_, 1, 0);
 
   // Stop button
   stop_button_ = new QPushButton("Stop Simulation", this);
+  stop_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(stop_button_);
-  connect(stop_button_, &QPushButton::clicked, this, &ExtendedInterface::stop_button_clicked);
+  connect(stop_button_, &QPushButton::clicked, this, &MainInterface::stop_button_clicked);
   button_grid->addWidget(stop_button_, 2, 0);
 
   // Reset button
   reset_button_ = new QPushButton("Reset Simulation", this);
+  reset_button_->setFixedHeight(rviz_height_ * 0.025);
   main_layout->addWidget(reset_button_);
-  connect(reset_button_, &QPushButton::clicked, this, &ExtendedInterface::reset_button_clicked);
+  connect(reset_button_, &QPushButton::clicked, this, &MainInterface::reset_button_clicked);
   button_grid->addWidget(reset_button_, 2, 1);
 
   // Circuit selection
   circuit_select_ = new QComboBox(this);
+  circuit_select_->setFixedHeight(rviz_height_ * 0.025);
   circuit_select_->setPlaceholderText("Choose a circuit");
-  QDir tracks_dir("ARUSSim/src/arussim/resources/tracks");
+  std::string package_path_arussim = ament_index_cpp::get_package_share_directory("arussim");
+  QString tracks_path = QString::fromStdString(package_path_arussim + "/resources/tracks/");
+  QDir tracks_dir(tracks_path);
   QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
   circuit_select_->addItems(pcd_files);
-  connect(circuit_select_, &QComboBox::currentTextChanged, this, &ExtendedInterface::circuit_selector);
+  connect(circuit_select_, &QComboBox::currentTextChanged, this, &MainInterface::circuit_selector);
   button_grid->addWidget(circuit_select_, 1, 1);
 
   // Launch selection
   launch_select_ = new QComboBox(this);
-  QDir launch_dir("DRIVERLESS2/src/common/common_meta/launch");
+  launch_select_->setFixedHeight(rviz_height_ * 0.025);
+  std::string package_path_launch = ament_index_cpp::get_package_share_directory("common_meta");
+  QString launch_path = QString::fromStdString(package_path_launch + "/launch/");
+  QDir launch_dir(launch_path);
   QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
   launch_select_->addItems(launch_files);
   launch_select_->setCurrentText("simulation_launch.py");
@@ -220,9 +237,9 @@ ExtendedInterface::ExtendedInterface(QWidget* parent) : Panel(parent)
   main_layout->addLayout(main_grid);
 }
 
-ExtendedInterface::~ExtendedInterface() = default;
+MainInterface::~MainInterface() = default;
 
-void ExtendedInterface::onInitialize()
+void MainInterface::onInitialize()
 {
   // Access the abstract ROS Node and
   // in the process lock it for exclusive use until the method is done.
@@ -292,7 +309,7 @@ void ExtendedInterface::onInitialize()
  * 
  * @param time_list_ 
  */
-void ExtendedInterface::update_lap_time_labels(double lap_time_)
+void MainInterface::update_lap_time_labels(double lap_time_)
 {
     lap_counter_++;
     lap_label_->setText("Lap: " + QString::number(lap_counter_));
@@ -318,7 +335,7 @@ void ExtendedInterface::update_lap_time_labels(double lap_time_)
  * @param rl_param_ 
  * @param rr_param_ 
  */
-void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_)
+void MainInterface::update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_)
 {
     // Front Left
     double height_fl = std::abs(fl_param_) * scale_factor_;
@@ -383,14 +400,14 @@ void ExtendedInterface::update_telemetry_bar(double fr_param_, double fl_param_,
  * @param ay_ 
  * @param delta_ 
  */
-void ExtendedInterface::state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+void MainInterface::state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
 {
     update_vx_target_graph(vx_, vy_);
     update_gg_graph(ax_, ay_);
     update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
 }
 
-void ExtendedInterface::update_vx_target_graph(double vx, double vy)
+void MainInterface::update_vx_target_graph(double vx, double vy)
 {
   // Get the elapsed time in seconds from the start
   double current_time = timer_.elapsed() / 1000.0;
@@ -508,7 +525,7 @@ void ExtendedInterface::update_vx_target_graph(double vx, double vy)
   speed_graph_label_->setPixmap(pixmap);
 }
 
-void ExtendedInterface::update_gg_graph(double ax, double ay)
+void MainInterface::update_gg_graph(double ax, double ay)
 {
   gg_vector_.append(qMakePair(ay, ax));
 
@@ -573,7 +590,7 @@ void ExtendedInterface::update_gg_graph(double ax, double ay)
   gg_graph_label_->setPixmap(pixmap);
 }
 
-void ExtendedInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
+void MainInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
 {
     vx_label_->setText("Vx: " + QString::number(vx, 'f', 2));
     vy_label_->setText("Vy: " + QString::number(vy, 'f', 2));
@@ -587,7 +604,7 @@ void ExtendedInterface::update_telemetry_labels(double vx, double vy, double r, 
  * @brief Callback for the launch button
  * 
  */
-void ExtendedInterface::launch_button_clicked()
+void MainInterface::launch_button_clicked()
 {
     if (simulation_process_ == nullptr) {
         simulation_process_ = new QProcess(this);
@@ -602,14 +619,14 @@ void ExtendedInterface::launch_button_clicked()
  * @brief Callback for the stop button
  * 
  */
-void ExtendedInterface::stop_button_clicked()
+void MainInterface::stop_button_clicked()
 {
     if (simulation_process_) {
         kill(static_cast<pid_t>(simulation_process_->processId()), SIGINT);
         simulation_process_->waitForFinished();
         simulation_process_->deleteLater();
         simulation_process_ = nullptr;
-        RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sSimulation stopped%s", red.c_str(), reset.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sSimulation stopped%s", red.c_str(), reset.c_str());
     }
 }
 
@@ -617,7 +634,7 @@ void ExtendedInterface::stop_button_clicked()
  * @brief Callback for the reset button
  * 
  */
-void ExtendedInterface::reset_button_clicked()
+void MainInterface::reset_button_clicked()
 {
     auto msg = std_msgs::msg::Bool();
     msg.data = true;
@@ -640,7 +657,7 @@ void ExtendedInterface::reset_button_clicked()
     speed_graph_label_->clear();
     gg_graph_label_->clear();
 
-    RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
 }
 
 /**
@@ -648,7 +665,7 @@ void ExtendedInterface::reset_button_clicked()
  * 
  * @param option 
  */
-void ExtendedInterface::circuit_selector(const QString & option)
+void MainInterface::circuit_selector(const QString & option)
 {
   auto msg_circuit = std_msgs::msg::String();
   msg_circuit.data = option.toStdString();
@@ -665,12 +682,12 @@ void ExtendedInterface::circuit_selector(const QString & option)
   speed_graph_label_->clear();
   gg_graph_label_->clear();
 
-  RCLCPP_INFO(rclcpp::get_logger("ExtendedInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
 
 }
 
-}  // namespace rviz_panel_tutorial
+}  // namespace main_interface
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(rviz_panel_tutorial::ExtendedInterface, rviz_common::Panel)
+PLUGINLIB_EXPORT_CLASS(main_interface::MainInterface, rviz_common::Panel)
