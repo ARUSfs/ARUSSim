@@ -227,7 +227,7 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
   std::string package_path_launch = ament_index_cpp::get_package_share_directory("common_meta");
   QString launch_path = QString::fromStdString(package_path_launch + "/launch/");
   QDir launch_dir(launch_path);
-  QStringList launch_files = launch_dir.entryList(QStringList() << "*.py", QDir::Files);
+  QStringList launch_files = launch_dir.entryList(QStringList() << "*sim*.py", QDir::Files);
   launch_select_->addItems(launch_files);
   launch_select_->setCurrentText("simulation_launch.py");
   button_grid->addWidget(launch_select_, 0, 0, 1, 2);
