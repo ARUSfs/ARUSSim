@@ -19,7 +19,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
   grid_margin_ = rviz_size_ * 0.003;
   graph_grid_width_ = rviz_size_ * 0.001;
-  pen_size_ = rviz_size_ * 0.0015;
+  pen_size_ = rviz_size_ * 0.002;
 
   // Main vertical layout
   auto main_layout = new QVBoxLayout(this);
@@ -197,6 +197,34 @@ void PlotInterface::onInitialize()
           }
       }
   );
+
+  gg_graph_label_->installEventFilter(this);
+}
+
+bool PlotInterface::eventFilter(QObject* obj, QEvent* event)
+{
+  if(obj == gg_graph_label_) {
+    if (event->type() == QEvent::Wheel) {
+      auto* wheel_event = static_cast<QWheelEvent*>(event);
+      double angleDelta = wheel_event->angleDelta().y();
+      gg_zoom_factor_ *= (angleDelta > 0 ? 1.1 : 0.9);
+      gg_zoom_factor_ = std::clamp(gg_zoom_factor_, 0.01, 4.0);
+    } else if (event->type() == QEvent::MouseButtonPress) {
+      auto* mouse_event = static_cast<QMouseEvent*>(event);
+      if(mouse_event->button() == Qt::LeftButton)
+      {
+        gg_last_mouse_pos_ = mouse_event->pos();
+      }
+    } else if (event->type() == QEvent::MouseMove && QEvent::MouseButtonPress) {
+      auto* mouse_event = static_cast<QMouseEvent*>(event);
+      // Calculate the position of (0,0) in the graph based on gg_center_x_, gg_center_y_, and gg_zoom_factor_
+      QPoint delta = mouse_event->pos() - gg_last_mouse_pos_;
+      gg_center_x_ -= delta.x() / (10.0 / gg_zoom_factor_);
+      gg_center_y_ += delta.y() / (10.0 / gg_zoom_factor_);
+      gg_last_mouse_pos_ = mouse_event->pos();
+    }
+  }
+  return QObject::eventFilter(obj, event);
 }
 
 /**
@@ -272,11 +300,11 @@ void PlotInterface::update_telemetry_bar(double fr_param_, double fl_param_, dou
  * @param ay_ 
  * @param delta_ 
  */
-void PlotInterface::state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_)
+void PlotInterface::state_callback(double vx, double vy, double r, double ax, double ay, double delta)
 {
-    update_vx_target_graph(vx_, vy_);
-    update_gg_graph(ax_, ay_);
-    update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
+    update_vx_target_graph(vx, vy);
+    update_gg_graph(ax, ay, vx);
+    update_telemetry_labels(vx, vy, r, ax, ay, delta);
 }
 
 void PlotInterface::update_vx_target_graph(double vx, double vy)
@@ -397,9 +425,18 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
   speed_graph_label_->setPixmap(pixmap);
 }
 
-void PlotInterface::update_gg_graph(double ax, double ay)
+void PlotInterface::update_gg_graph(double ax, double ay, double vx)
 {
-  gg_vector_.append(qMakePair(ay, ax));
+  // Remove points older than 10 seconds
+  if (vx != 0.5){
+    gg_vector_.append(qMakePair(ay, ax));
+    if (!timer_gg_started_){
+        timer_gg_.start();
+        timer_gg_started_ = true;
+    }
+  } if (timer_gg_.elapsed() > 30000) {
+      gg_vector_.removeFirst();
+  }
 
   if (!gg_graph_label_) return;
 
@@ -415,29 +452,25 @@ void PlotInterface::update_gg_graph(double ax, double ay)
   int cx = pixmap_width / 2;
   int cy = pixmap_height / 2;
 
-  // Draw grid for integers from -12 to 12 (skip 0, already drawn by the axis)
-  for (int i = -12; i <= 12; i++)
+  // Calculate the position of (0,0) in the graph based on gg_center_x_, gg_center_y_, and gg_zoom_factor_
+  double zero_x = ((0.0 - gg_center_x_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_width;
+  double zero_y = pixmap_height - ((0.0 - gg_center_y_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_height;
+
+  // Draw the grid applying translation and zoom
+  for (int i = -50; i <= 50; i++)
   {
-    if(i == 0) continue; // Skip the axis
-    if (i % 2 == 0) {
-        painter.setPen(QPen(Qt::lightGray, graph_grid_width_));
-    } else {
-        painter.setPen(QPen(Qt::lightGray, graph_grid_width_/2));
-    }
-    double x = (i + 12.0) / 24.0 * pixmap_width;
-    double y = pixmap_height - ((i + 12.0) / 24.0 * pixmap_height);
-
-    // Vertical line
+    if(i == 0) continue; 
+    double x = ((i - gg_center_x_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_width;
+    double y = pixmap_height - ((i - gg_center_y_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_height;
+    painter.setPen(QPen(Qt::lightGray, graph_grid_width_));
     painter.drawLine(x, 0, x, pixmap_height);
-
-    // Horizontal line
     painter.drawLine(0, y, pixmap_width, y);
   }
 
-  // Centered axes
+  // Draw axes centered at the real (0,0)
   painter.setPen(QPen(Qt::black, graph_grid_width_*2));
-  painter.drawLine(0, cy, pixmap_width, cy); // x-axis
-  painter.drawLine(cx, 0, cx, pixmap_height);  // y-axis
+  painter.drawLine(0, zero_y, pixmap_width, zero_y);
+  painter.drawLine(zero_x, 0, zero_x, pixmap_height);
 
   // draw GG legend
   int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
@@ -454,9 +487,9 @@ void PlotInterface::update_gg_graph(double ax, double ay)
   // Draw points from gg_vector_ with new scaling for range -12 to 12
   painter.setPen(QPen(Qt::blue, pen_size_));
   for (auto &p : gg_vector_) {
-    double x = (p.first + 12.0) / 24.0 * pixmap_width;
-    double y = pixmap_height - ((p.second + 12.0) / 24.0 * pixmap_height);
-    painter.drawPoint(QPointF(x, y));
+    double rx = ((p.first - gg_center_x_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_width;
+    double ry = pixmap_height - ((p.second - gg_center_y_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_height;
+    painter.drawPoint(QPointF(rx, ry));
   }
 
   gg_graph_label_->setPixmap(pixmap);
