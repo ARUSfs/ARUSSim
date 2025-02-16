@@ -20,7 +20,8 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QScreen>
-
+#include <QTextEdit>
+#include <QRegularExpression>
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -39,6 +40,14 @@ public:
   ~MainInterface() override;
 
   void onInitialize() override;
+
+private Q_SLOTS:
+  void launch_button_clicked();
+  void stop_button_clicked();
+  void reset_button_clicked();
+  void update_lap_time_labels(double lap_time_);
+  void circuit_selector(const QString & option);
+  void process_output();
 
 protected:
   std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -64,6 +73,7 @@ protected:
   QWidget* telemetry_bar_rr_;
 
   QProcess* simulation_process_ = nullptr;
+  QTextEdit* process_output_text_edit_;
 
   QElapsedTimer timer_;
   QVector<QPair<double, double>> vx_history_;
@@ -84,13 +94,6 @@ protected:
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
-
-private Q_SLOTS:
-  void launch_button_clicked();
-  void stop_button_clicked();
-  void reset_button_clicked();
-  void update_lap_time_labels(double lap_time_);
-  void circuit_selector(const QString & option);
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;

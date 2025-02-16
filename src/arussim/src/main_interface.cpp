@@ -69,6 +69,12 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
     // Add the grid layout at the top of the main layout
     main_grid->addLayout(grid_layout, 0, 0);
 
+    // Virtual terminal output
+    process_output_text_edit_ = new QTextEdit(this);
+    process_output_text_edit_->setReadOnly(true);
+    process_output_text_edit_->setMinimumHeight(100);
+    main_grid->addWidget(process_output_text_edit_, 1, 0);
+
     // Buttons
     auto button_grid = new QGridLayout();
     button_grid->setContentsMargins(grid_margin_, grid_margin_, grid_margin_, grid_margin_);
@@ -119,7 +125,7 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
     launch_select_->setCurrentText("simulation_launch.py");
     button_grid->addWidget(launch_select_, 0, 0, 1, 2);
 
-    main_grid->addLayout(button_grid, 1, 0);
+    main_grid->addLayout(button_grid, 2, 0);
 
     main_layout->addLayout(main_grid);
 }
@@ -195,6 +201,11 @@ void MainInterface::launch_button_clicked()
 {
     if (simulation_process_ == nullptr) {
         simulation_process_ = new QProcess(this);
+        // Merge standard output and error
+        simulation_process_->setProcessChannelMode(QProcess::MergedChannels);
+        // Connect signal to capture output
+        connect(simulation_process_, &QProcess::readyReadStandardOutput, this, &MainInterface::process_output);
+        
         QString launch_file = launch_select_->currentText();
         QStringList args;
         args << "launch" << "common_meta" << launch_file;
@@ -256,6 +267,22 @@ void MainInterface::circuit_selector(const QString & option)
     reset_pub_->publish(msg_reset);
 
     RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
+}
+
+/**
+ * @brief Process the output from the simulation
+ * 
+ */
+void MainInterface::process_output()
+{
+    if(simulation_process_) {
+        QByteArray output = simulation_process_->readAllStandardOutput();
+        QString text = QString::fromLocal8Bit(output);
+        // Remove ANSI sequences
+        QRegularExpression ansiRegex("\x1B\\[[0-9;]*m");
+        text.remove(ansiRegex);
+        process_output_text_edit_->append(text);
+    }
 }
 
 }  // namespace main_interface
