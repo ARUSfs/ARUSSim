@@ -1,0 +1,5 @@
+<library path="plot_interface_exec">
+  <class type="plot_interface::PlotInterface" base_class_type="rviz_common::Panel">
+    <description>ARUSsim plot interface</description>
+  </class>
+</library>
