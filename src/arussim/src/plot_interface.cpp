@@ -463,8 +463,11 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
 
     // draw legend
     // Adaptable legend for speed graph
-    int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
-    int legend_height = std::min(pixmap_height * 0.225, rviz_size_ * 0.06);
+    QString legend_text_target = tr("Target");
+    QString legend_text_vx = tr("Vx");
+    int legend_width = std::max(QFontMetrics(painter.font()).horizontalAdvance(legend_text_target)*2, 
+                                QFontMetrics(painter.font()).horizontalAdvance(legend_text_vx)*2);
+    int legend_height = QFontMetrics(painter.font()).height()*2.5;
     QRect legend_rect(20, 10, legend_width, legend_height);
     painter.setPen(Qt::black);
     painter.setBrush(QColor(255, 255, 255, 200));
@@ -483,13 +486,13 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
     painter.setPen(QPen(Qt::blue, pen_size_*0.9));
     painter.drawLine(legend_rect.left() + 10, y_target, legend_rect.left() + 10 + line_length, y_target);
     painter.setPen(Qt::black);
-    painter.drawText(legend_rect.left() + 10 + line_length + 10, y_target + 5, "Target");
+    painter.drawText(legend_rect.left() + 10 + line_length + 10, y_target + 5, legend_text_target);
     
     // Legend for Vx (red)
     painter.setPen(QPen(Qt::red, pen_size_));
     painter.drawLine(legend_rect.left() + 10, y_vx, legend_rect.left() + 10 + line_length, y_vx);
     painter.setPen(Qt::black);
-    painter.drawText(legend_rect.left() + 10 + line_length + 10, y_vx + 5, "Vx");
+    painter.drawText(legend_rect.left() + 10 + line_length + 10, y_vx + 5, legend_text_vx);
 
     speed_graph_label_->setPixmap(pixmap);
 }
@@ -542,8 +545,9 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     painter.drawLine(zero_x, 0, zero_x, pixmap_height);
 
     // draw GG legend
-    int legend_width = std::min(pixmap_width * 0.35, rviz_size_ * 0.15);
-    int legend_height = std::min(pixmap_height * 0.15, rviz_size_ * 0.05);
+    QString legend_text = tr("GG diagram");
+    int legend_width = QFontMetrics(painter.font()).horizontalAdvance(legend_text)*1.25;
+    int legend_height = QFontMetrics(painter.font()).height()*1.1;
     QRect legend_gg_rect(10, 10, legend_width, legend_height);
     painter.setPen(Qt::black);
     painter.setBrush(QColor(255, 255, 255, 200));
@@ -551,7 +555,7 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     QFont legend_font = painter.font();
     legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
     painter.setFont(legend_font);
-    painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), "GG diagram");
+    painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), legend_text);
 
     // Draw points from gg_vector_ with new scaling for range -12 to 12
     painter.setPen(QPen(Qt::blue, pen_size_));
