@@ -197,6 +197,7 @@ void PlotInterface::onInitialize()
         }
     );
 
+    speed_graph_label_->installEventFilter(this);
     gg_graph_label_->installEventFilter(this);
 }
 
@@ -204,23 +205,38 @@ bool PlotInterface::eventFilter(QObject* obj, QEvent* event)
 {
     if(obj == gg_graph_label_) {
         if (event->type() == QEvent::Wheel) {
-        auto* wheel_event = static_cast<QWheelEvent*>(event);
-        double angleDelta = wheel_event->angleDelta().y();
-        gg_zoom_factor_ *= (angleDelta > 0 ? 1.1 : 0.9);
-        gg_zoom_factor_ = std::clamp(gg_zoom_factor_, 0.01, 4.0);
+            auto* wheel_event = static_cast<QWheelEvent*>(event);
+            double angle_delta = wheel_event->angleDelta().y();
+            gg_zoom_factor_ *= (angle_delta > 0 ? 1.1 : 0.9);
+            gg_zoom_factor_ = std::clamp(gg_zoom_factor_, 0.01, 4.0);
         } else if (event->type() == QEvent::MouseButtonPress) {
-        auto* mouse_event = static_cast<QMouseEvent*>(event);
-        if(mouse_event->button() == Qt::LeftButton)
-        {
+            auto* mouse_event = static_cast<QMouseEvent*>(event);
+            if(mouse_event->button() == Qt::LeftButton) {
+                gg_last_mouse_pos_ = mouse_event->pos();
+            }
+        } else if (event->type() == QEvent::MouseMove && QEvent::MouseButtonPress) {
+            auto* mouse_event = static_cast<QMouseEvent*>(event);
+            // Calculate the position of (0,0) in the graph based on gg_center_x_, gg_center_y_, and gg_zoom_factor_
+            QPoint delta = mouse_event->pos() - gg_last_mouse_pos_;
+            gg_center_x_ -= delta.x() / (10.0 / gg_zoom_factor_);
+            gg_center_y_ += delta.y() / (10.0 / gg_zoom_factor_);
             gg_last_mouse_pos_ = mouse_event->pos();
         }
-        } else if (event->type() == QEvent::MouseMove && QEvent::MouseButtonPress) {
-        auto* mouse_event = static_cast<QMouseEvent*>(event);
-        // Calculate the position of (0,0) in the graph based on gg_center_x_, gg_center_y_, and gg_zoom_factor_
-        QPoint delta = mouse_event->pos() - gg_last_mouse_pos_;
-        gg_center_x_ -= delta.x() / (10.0 / gg_zoom_factor_);
-        gg_center_y_ += delta.y() / (10.0 / gg_zoom_factor_);
-        gg_last_mouse_pos_ = mouse_event->pos();
+    } else if (obj == speed_graph_label_) {
+        if (event->type() == QEvent::Wheel) {
+            auto* wheel_event = static_cast<QWheelEvent*>(event);
+            double angle_delta = wheel_event->angleDelta().y();
+            // Accumulate delta until sensibility param is reached
+            double accumulated_delta = 0.0;
+            accumulated_delta += angle_delta;
+            const double sensibility = 30.0;
+            if (accumulated_delta >= sensibility) {
+                max_vx_ += 5.0;
+                accumulated_delta = 0.0;
+            } else if (accumulated_delta <= -sensibility) {
+                max_vx_ -= 5.0;
+                accumulated_delta = 0.0;
+            }
         }
     }
     return QObject::eventFilter(obj, event);
@@ -337,7 +353,7 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
     painter.drawLine(0, 0, 0, pixmap_height); // y-axis
 
     // Draw grid lines
-    int num_rows = 4;
+    int num_rows = max_vx_ / 5.0;
     double step_y = pixmap_height / static_cast<double>(num_rows);
     painter.setPen(QPen(Qt::lightGray, graph_grid_width_, Qt::DashLine));
     for (int j = 1; j < num_rows; ++j) {
