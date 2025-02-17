@@ -590,6 +590,7 @@ void PlotInterface::reset_callback()
     gg_vector_.clear();
     speed_graph_label_->clear();
     gg_graph_label_->clear();
+    timer_gg_started_ = false;
 }
 
 }  // namespace plot_interface
