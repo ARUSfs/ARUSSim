@@ -96,6 +96,10 @@ private Q_SLOTS:
   void update_gg_graph(double ax, double ay, double vx);
   void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
   void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
+  void zoom_in_speed_graph();
+  void zoom_out_speed_graph();
+  void zoom_in_gg_graph();
+  void zoom_out_gg_graph();
 
 private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;

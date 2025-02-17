@@ -90,19 +90,53 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     graph_grid->setSpacing(grid_margin_);
     graph_grid->setAlignment(Qt::AlignTop);
 
+    // Speed graph container
+    auto speed_graph_container = new QWidget(this);
+    auto speed_graph_layout = new QVBoxLayout(speed_graph_container);
+    speed_graph_layout->setContentsMargins(0, 0, 0, 0);
+    speed_graph_layout->setSpacing(0);
+
     speed_graph_label_ = new QLabel(this);
     speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
     speed_graph_label_->setFixedHeight(rviz_height_ * 0.2);
     speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     speed_graph_label_->setStyleSheet("border: 2px solid black;");
-    graph_grid->addWidget(speed_graph_label_, 0, 0);
+    speed_graph_layout->addWidget(speed_graph_label_);
+
+    auto speed_zoom_layout = new QHBoxLayout();
+    auto speed_zoom_in_button = new QPushButton("+", this);
+    auto speed_zoom_out_button = new QPushButton("-", this);
+    connect(speed_zoom_in_button, &QPushButton::clicked, this, &PlotInterface::zoom_in_speed_graph);
+    connect(speed_zoom_out_button, &QPushButton::clicked, this, &PlotInterface::zoom_out_speed_graph);
+    speed_zoom_layout->addWidget(speed_zoom_in_button);
+    speed_zoom_layout->addWidget(speed_zoom_out_button);
+    speed_graph_layout->addLayout(speed_zoom_layout);
+
+    graph_grid->addWidget(speed_graph_container, 0, 0);
+
+    // GG graph container
+    auto gg_graph_container = new QWidget(this);
+    auto gg_graph_layout = new QVBoxLayout(gg_graph_container);
+    gg_graph_layout->setContentsMargins(0, 0, 0, 0);
+    gg_graph_layout->setSpacing(0);
 
     gg_graph_label_ = new QLabel(this);
     gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
     gg_graph_label_->setMinimumHeight(rviz_height_ * 0.2);
     gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     gg_graph_label_->setStyleSheet("border: 2px solid black;");
-    graph_grid->addWidget(gg_graph_label_, 1, 0);
+    gg_graph_layout->addWidget(gg_graph_label_);
+
+    auto gg_zoom_layout = new QHBoxLayout();
+    auto gg_zoom_in_button = new QPushButton("+", this);
+    auto gg_zoom_out_button = new QPushButton("-", this);
+    connect(gg_zoom_in_button, &QPushButton::clicked, this, &PlotInterface::zoom_in_gg_graph);
+    connect(gg_zoom_out_button, &QPushButton::clicked, this, &PlotInterface::zoom_out_gg_graph);
+    gg_zoom_layout->addWidget(gg_zoom_in_button);
+    gg_zoom_layout->addWidget(gg_zoom_out_button);
+    gg_graph_layout->addLayout(gg_zoom_layout);
+
+    graph_grid->addWidget(gg_graph_container, 1, 0);
 
     main_grid->addLayout(graph_grid, 1, 0);
 
@@ -240,6 +274,26 @@ bool PlotInterface::eventFilter(QObject* obj, QEvent* event)
         }
     }
     return QObject::eventFilter(obj, event);
+}
+
+void PlotInterface::zoom_in_speed_graph()
+{
+    max_vx_ += 5.0;
+}
+
+void PlotInterface::zoom_out_speed_graph()
+{
+    max_vx_ -= 5.0;
+}
+
+void PlotInterface::zoom_in_gg_graph()
+{
+    gg_zoom_factor_ *= 1.1;
+}
+
+void PlotInterface::zoom_out_gg_graph()
+{
+    gg_zoom_factor_ *= 0.9;
 }
 
 /**
