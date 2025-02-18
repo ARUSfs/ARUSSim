@@ -104,12 +104,12 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     speed_graph_layout->addWidget(speed_graph_label_);
 
     auto speed_zoom_layout = new QHBoxLayout();
-    auto speed_zoom_in_button = new QPushButton("+", this);
-    auto speed_zoom_out_button = new QPushButton("-", this);
+    auto speed_zoom_out_button = new QPushButton("+", this);
+    auto speed_zoom_in_button = new QPushButton("-", this);
     connect(speed_zoom_in_button, &QPushButton::clicked, this, &PlotInterface::zoom_in_speed_graph);
     connect(speed_zoom_out_button, &QPushButton::clicked, this, &PlotInterface::zoom_out_speed_graph);
-    speed_zoom_layout->addWidget(speed_zoom_in_button);
     speed_zoom_layout->addWidget(speed_zoom_out_button);
+    speed_zoom_layout->addWidget(speed_zoom_in_button);
     speed_graph_layout->addLayout(speed_zoom_layout);
 
     graph_grid->addWidget(speed_graph_container, 0, 0);
@@ -128,12 +128,12 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     gg_graph_layout->addWidget(gg_graph_label_);
 
     auto gg_zoom_layout = new QHBoxLayout();
-    auto gg_zoom_in_button = new QPushButton("+", this);
-    auto gg_zoom_out_button = new QPushButton("-", this);
+    auto gg_zoom_out_button = new QPushButton("+", this);
+    auto gg_zoom_in_button = new QPushButton("-", this);
     connect(gg_zoom_in_button, &QPushButton::clicked, this, &PlotInterface::zoom_in_gg_graph);
     connect(gg_zoom_out_button, &QPushButton::clicked, this, &PlotInterface::zoom_out_gg_graph);
-    gg_zoom_layout->addWidget(gg_zoom_in_button);
     gg_zoom_layout->addWidget(gg_zoom_out_button);
+    gg_zoom_layout->addWidget(gg_zoom_in_button);
     gg_graph_layout->addLayout(gg_zoom_layout);
 
     graph_grid->addWidget(gg_graph_container, 1, 0);
