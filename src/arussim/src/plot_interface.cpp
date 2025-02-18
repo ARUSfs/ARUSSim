@@ -98,7 +98,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
     speed_graph_label_ = new QLabel(this);
     speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
-    speed_graph_label_->setFixedHeight(rviz_height_ * 0.2);
+    speed_graph_label_->setFixedHeight(rviz_height_ * 0.175);
     speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     speed_graph_label_->setStyleSheet("border: 2px solid black;");
     speed_graph_layout->addWidget(speed_graph_label_);
@@ -122,7 +122,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
     gg_graph_label_ = new QLabel(this);
     gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
-    gg_graph_label_->setMinimumHeight(rviz_height_ * 0.2);
+    gg_graph_label_->setMinimumHeight(rviz_height_ * 0.175);
     gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     gg_graph_label_->setStyleSheet("border: 2px solid black;");
     gg_graph_layout->addWidget(gg_graph_label_);
