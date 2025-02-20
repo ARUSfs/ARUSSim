@@ -501,7 +501,7 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
 {
     // Remove points older than 10 seconds
     if (vx != 0.5){
-        gg_vector_.append(qMakePair(ay, ax));
+        gg_vector_.append(std::make_tuple(ay, ax, vx));
         if (!timer_gg_started_){
             timer_gg_.start();
             timer_gg_started_ = true;
@@ -558,10 +558,24 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), legend_text);
 
     // Draw points from gg_vector_ with new scaling for range -12 to 12
-    painter.setPen(QPen(Qt::blue, pen_size_));
     for (auto &p : gg_vector_) {
-        double rx = ((p.first - gg_center_x_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_width;
-        double ry = pixmap_height - ((p.second - gg_center_y_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_height;
+        double loc_ay = std::get<0>(p);
+        double loc_ax = std::get<1>(p);
+        double loc_vx = std::get<2>(p);
+
+        // Normalize loc_vx using min_vx_ and max_vx_
+        double norm = (loc_vx - min_vx_) / (max_vx_ - min_vx_);
+        norm = std::clamp(norm, 0.0, 1.0);
+        // Map normalized value to hue: 240 (blue) to 0 (red)
+        int hue = static_cast<int>(240 * (1 - norm));
+        QColor point_color = QColor::fromHsv(hue, 255, 255);
+
+        painter.setPen(QPen(point_color, pen_size_));
+        double rx = ((loc_ay - gg_center_x_) + 12.0 * gg_zoom_factor_) 
+                    / (24.0 * gg_zoom_factor_) * pixmap_width;
+        double ry = pixmap_height - 
+                    ((loc_ax - gg_center_y_) + 12.0 * gg_zoom_factor_) 
+                    / (24.0 * gg_zoom_factor_) * pixmap_height;
         painter.drawPoint(QPointF(rx, ry));
     }
 

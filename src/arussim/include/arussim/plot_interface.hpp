@@ -73,7 +73,7 @@ protected:
   QVector<QPair<double, double>> target_speed_history_;
   QLabel* speed_graph_label_ = nullptr;
 
-  QVector<QPair<double, double>> gg_vector_;
+  QVector<std::tuple<double, double, double>> gg_vector_; // (ay, ax, vx)
   QLabel* gg_graph_label_ = nullptr;
 
   QLabel* vx_label_;
@@ -87,6 +87,8 @@ protected:
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
+
+  QPoint gg_last_mouse_pos_;
 
 private Q_SLOTS:
   void launch_button_clicked();
@@ -128,11 +130,10 @@ private:
   double pen_size_;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 20.0;
+  double max_vx_ = 30.0;
 
   double target_speed_;
 
-  QPoint gg_last_mouse_pos_;
   double gg_zoom_factor_ = 1.0;
   double gg_center_x_ = 0.0;
   double gg_center_y_ = 0.0;
