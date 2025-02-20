@@ -121,11 +121,19 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     gg_graph_layout->setSpacing(0);
 
     gg_graph_label_ = new QLabel(this);
-    gg_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
+    gg_graph_label_->setMinimumWidth(rviz_width_ * 0.15);
     gg_graph_label_->setMinimumHeight(rviz_height_ * 0.175);
     gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     gg_graph_label_->setStyleSheet("border: 2px solid black;");
     gg_graph_layout->addWidget(gg_graph_label_);
+
+    // Add the legend label
+    gg_legend_label_ = new QLabel(this);
+    gg_legend_label_->setMinimumWidth(rviz_width_ * 0.15);
+    gg_legend_label_->setFixedHeight(rviz_height_ * 0.035);
+    gg_legend_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    gg_legend_label_->setStyleSheet("border: 2px solid black;");
+    gg_graph_layout->addWidget(gg_legend_label_);
 
     auto gg_zoom_layout = new QHBoxLayout();
     auto gg_zoom_out_button = new QPushButton("+", this);
@@ -580,6 +588,32 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     }
 
     gg_graph_label_->setPixmap(pixmap);
+
+    // Draw horizontal multicolor bar legend below the graph
+    int legend_bar_height = 20;
+    int legend_bar_width = gg_legend_label_->width();
+    QPixmap legend_pixmap(legend_bar_width, legend_bar_height + 20);
+    legend_pixmap.fill(Qt::white);
+    QPainter legend_painter(&legend_pixmap);
+    legend_painter.setRenderHint(QPainter::Antialiasing);
+
+    for (int i = 0; i < legend_bar_width; ++i) {
+        double norm = static_cast<double>(i) / legend_bar_width;
+        int hue = static_cast<int>(240 * (1 - norm));
+        QColor color = QColor::fromHsv(hue, 255, 255);
+        legend_painter.setPen(QPen(color, 1));
+        legend_painter.drawLine(i, 0, i, legend_bar_height);
+    }
+
+    // Draw velocity values
+    for (double v = min_vx_; v <= max_vx_; v += 2.5) {
+        double norm = (v - min_vx_) / (max_vx_ - min_vx_);
+        int x = static_cast<int>(norm * legend_bar_width);
+        legend_painter.setPen(Qt::black);
+        legend_painter.drawText(x, legend_bar_height + 15, QString::number(v, 'f', 1));
+    }
+
+    gg_legend_label_->setPixmap(legend_pixmap);
 }
 
 void PlotInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)

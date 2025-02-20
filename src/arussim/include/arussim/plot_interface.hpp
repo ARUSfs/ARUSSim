@@ -90,6 +90,8 @@ protected:
 
   QPoint gg_last_mouse_pos_;
 
+  QLabel* gg_legend_label_;
+
 private Q_SLOTS:
   void launch_button_clicked();
   void reset_callback();
@@ -130,7 +132,7 @@ private:
   double pen_size_;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 30.0;
+  double max_vx_ = 20.0;
 
   double target_speed_;
 
