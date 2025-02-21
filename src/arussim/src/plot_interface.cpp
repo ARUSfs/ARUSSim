@@ -130,7 +130,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     // Add the legend label
     gg_legend_label_ = new QLabel(this);
     gg_legend_label_->setMinimumWidth(rviz_width_ * 0.15);
-    gg_legend_label_->setFixedHeight(rviz_height_ * 0.035);
+    gg_legend_label_->setFixedHeight(rviz_height_ * 0.03);
     gg_legend_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     gg_legend_label_->setStyleSheet("border: 2px solid black;");
     gg_graph_layout->addWidget(gg_legend_label_);
