@@ -20,8 +20,9 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QScreen>
-#include <QTextEdit>
-#include <QRegularExpression>
+#include <QWheelEvent>
+#include <QMouseEvent>
+
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -30,24 +31,16 @@
 #include "arussim_msgs/msg/state.hpp"
 
 
-namespace main_interface
+namespace plot_interface
 {
-class MainInterface : public rviz_common::Panel
+class PlotInterface : public rviz_common::Panel
 {
   Q_OBJECT
 public:
-  explicit MainInterface(QWidget * parent = 0);
-  ~MainInterface() override;
+  explicit PlotInterface(QWidget * parent = 0);
+  ~PlotInterface() override;
 
   void onInitialize() override;
-
-private Q_SLOTS:
-  void launch_button_clicked();
-  void stop_button_clicked();
-  void reset_button_clicked();
-  void update_lap_time_labels(double lap_time_);
-  void circuit_selector(const QString & option);
-  void process_output();
 
 protected:
   std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -73,14 +66,14 @@ protected:
   QWidget* telemetry_bar_rr_;
 
   QProcess* simulation_process_ = nullptr;
-  QTextEdit* process_output_text_edit_;
 
   QElapsedTimer timer_;
+  QElapsedTimer timer_gg_;
   QVector<QPair<double, double>> vx_history_;
   QVector<QPair<double, double>> target_speed_history_;
   QLabel* speed_graph_label_ = nullptr;
 
-  QVector<QPair<double, double>> gg_vector_;
+  QVector<std::tuple<double, double, double>> gg_vector_; // (ay, ax, vx)
   QLabel* gg_graph_label_ = nullptr;
 
   QLabel* vx_label_;
@@ -95,10 +88,25 @@ protected:
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
 
-private:
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr circuit_pub_;
+  QPoint gg_last_mouse_pos_;
 
+  QLabel* gg_legend_label_;
+
+private Q_SLOTS:
+  void launch_button_clicked();
+  void reset_callback();
+  void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
+  void update_vx_target_graph(double vx, double vy);
+  void update_gg_graph(double ax, double ay, double vx);
+  void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+  void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
+  void zoom_in_speed_graph();
+  void zoom_out_speed_graph();
+  void zoom_in_gg_graph();
+  void zoom_out_gg_graph();
+
+private:
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
@@ -128,6 +136,13 @@ private:
 
   double target_speed_;
 
+  double gg_zoom_factor_ = 1.0;
+  double gg_center_x_ = 0.0;
+  double gg_center_y_ = 0.0;
+  bool timer_gg_started_ = false;
+
+
+  bool eventFilter(QObject* obj, QEvent* event) override;
 
   //Loginfo colors
   const std::string red = "\033[1;31m";
@@ -138,4 +153,4 @@ private:
   const std::string cyan = "\033[1;36m";
   const std::string reset = "\033[0m";
 };
-}  // namespace main_interface
+}  // namespace plot_interface

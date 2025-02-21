@@ -24,8 +24,11 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(pluginlib REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-qt5_wrap_cpp(MOC_FILES
+qt5_wrap_cpp(MAIN_MOC_FILES
   include/arussim/main_interface.hpp
+)
+qt5_wrap_cpp(PLOT_MOC_FILES
+  include/arussim/plot_interface.hpp
 )
 
 include_directories(
@@ -33,12 +36,29 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-add_library(main_interface_exec src/main_interface.cpp ${MOC_FILES})
+add_library(main_interface_exec
+  src/main_interface.cpp
+  ${MAIN_MOC_FILES}
+)
 target_include_directories(main_interface_exec PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+add_library(plot_interface_exec
+  src/plot_interface.cpp
+  ${PLOT_MOC_FILES}
+)
+target_include_directories(plot_interface_exec PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 ament_target_dependencies(main_interface_exec
+  pluginlib
+  rviz_common
+  arussim_msgs
+)
+ament_target_dependencies(plot_interface_exec
   pluginlib
   rviz_common
   arussim_msgs
@@ -49,10 +69,19 @@ install(TARGETS main_interface_exec
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
 )
+install(TARGETS plot_interface_exec
+        EXPORT export_main_interface
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
 install(DIRECTORY include/
         DESTINATION include
 )
 install(FILES main_interface.xml
+        DESTINATION share/${PROJECT_NAME}
+)
+install(FILES plot_interface.xml
         DESTINATION share/${PROJECT_NAME}
 )
 
@@ -107,5 +136,6 @@ install(DIRECTORY resources
 ament_export_include_directories(include)
 ament_export_targets(export_main_interface)
 pluginlib_export_plugin_description_file(rviz_common main_interface.xml)
+pluginlib_export_plugin_description_file(rviz_common plot_interface.xml)
 
 ament_package()
