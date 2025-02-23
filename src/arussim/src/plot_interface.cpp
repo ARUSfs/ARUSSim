@@ -122,7 +122,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
     gg_graph_label_ = new QLabel(this);
     gg_graph_label_->setMinimumWidth(rviz_width_ * 0.15);
-    gg_graph_label_->setMinimumHeight(rviz_height_ * 0.175);
+    gg_graph_label_->setMinimumHeight(rviz_height_ * 0.15);
     gg_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     gg_graph_label_->setStyleSheet("border: 2px solid black;");
     gg_graph_layout->addWidget(gg_graph_label_);
@@ -156,7 +156,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
     vx_label_ = new QLabel("Vx: 0", this);
     QFont font = vx_label_->font();
-    font.setPointSize(std::min(rviz_height_ * 0.015, 12.0));
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
     vx_label_->setFont(font);
     telemetry_labels_grid->addWidget(vx_label_, 0, 0);
 
@@ -239,6 +239,9 @@ void PlotInterface::onInitialize()
         }
     );
 
+    // Publishers
+    max_vx_pub_ = node->create_publisher<std_msgs::msg::Float32>("/arussim/max_vx", 1);
+
     speed_graph_label_->installEventFilter(this);
     gg_graph_label_->installEventFilter(this);
 }
@@ -287,11 +290,22 @@ bool PlotInterface::eventFilter(QObject* obj, QEvent* event)
 void PlotInterface::zoom_in_speed_graph()
 {
     max_vx_ += 5.0;
+
+    // Pub the new max_vx_ value
+    auto msg = std::make_shared<std_msgs::msg::Float32>();
+    msg->data = max_vx_;
+    max_vx_pub_->publish(*msg);
 }
 
 void PlotInterface::zoom_out_speed_graph()
 {
     max_vx_ -= 5.0;
+
+    // Pub the new max_vx_ value
+    auto msg = std::make_shared<std_msgs::msg::Float32>();
+    msg->data = max_vx_;
+    max_vx_pub_->publish(*msg);
+    
 }
 
 void PlotInterface::zoom_in_gg_graph()
@@ -561,7 +575,7 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     painter.setBrush(QColor(255, 255, 255, 200));
     painter.drawRect(legend_gg_rect);
     QFont legend_font = painter.font();
-    legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 12.0));
+    legend_font.setPointSizeF(std::min(pixmap_height * 0.075, 10.0));
     painter.setFont(legend_font);
     painter.drawText(legend_gg_rect.adjusted(10, 0, 0, 0), legend_text);
 

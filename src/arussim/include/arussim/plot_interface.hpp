@@ -112,6 +112,7 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;
+  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr max_vx_pub_;
 
   double best_lap_time_ = 9999.99;
   double last_lap_time_ = 9999.99;
@@ -132,7 +133,7 @@ private:
   double pen_size_;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 20.0;
+  double max_vx_ = 15.0;
 
   double target_speed_;
 
