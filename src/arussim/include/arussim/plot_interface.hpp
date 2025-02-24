@@ -132,7 +132,7 @@ private:
   double pen_size_;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 20.0;
+  double max_vx_ = 15.0;
 
   double target_speed_;
 
