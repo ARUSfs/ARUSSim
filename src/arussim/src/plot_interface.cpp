@@ -239,9 +239,6 @@ void PlotInterface::onInitialize()
         }
     );
 
-    // Publishers
-    max_vx_pub_ = node->create_publisher<std_msgs::msg::Float32>("/arussim/max_vx", 1);
-
     speed_graph_label_->installEventFilter(this);
     gg_graph_label_->installEventFilter(this);
 }
@@ -290,22 +287,11 @@ bool PlotInterface::eventFilter(QObject* obj, QEvent* event)
 void PlotInterface::zoom_in_speed_graph()
 {
     max_vx_ += 5.0;
-
-    // Pub the new max_vx_ value
-    auto msg = std::make_shared<std_msgs::msg::Float32>();
-    msg->data = max_vx_;
-    max_vx_pub_->publish(*msg);
 }
 
 void PlotInterface::zoom_out_speed_graph()
 {
     max_vx_ -= 5.0;
-
-    // Pub the new max_vx_ value
-    auto msg = std::make_shared<std_msgs::msg::Float32>();
-    msg->data = max_vx_;
-    max_vx_pub_->publish(*msg);
-    
 }
 
 void PlotInterface::zoom_in_gg_graph()
