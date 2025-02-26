@@ -379,12 +379,12 @@ void PlotInterface::update_telemetry_bar(double fr_param_, double fl_param_, dou
  */
 void PlotInterface::state_callback(double vx, double vy, double r, double ax, double ay, double delta)
 {
-    update_vx_target_graph(vx, vy);
+    update_vx_target_graph(vx);
     update_gg_graph(ax, ay, vx);
     update_telemetry_labels(vx, vy, r, ax, ay, delta);
 }
 
-void PlotInterface::update_vx_target_graph(double vx, double vy)
+void PlotInterface::update_vx_target_graph(double vx)
 {
     // Get the elapsed time in seconds from the start
     double current_time = timer_.elapsed() / 1000.0;
@@ -408,11 +408,6 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
 
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
-
-    // Draw axes
-    painter.setPen(Qt::black);
-    painter.drawLine(0, pixmap_height-1, pixmap_width, pixmap_height-1); // x-axis
-    painter.drawLine(0, 0, 0, pixmap_height); // y-axis
 
     // Draw grid lines
     int num_rows = max_vx_ / 5.0;
@@ -469,8 +464,7 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
     }
     painter.drawPath(vx_path);
 
-    // draw legend
-    // Adaptable legend for speed graph
+    // Draw legend
     QString legend_text_target = tr("Target");
     QString legend_text_vx = tr("Vx");
     int legend_width = std::max(QFontMetrics(painter.font()).horizontalAdvance(legend_text_target)*2, 
@@ -507,7 +501,7 @@ void PlotInterface::update_vx_target_graph(double vx, double vy)
 
 void PlotInterface::update_gg_graph(double ax, double ay, double vx)
 {
-    // Remove points older than 10 seconds
+    // Remove points older than 30 seconds
     if (vx != 0.5){
         gg_vector_.append(std::make_tuple(ay, ax, vx));
         if (!timer_gg_started_){
@@ -527,10 +521,6 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
 
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
-
-    // main axes with color
-    int cx = pixmap_width / 2;
-    int cy = pixmap_height / 2;
 
     // Calculate the position of (0,0) in the graph based on gg_center_x_, gg_center_y_, and gg_zoom_factor_
     double zero_x = ((0.0 - gg_center_x_) + 12.0 * gg_zoom_factor_) / (24.0 * gg_zoom_factor_) * pixmap_width;
