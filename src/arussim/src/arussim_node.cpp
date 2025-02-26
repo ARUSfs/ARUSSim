@@ -369,7 +369,10 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
+    input_acc_ = 0.0;
+    input_delta_ = 0.0;
     vehicle_dynamics_ = VehicleDynamics();
+
     started_acc_ = false;
     if (prev_circuit_ != track_name_){
         fixed_trajectory_msg_.points.clear();
