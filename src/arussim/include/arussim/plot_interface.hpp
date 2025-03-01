@@ -96,7 +96,7 @@ private Q_SLOTS:
   void launch_button_clicked();
   void reset_callback();
   void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
-  void update_vx_target_graph(double vx, double vy);
+  void update_vx_target_graph(double vx);
   void update_gg_graph(double ax, double ay, double vx);
   void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
   void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
@@ -132,7 +132,7 @@ private:
   double pen_size_;
 
   double min_vx_ = 0.0;
-  double max_vx_ = 20.0;
+  double max_vx_ = 15.0;
 
   double target_speed_;
 
