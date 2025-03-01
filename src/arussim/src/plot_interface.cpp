@@ -210,9 +210,9 @@ void PlotInterface::onInitialize()
         }
     );
 
-    state_sub_ = node->create_subscription<arussim_msgs::msg::State>(
-        "/arussim/state", 1, 
-        [this](const arussim_msgs::msg::State::SharedPtr msg) { 
+    state_sub_ = node->create_subscription<common_msgs::msg::State>(
+        "/car_state/state", 1, 
+        [this](const common_msgs::msg::State::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
                 state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
             }, Qt::QueuedConnection);
@@ -238,6 +238,11 @@ void PlotInterface::onInitialize()
             }
         }
     );
+
+    plot_timer_ = node->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/100)), 
+        std::bind(&PlotInterface::plot_timer, this));
+
 
     speed_graph_label_->installEventFilter(this);
     gg_graph_label_->installEventFilter(this);
@@ -379,9 +384,19 @@ void PlotInterface::update_telemetry_bar(double fr_param_, double fl_param_, dou
  */
 void PlotInterface::state_callback(double vx, double vy, double r, double ax, double ay, double delta)
 {
-    update_vx_target_graph(vx);
-    update_gg_graph(ax, ay, vx);
-    update_telemetry_labels(vx, vy, r, ax, ay, delta);
+    vx_ = vx;
+    vy_ = vy;
+    r_ = r;
+    ax_ = ax;
+    ay_ = ay;
+    delta_ = delta;
+}
+
+void PlotInterface::plot_timer()
+{
+    update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
+    update_vx_target_graph(vx_);
+    update_gg_graph(ax_, ay_, vx_);
 }
 
 void PlotInterface::update_vx_target_graph(double vx)
