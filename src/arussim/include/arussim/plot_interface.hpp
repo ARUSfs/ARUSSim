@@ -97,9 +97,9 @@ private Q_SLOTS:
   void launch_button_clicked();
   void reset_callback();
   void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
-  void update_vx_target_graph(double vx);
-  void update_gg_graph(double ax, double ay, double vx);
-  void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+  void update_vx_target_graph();
+  void update_gg_graph();
+  void update_telemetry_labels();
   void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
   void zoom_in_speed_graph();
   void zoom_out_speed_graph();

@@ -394,18 +394,18 @@ void PlotInterface::state_callback(double vx, double vy, double r, double ax, do
 
 void PlotInterface::plot_timer()
 {
-    update_telemetry_labels(vx_, vy_, r_, ax_, ay_, delta_);
-    update_vx_target_graph(vx_);
-    update_gg_graph(ax_, ay_, vx_);
+    update_telemetry_labels();
+    update_vx_target_graph();
+    update_gg_graph();
 }
 
-void PlotInterface::update_vx_target_graph(double vx)
+void PlotInterface::update_vx_target_graph()
 {
     // Get the elapsed time in seconds from the start
     double current_time = timer_.elapsed() / 1000.0;
 
     // Add the new data point
-    vx_history_.append(qMakePair(current_time, vx));
+    vx_history_.append(qMakePair(current_time, vx_));
     target_speed_history_.append(qMakePair(current_time, target_speed_));
 
     // Remove points older than 10 seconds
@@ -443,24 +443,6 @@ void PlotInterface::update_vx_target_graph(double vx)
         return;
     }
 
-    // Draw target speed line in blue
-    painter.setPen(QPen(Qt::blue, pen_size_));
-    QPainterPath ts_path;
-    bool first_ts_point = true;
-    for (const auto &point : target_speed_history_)
-    {
-        double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
-        double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
-        double y = pixmap_height - (norm * pixmap_height);
-        if(first_ts_point) {
-            ts_path.moveTo(x, y);
-            first_ts_point = false;
-        } else {
-            ts_path.lineTo(x, y);
-        }
-    }
-    painter.drawPath(ts_path);
-
     // Draw vx line in red
     painter.setPen(QPen(Qt::red, pen_size_));
     QPainterPath vx_path;
@@ -478,6 +460,24 @@ void PlotInterface::update_vx_target_graph(double vx)
         }
     }
     painter.drawPath(vx_path);
+
+    // Draw target speed line in blue
+    painter.setPen(QPen(Qt::blue, pen_size_));
+    QPainterPath ts_path;
+    bool first_ts_point = true;
+    for (const auto &point : target_speed_history_)
+    {
+        double x = ((point.first - (current_time - 10.0)) / 10.0) * pixmap_width;
+        double norm = (point.second - min_vx_) / (max_vx_ - min_vx_);
+        double y = pixmap_height - (norm * pixmap_height);
+        if(first_ts_point) {
+            ts_path.moveTo(x, y);
+            first_ts_point = false;
+        } else {
+            ts_path.lineTo(x, y);
+        }
+    }
+    painter.drawPath(ts_path);
 
     // Draw legend
     QString legend_text_target = tr("Target");
@@ -514,11 +514,11 @@ void PlotInterface::update_vx_target_graph(double vx)
     speed_graph_label_->setPixmap(pixmap);
 }
 
-void PlotInterface::update_gg_graph(double ax, double ay, double vx)
+void PlotInterface::update_gg_graph()
 {
     // Remove points older than 30 seconds
-    if (vx != 0.5){
-        gg_vector_.append(std::make_tuple(ay, ax, vx));
+    if (vx_ != 0.5){
+        gg_vector_.append(std::make_tuple(ay_, ax_, vx_));
         if (!timer_gg_started_){
             timer_gg_.start();
             timer_gg_started_ = true;
@@ -621,14 +621,14 @@ void PlotInterface::update_gg_graph(double ax, double ay, double vx)
     gg_legend_label_->setPixmap(legend_pixmap);
 }
 
-void PlotInterface::update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta)
+void PlotInterface::update_telemetry_labels()
 {
-    vx_label_->setText("Vx: " + QString::number(vx, 'f', 2));
-    vy_label_->setText("Vy: " + QString::number(vy, 'f', 2));
-    r_label_->setText("r: " + QString::number(r, 'f', 2));
-    ax_label_->setText("Ax: " + QString::number(ax, 'f', 2));
-    ay_label_->setText("Ay: " + QString::number(ay, 'f', 2));
-    delta_label_->setText("Delta: " + QString::number(delta, 'f', 2));
+    vx_label_->setText("Vx: " + QString::number(vx_, 'f', 2));
+    vy_label_->setText("Vy: " + QString::number(vy_, 'f', 2));
+    r_label_->setText("r: " + QString::number(r_, 'f', 2));
+    ax_label_->setText("Ax: " + QString::number(ax_, 'f', 2));
+    ay_label_->setText("Ay: " + QString::number(ay_, 'f', 2));
+    delta_label_->setText("Delta: " + QString::number(delta_, 'f', 2));
 }
 
 /**
