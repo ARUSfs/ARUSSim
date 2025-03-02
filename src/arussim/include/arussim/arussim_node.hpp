@@ -13,7 +13,6 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
-#include "arussim_msgs/srv/set_timer.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
 
@@ -190,31 +189,6 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
-    /**
-     * @brief Load the fixed trajectory from a JSON file.
-     * 
-     * @param track_msg 
-     */
-    void load_fixed_trajectory(const std_msgs::msg::String::SharedPtr track_msg);
-
-    /**
-     * @brief Service handler for setting the FOV.
-     * 
-     * This method updates the FOV parameter based on a service request.
-     * 
-     * @param request The service request message.
-     * @param response The service response message.
-     */
-    void handle_set_timer(
-      const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
-      std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
-
-    /**
-     * @brief Update the timers based on the simulation speed multiplier.
-     * 
-     */
-    void update_timers();
-
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
@@ -229,6 +203,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
-    rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
 };
