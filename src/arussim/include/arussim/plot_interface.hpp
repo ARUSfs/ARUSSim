@@ -105,7 +105,6 @@ private Q_SLOTS:
   void zoom_out_speed_graph();
   void zoom_in_gg_graph();
   void zoom_out_gg_graph();
-  void plot_timer();
 
 private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
@@ -114,7 +113,6 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;
-  rclcpp::TimerBase::SharedPtr plot_timer_;
 
   double best_lap_time_ = 9999.99;
   double last_lap_time_ = 9999.99;

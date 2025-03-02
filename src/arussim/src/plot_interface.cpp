@@ -239,11 +239,6 @@ void PlotInterface::onInitialize()
         }
     );
 
-    plot_timer_ = node->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/100)), 
-        std::bind(&PlotInterface::plot_timer, this));
-
-
     speed_graph_label_->installEventFilter(this);
     gg_graph_label_->installEventFilter(this);
 }
@@ -370,6 +365,10 @@ void PlotInterface::update_telemetry_bar(double fr_param_, double fl_param_, dou
         telemetry_bar_rr_->move(telemetry_bar_rr_->x(), center_y_);
         telemetry_bar_rr_->setStyleSheet("background-color: red;");
     }
+
+    update_telemetry_labels();
+    update_vx_target_graph();
+    update_gg_graph();
 }
 
 /**
@@ -390,13 +389,6 @@ void PlotInterface::state_callback(double vx, double vy, double r, double ax, do
     ax_ = ax;
     ay_ = ay;
     delta_ = delta;
-}
-
-void PlotInterface::plot_timer()
-{
-    update_telemetry_labels();
-    update_vx_target_graph();
-    update_gg_graph();
 }
 
 void PlotInterface::update_vx_target_graph()
