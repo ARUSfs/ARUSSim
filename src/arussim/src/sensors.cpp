@@ -216,11 +216,6 @@ void Sensors::wheel_speed_timer()
     wheel_speed_.rr_ = wheel_speed.rear_right * 0.202 + dist_rear_right(gen);
     wheel_speed_.rl_ = wheel_speed.rear_left * 0.202 + dist_rear_left(gen);
 
-    if (wheel_speed_.fr_ < 1.0) wheel_speed_.fr_ = 1.0;
-    if (wheel_speed_.fl_ < 1.0) wheel_speed_.fl_ = 1.0;
-    if (wheel_speed_.rr_ < 1.0) wheel_speed_.rr_ = 1.0;
-    if (wheel_speed_.rl_ < 1.0) wheel_speed_.rl_ = 1.0;
-
     // Create the wheel speed message
     auto msg_fr = std_msgs::msg::Float32();
     auto msg_fl = std_msgs::msg::Float32();
