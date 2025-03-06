@@ -22,7 +22,6 @@ find_package(Qt5Widgets REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(common_msgs REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 qt5_wrap_cpp(MAIN_MOC_FILES
@@ -63,7 +62,6 @@ ament_target_dependencies(plot_interface_exec
   pluginlib
   rviz_common
   arussim_msgs
-  common_msgs
 )
 install(TARGETS main_interface_exec
         EXPORT export_main_interface

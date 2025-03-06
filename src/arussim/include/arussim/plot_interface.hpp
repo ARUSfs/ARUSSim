@@ -29,7 +29,6 @@
 #include <std_msgs/msg/float32.hpp>
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "arussim_msgs/msg/state.hpp"
-#include "common_msgs/msg/state.hpp"
 
 
 namespace plot_interface
@@ -109,7 +108,7 @@ private Q_SLOTS:
 private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
-  rclcpp::Subscription<common_msgs::msg::State>::SharedPtr state_sub_;
+  rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;

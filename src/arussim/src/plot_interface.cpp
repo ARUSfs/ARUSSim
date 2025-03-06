@@ -210,9 +210,9 @@ void PlotInterface::onInitialize()
         }
     );
 
-    state_sub_ = node->create_subscription<common_msgs::msg::State>(
-        "/car_state/state", 1, 
-        [this](const common_msgs::msg::State::SharedPtr msg) { 
+    state_sub_ = node->create_subscription<arussim_msgs::msg::State>(
+        "/arussim/state", 1, 
+        [this](const arussim_msgs::msg::State::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
                 state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
             }, Qt::QueuedConnection);
