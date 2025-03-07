@@ -171,8 +171,19 @@ def circuit_to_midpoints(outer_cones: list, inner_cones: list, output_filename: 
         my = (out_cone[1] + in_cone[1]) / 2
         midpoints.append((mx, my))
 
-    x = [m[0] for m in midpoints]
-    y = [m[1] for m in midpoints]
+    # Filter duplicate midpoints
+    filtered_midpoints = []
+    for point in midpoints:
+        if not filtered_midpoints or distance(filtered_midpoints[-1], point) > 1e-6:  # Adjust threshold as needed
+            filtered_midpoints.append(point)
+
+    x = [m[0] for m in filtered_midpoints]
+    y = [m[1] for m in filtered_midpoints]
+
+    # Check if there are enough unique points
+    if len(x) < 4:  # Minimum 4 points required for k=3 spline
+        print("Not enough unique midpoints to create a spline.")
+        return
 
     tck, u = splprep([x, y], s=1.0, per=1, k=3)
     

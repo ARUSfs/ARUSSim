@@ -17,7 +17,6 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
-    this->declare_parameter<double>("simulation_speed_multiplier", 1.0);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -32,7 +31,6 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("simulation_speed_multiplier", kSimulationSpeedMultiplier);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -82,11 +80,6 @@ Simulator::Simulator() : Node("simulator")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
-    set_timer_service_ = this->create_service<arussim_msgs::srv::SetTimer>(
-        "arussim/set_timer",
-        std::bind(&Simulator::handle_set_timer, this, 
-            std::placeholders::_1, std::placeholders::_2));
-
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
@@ -123,54 +116,6 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 }
-/**
- * @brief Function that updtates the timers based on the simulation speed multiplier.
- *
- * 
- */
-void Simulator::update_timers() {
-    // Destroy the current timers
-    slow_timer_.reset();
-    fast_timer_.reset();
-
-    // Calculate intervals in nanoseconds for higher precision
-    auto slow_interval_ns = std::chrono::nanoseconds(
-        static_cast<int>(1000000000 / (kSensorRate * kSimulationSpeedMultiplier)));
-    auto fast_interval_ns = std::chrono::nanoseconds(
-        static_cast<int>(1000000000 / (kStateUpdateRate * kSimulationSpeedMultiplier)));
-
-    // Create new timers with adjusted intervals
-    slow_timer_ = this->create_wall_timer(
-        slow_interval_ns, std::bind(&Simulator::on_slow_timer, this));
-    fast_timer_ = this->create_wall_timer(
-        fast_interval_ns, std::bind(&Simulator::on_fast_timer, this));
-}
-
-
-/**
- * @brief Service handler for setting the timer.
- * 
- * This method updates the timer parameter based on a service request.
- * 
- * @param request The service request message.
- * @param response The service response message.
- */
-void Simulator::handle_set_timer(
-    const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
-    std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response)
-{
-    try {
-        kSimulationSpeedMultiplier = request->timer;
-        update_timers();
-        response->success = true;
-        response->message = "timer updated successfully to " + std::to_string(kSimulationSpeedMultiplier);
-    } catch (const std::exception& e) {
-        response->success = false;
-        response->message = "Error updating timer: " + std::string(e.what());
-        RCLCPP_ERROR(get_logger(), "Error updating timer: %s", e.what());
-    }
-}
-
 
 /**
  * @brief Determines if the vehicle is above, below, or on the line formed by the two cones.

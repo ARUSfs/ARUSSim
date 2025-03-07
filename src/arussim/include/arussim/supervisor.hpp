@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include "arussim_msgs/srv/set_timer.hpp"
 #include "arussim/csv_generator.hpp"
 #include <memory>
 
@@ -56,16 +55,6 @@ private:
     void reset_callback(const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
-     * @brief Service handler for setting the timer.
-     * 
-     * @param request 
-     * @param response 
-     */
-    void handle_set_timer(
-        const std::shared_ptr<arussim_msgs::srv::SetTimer::Request> request,
-        std::shared_ptr<arussim_msgs::srv::SetTimer::Response> response);
-
-    /**
      * @brief Timer callback to update the timer.
      * 
      */
@@ -79,7 +68,6 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lap_time_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr hit_cones_pub_;
-    rclcpp::Service<arussim_msgs::srv::SetTimer>::SharedPtr set_timer_service_;
     rclcpp::TimerBase::SharedPtr timer_;
 
 

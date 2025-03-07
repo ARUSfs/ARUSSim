@@ -96,9 +96,9 @@ private Q_SLOTS:
   void launch_button_clicked();
   void reset_callback();
   void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
-  void update_vx_target_graph(double vx);
-  void update_gg_graph(double ax, double ay, double vx);
-  void update_telemetry_labels(double vx, double vy, double r, double ax, double ay, double delta);
+  void update_vx_target_graph();
+  void update_gg_graph();
+  void update_telemetry_labels();
   void state_callback(double vx_, double vy_, double r_, double ax_, double ay_, double delta_);
   void zoom_in_speed_graph();
   void zoom_out_speed_graph();
@@ -117,6 +117,13 @@ private:
   double last_lap_time_ = 9999.99;
   int hit_cones_counter_ = 0;
   int lap_counter_ = 0;
+
+  double vx_ = 0.0;
+  double vy_ = 0.0;
+  double r_ = 0.0;
+  double ax_ = 0.0;
+  double ay_ = 0.0;
+  double delta_ = 0.0;
 
   double bar_size_;
   double max_torque_value_ = 90.0;
