@@ -54,8 +54,8 @@ void VehicleDynamics::calculate_dynamics(){
     total_fy += (force_fl.fx + force_fr.fx) * std::sin(delta_);
     ay_ = total_fy / kMass;
 
-    x_dot_ = vx_ * std::cos(yaw_) + vy_ * std::sin(yaw_);
-    y_dot_ = vx_ * std::sin(yaw_) - vy_ * std::cos(yaw_);
+    x_dot_ = vx_ * std::cos(yaw_) - vy_ * std::sin(yaw_);
+    y_dot_ = vx_ * std::sin(yaw_) + vy_ * std::cos(yaw_);
 
     vx_dot_ = ax_ + r_ * vy_;
     vy_dot_ = ay_ - r_ * vx_;
