@@ -98,7 +98,7 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
 
     speed_graph_label_ = new QLabel(this);
     speed_graph_label_->setMinimumWidth(rviz_width_ * 0.1);
-    speed_graph_label_->setFixedHeight(rviz_height_ * 0.175);
+    speed_graph_label_->setFixedHeight(rviz_height_ * 0.15);
     speed_graph_label_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     speed_graph_label_->setStyleSheet("border: 2px solid black;");
     speed_graph_layout->addWidget(speed_graph_label_);
@@ -185,7 +185,12 @@ PlotInterface::PlotInterface(QWidget* parent) : Panel(parent)
     // Plot timer
     timer_.start();
 
-    main_layout->addLayout(main_grid);
+    auto scroll_area = new QScrollArea(this);
+    scroll_area->setWidgetResizable(true);
+    auto container_widget = new QWidget();
+    container_widget->setLayout(main_grid);
+    scroll_area->setWidget(container_widget);
+    main_layout->addWidget(scroll_area);
 }
 
 PlotInterface::~PlotInterface() = default;

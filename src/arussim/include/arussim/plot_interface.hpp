@@ -22,6 +22,7 @@
 #include <QScreen>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QScrollArea>
 
 
 #include <std_msgs/msg/bool.hpp>
