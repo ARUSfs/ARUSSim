@@ -4,7 +4,12 @@
  */
 
 #include "arussim/arussim_node.hpp"
+#include "controller_sim/controller_sim.hpp"
 
+#include "controller_sim/estimation.hpp"
+#include "controller_sim/power_limitation.hpp"
+#include "controller_sim/traction_control.hpp"
+#include "controller_sim/torque_vectoring.hpp"
 /**
  * @class Simulator
  * @brief Simulator class for the ARUS Team (ARUSsim).
@@ -234,8 +239,9 @@ void Simulator::on_fast_timer()
     }
 
     double dt = 1.0 / kStateUpdateRate;
-
-    vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
+    ControllerSim controller_sim;
+    controller_sim.get_torque_cmd(input_delta_, input_acc_);    
+    vehicle_dynamics_.update_simulation(controller_sim.tryFinal_delta, controller_sim.tryFinal_acc, dt);
 
     if(use_tpl_){
         check_lap();
