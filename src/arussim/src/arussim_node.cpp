@@ -240,8 +240,19 @@ void Simulator::on_fast_timer()
 
     double dt = 1.0 / kStateUpdateRate;
     ControllerSim controller_sim;
-    controller_sim.get_torque_cmd(input_delta_, input_acc_);    
-    vehicle_dynamics_.update_simulation(controller_sim.tryFinal_delta, controller_sim.tryFinal_acc, dt);
+    //controller_sim.get_torque_cmd(input_delta_, input_acc_); 
+    // Actualizar el estado del vehículo en controller_sim
+    controller_sim.set_state(
+        vehicle_dynamics_.vx_,
+        vehicle_dynamics_.vy_,
+        vehicle_dynamics_.r_,
+        vehicle_dynamics_.ax_,
+        vehicle_dynamics_.ay_,
+        vehicle_dynamics_.delta_,
+        vehicle_dynamics_.delta_v_
+    );
+
+    vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt);
 
     if(use_tpl_){
         check_lap();

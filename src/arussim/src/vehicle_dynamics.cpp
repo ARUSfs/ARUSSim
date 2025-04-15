@@ -20,13 +20,16 @@ VehicleDynamics::VehicleDynamics(){
 }
 
 void VehicleDynamics::update_simulation(double input_delta, 
-                                        double input_acc, 
+                                        std::vector<double> input_torque, 
                                         double dt){
     input_delta_ = input_delta;
-    input_acc_ = input_acc;
+    torque_cmd_.fl_ = input_torque[0];
+    torque_cmd_.fr_ = input_torque[1];
+    torque_cmd_.rl_ = input_torque[2];
+    torque_cmd_.rr_ = input_torque[3];
     dt_ = dt;
 
-    update_torque_cmd();
+    
 
     calculate_dynamics();
     integrate_dynamics();
