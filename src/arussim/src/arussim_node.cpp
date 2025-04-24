@@ -251,8 +251,15 @@ void Simulator::on_fast_timer()
         vehicle_dynamics_.delta_,
         vehicle_dynamics_.delta_v_
     );
+    // Actualizar wheel_speed_ en controller_sim antes de llamar a get_torque_cmd
+    controller_sim.set_wheel_speed(
+        vehicle_dynamics_.wheel_speed_.fl_,
+        vehicle_dynamics_.wheel_speed_.fr_,
+        vehicle_dynamics_.wheel_speed_.rl_,
+        vehicle_dynamics_.wheel_speed_.rr_
+    );
 
-    vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt);
+    vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt, controller_sim);
 
     if(use_tpl_){
         check_lap();
