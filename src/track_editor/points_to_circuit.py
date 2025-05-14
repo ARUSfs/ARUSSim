@@ -191,11 +191,11 @@ def circuit_to_midpoints(outer_cones: list, inner_cones: list, output_filename: 
     x_smooth, y_smooth = splev(u_new, tck)
 
     pr = profiles(x_smooth, y_smooth)
-    with open("ARUSSim/src/arussim/resources/tracks/" + output_filename, 'w') as outfile:
+    with open("src/ARUSSim/src/arussim/resources/tracks/" + output_filename, 'w') as outfile:
         json.dump(pr, outfile, indent=2)
 
 def readPCD(fileName: str): 
-    with open("ARUSSim/src/arussim/resources/tracks/" + fileName, 'r') as f:
+    with open("src/ARUSSim/src/arussim/resources/tracks/" + fileName, 'r') as f:
         lines = f.readlines()
 
     leftCones = []
