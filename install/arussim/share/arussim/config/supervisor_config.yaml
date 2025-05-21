@@ -1,3 +1,0 @@
-arussim:
-  ros__parameters:
-    csv_supervisor: false           # bool   Save data to CSV file
