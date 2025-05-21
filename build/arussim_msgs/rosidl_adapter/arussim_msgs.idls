@@ -1,6 +1,0 @@
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/Cmd.idl
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/Cmd4WD.idl
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/FourWheelDrive.idl
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/PointXY.idl
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/State.idl
-/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/rosidl_adapter/arussim_msgs:msg/Trajectory.idl
