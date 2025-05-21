@@ -1,0 +1,17 @@
+[  4%] [34m[1mAutomatic MOC for target arussim_exec[0m
+[  8%] [34m[1mAutomatic MOC for target plot_interface_exec[0m
+[ 12%] [34m[1mAutomatic MOC for target supervisor_exec[0m
+[ 16%] [34m[1mAutomatic MOC for target sensors_exec[0m
+[ 20%] [34m[1mAutomatic MOC for target main_interface_exec[0m
+[ 20%] Built target plot_interface_exec_autogen
+[ 20%] Built target arussim_exec_autogen
+[ 20%] Built target supervisor_exec_autogen
+[ 20%] Built target sensors_exec_autogen
+[ 20%] Built target main_interface_exec_autogen
+[35m[1mConsolidate compiler generated dependencies of target arussim_exec[0m
+[ 40%] Built target sensors_exec
+[ 44%] Built target supervisor_exec
+[ 64%] Built target plot_interface_exec
+[ 84%] Built target main_interface_exec
+[ 88%] [32mBuilding CXX object CMakeFiles/arussim_exec.dir/src/arussim_node.cpp.o[0m
+[ 92%] [32m[1mLinking CXX executable arussim_exec[0m

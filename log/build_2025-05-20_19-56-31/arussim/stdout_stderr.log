@@ -1,0 +1,396 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Found rclcpp: 16.0.11 (/opt/ros/humble/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+-- Found FastRTPS: /opt/ros/humble/include  
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found geometry_msgs: 4.2.4 (/opt/ros/humble/share/geometry_msgs/cmake)
+-- Found sensor_msgs: 4.2.4 (/opt/ros/humble/share/sensor_msgs/cmake)
+-- Found visualization_msgs: 4.2.4 (/opt/ros/humble/share/visualization_msgs/cmake)
+-- Found arussim_msgs: 0.0.0 (/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake)
+-- Found tf2_ros: 0.25.12 (/opt/ros/humble/share/tf2_ros/cmake)
+-- Checking for module 'eigen3'
+--   Found eigen3, version 3.4.0
+-- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1") 
+-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found suitable version "1.74.0", minimum required is "1.65.0") found components: system filesystem date_time iostreams serialization 
+-- Checking for module 'flann'
+--   Found flann, version 1.9.1
+-- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so  
+-- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+-- Found GLEW: /usr/lib/x86_64-linux-gnu/libGLEW.so  
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so  found components: OpenGL GLX 
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/libmpi.so (found version "3.1") 
+-- Found MPI: TRUE (found version "3.1") found components: C 
+-- Found JsonCpp: /usr/lib/x86_64-linux-gnu/libjsoncpp.so (found suitable version "1.9.5", minimum required is "0.7.0") 
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.2.11") 
+-- Found PNG: /usr/lib/x86_64-linux-gnu/libpng.so (found version "1.6.37") 
+-- Found Eigen3: /usr/include/eigen3 (found version "3.4.0") 
+-- Found X11: /usr/include   
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Found EXPAT: /usr/lib/x86_64-linux-gnu/libexpat.so (found version "2.4.7") 
+-- Found double-conversion: /usr/lib/x86_64-linux-gnu/libdouble-conversion.so  
+-- Found LZ4: /usr/lib/x86_64-linux-gnu/liblz4.so (found version "1.9.3") 
+-- Found LZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.2.5") 
+-- Found JPEG: /usr/lib/x86_64-linux-gnu/libjpeg.so (found version "80") 
+-- Found TIFF: /usr/lib/x86_64-linux-gnu/libtiff.so (found version "4.3.0")  
+-- Found Freetype: /usr/lib/x86_64-linux-gnu/libfreetype.so (found version "2.11.1") 
+-- Found utf8cpp: /usr/include/utf8cpp  
+-- Checking for module 'libusb-1.0'
+--   Found libusb-1.0, version 1.0.25
+-- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so  
+-- Found OpenNI: /usr/lib/libOpenNI.so;libusb::libusb (found version "1.5.4.0") 
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- Found OpenNI2: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb (found version "2.2.0.33") 
+-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[0m** WARNING ** io features related to pcap will be disabled[0m
+-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+-- Found Qhull version 8.0.2
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- looking for PCL_COMMON
+-- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so  
+-- looking for PCL_KDTREE
+-- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so  
+-- looking for PCL_OCTREE
+-- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so  
+-- looking for PCL_SEARCH
+-- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so  
+-- looking for PCL_SAMPLE_CONSENSUS
+-- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so  
+-- looking for PCL_FILTERS
+-- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so  
+-- looking for PCL_2D
+-- Found PCL_2D: /usr/include/pcl-1.12  
+-- looking for PCL_GEOMETRY
+-- Found PCL_GEOMETRY: /usr/include/pcl-1.12  
+-- looking for PCL_IO
+-- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so  
+-- looking for PCL_FEATURES
+-- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so  
+-- looking for PCL_ML
+-- Found PCL_ML: /usr/lib/x86_64-linux-gnu/libpcl_ml.so  
+-- looking for PCL_SEGMENTATION
+-- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so  
+-- looking for PCL_VISUALIZATION
+-- Found PCL_VISUALIZATION: /usr/lib/x86_64-linux-gnu/libpcl_visualization.so  
+-- looking for PCL_SURFACE
+-- Found PCL_SURFACE: /usr/lib/x86_64-linux-gnu/libpcl_surface.so  
+-- looking for PCL_REGISTRATION
+-- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so  
+-- looking for PCL_KEYPOINTS
+-- Found PCL_KEYPOINTS: /usr/lib/x86_64-linux-gnu/libpcl_keypoints.so  
+-- looking for PCL_TRACKING
+-- Found PCL_TRACKING: /usr/lib/x86_64-linux-gnu/libpcl_tracking.so  
+-- looking for PCL_RECOGNITION
+-- Found PCL_RECOGNITION: /usr/lib/x86_64-linux-gnu/libpcl_recognition.so  
+-- looking for PCL_STEREO
+-- Found PCL_STEREO: /usr/lib/x86_64-linux-gnu/libpcl_stereo.so  
+-- looking for PCL_APPS
+-- Found PCL_APPS: /usr/lib/x86_64-linux-gnu/libpcl_apps.so  
+-- looking for PCL_IN_HAND_SCANNER
+-- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.12  
+-- looking for PCL_MODELER
+-- Found PCL_MODELER: /usr/include/pcl-1.12  
+-- looking for PCL_POINT_CLOUD_EDITOR
+-- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.12  
+-- looking for PCL_OUTOFCORE
+-- Found PCL_OUTOFCORE: /usr/lib/x86_64-linux-gnu/libpcl_outofcore.so  
+-- looking for PCL_PEOPLE
+-- Found PCL_PEOPLE: /usr/lib/x86_64-linux-gnu/libpcl_people.so  
+-- Found PCL: pcl_common;pcl_kdtree;pcl_octree;pcl_search;pcl_sample_consensus;pcl_filters;pcl_io;pcl_features;pcl_ml;pcl_segmentation;pcl_visualization;pcl_surface;pcl_registration;pcl_keypoints;pcl_tracking;pcl_recognition;pcl_stereo;pcl_apps;pcl_outofcore;pcl_people;Boost::system;Boost::filesystem;Boost::date_time;Boost::iostreams;Boost::serialization;/usr/lib/libOpenNI.so;libusb::libusb;/usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb;VTK::ChartsCore;VTK::CommonColor;VTK::CommonComputationalGeometry;VTK::CommonCore;VTK::CommonDataModel;VTK::CommonExecutionModel;VTK::CommonMath;VTK::CommonMisc;VTK::CommonTransforms;VTK::FiltersCore;VTK::FiltersExtraction;VTK::FiltersGeneral;VTK::FiltersGeometry;VTK::FiltersModeling;VTK::FiltersSources;VTK::ImagingCore;VTK::ImagingSources;VTK::InteractionImage;VTK::InteractionStyle;VTK::InteractionWidgets;VTK::IOCore;VTK::IOGeometry;VTK::IOImage;VTK::IOLegacy;VTK::IOPLY;VTK::RenderingAnnotation;VTK::RenderingCore;VTK::RenderingContext2D;VTK::RenderingLOD;VTK::RenderingFreeType;VTK::ViewsCore;VTK::ViewsContext2D;VTK::RenderingOpenGL2;VTK::GUISupportQt;FLANN::FLANN;QHULL::QHULL  
+-- Found pcl_conversions: 2.4.5 (/opt/ros/humble/share/pcl_conversions/cmake)
+-- Found nlohmann_json: /usr/lib/cmake/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.10.5") 
+-- Found rviz_common: 11.2.16 (/opt/ros/humble/share/rviz_common/cmake)
+-- Setting assimp_DIR to: '/opt/ros/humble/share/rviz_assimp_vendor/cmake/../../../opt/rviz_assimp_vendor/lib/cmake/assimp-4.1'
+-- Setting OGRE_DIR to: '/opt/ros/humble/share/rviz_ogre_vendor/cmake/../../../opt/rviz_ogre_vendor/lib/OGRE/cmake'
+-- Found OGRE
+--   static     : OFF
+--   components : HLMS;MeshLodGenerator;Overlay;Paging;Property;RTShaderSystem;Terrain;Volume
+--   plugins    : Plugin_BSPSceneManager;Plugin_OctreeSceneManager;Plugin_PCZSceneManager;Plugin_ParticleFX;RenderSystem_GL;RenderSystem_GL3Plus;Codec_STBI
+--   media      : /opt/ros/humble/opt/rviz_ogre_vendor/share/OGRE/Media
+-- OGRE_LIBRARIES: OgreHLMS;OgreMeshLodGenerator;OgreOverlay;OgrePaging;OgreProperty;OgreRTShaderSystem;OgreTerrain;OgreVolume;OgreMain
+-- OGRE_LIBRARY_DIRS: /opt/ros/humble/opt/rviz_ogre_vendor/lib
+-- OGRE_PLUGINS: Plugin_BSPSceneManager;Plugin_OctreeSceneManager;Plugin_PCZSceneManager;Plugin_ParticleFX;RenderSystem_GL;RenderSystem_GL3Plus;Codec_STBI
+-- OGRE_PLUGIN_DIR: /opt/ros/humble/opt/rviz_ogre_vendor/lib/OGRE
+-- rviz_ogre_vendor::OgreOverlay for IMPORTED_LOCATION_RELEASE: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreOverlay.so
+-- rviz_ogre_vendor::OgreOverlay for IMPORTED_LOCATION_DEBUG: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreOverlay.so
+-- rviz_ogre_vendor::OgreMain for IMPORTED_LOCATION_RELEASE: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreMain.so
+-- rviz_ogre_vendor::OgreMain for IMPORTED_LOCATION_DEBUG: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreMain.so
+-- Could not find freeimage library
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   
+-- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+-- Found Eigen3: TRUE (found version "3.4.0") 
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/josedag31/Arus/ws/src/ARUSSim/build/arussim
+[  4%] [34m[1mAutomatic MOC for target arussim_exec[0m
+[ 12%] [34m[1mAutomatic MOC for target supervisor_exec[0m
+[ 12%] [34m[1mAutomatic MOC for target sensors_exec[0m
+[ 16%] [34m[1mAutomatic MOC for target plot_interface_exec[0m
+[ 20%] [34m[1mAutomatic MOC for target main_interface_exec[0m
+[ 20%] Built target arussim_exec_autogen
+[ 20%] Built target main_interface_exec_autogen
+[ 20%] Built target sensors_exec_autogen
+[ 20%] Built target supervisor_exec_autogen
+[ 20%] Built target plot_interface_exec_autogen
+[ 28%] [34m[1mGenerating include/arussim/moc_plot_interface.cpp[0m
+[ 28%] [34m[1mGenerating include/arussim/moc_main_interface.cpp[0m
+[ 32%] [32mBuilding CXX object CMakeFiles/sensors_exec.dir/sensors_exec_autogen/mocs_compilation.cpp.o[0m
+[ 36%] [32mBuilding CXX object CMakeFiles/arussim_exec.dir/src/arussim_node.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/arussim_exec.dir/arussim_exec_autogen/mocs_compilation.cpp.o[0m
+[ 44%] [32mBuilding CXX object CMakeFiles/supervisor_exec.dir/src/supervisor.cpp.o[0m
+[ 48%] [32mBuilding CXX object CMakeFiles/supervisor_exec.dir/supervisor_exec_autogen/mocs_compilation.cpp.o[0m
+[ 52%] [32mBuilding CXX object CMakeFiles/sensors_exec.dir/src/sensors.cpp.o[0m
+[ 56%] [32mBuilding CXX object CMakeFiles/main_interface_exec.dir/main_interface_exec_autogen/mocs_compilation.cpp.o[0m
+[ 60%] [32mBuilding CXX object CMakeFiles/plot_interface_exec.dir/src/plot_interface.cpp.o[0m
+[ 64%] [32mBuilding CXX object CMakeFiles/plot_interface_exec.dir/plot_interface_exec_autogen/mocs_compilation.cpp.o[0m
+[ 68%] [32mBuilding CXX object CMakeFiles/arussim_exec.dir/src/vehicle_dynamics.cpp.o[0m
+[ 72%] [32mBuilding CXX object CMakeFiles/plot_interface_exec.dir/include/arussim/moc_plot_interface.cpp.o[0m
+[ 76%] [32mBuilding CXX object CMakeFiles/main_interface_exec.dir/src/main_interface.cpp.o[0m
+[ 80%] [32mBuilding CXX object CMakeFiles/main_interface_exec.dir/include/arussim/moc_main_interface.cpp.o[0m
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/plot_interface.cpp:[m[K In member function ‘[01m[Kvirtual bool plot_interface::PlotInterface::eventFilter(QObject*, QEvent*)[m[K’:
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/plot_interface.cpp:264:66:[m[K [01;35m[Kwarning: [m[Kenum constant in boolean context [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wint-in-bool-context-Wint-in-bool-context]8;;[m[K]
+  264 |         } else if (event->type() == QEvent::MouseMove && QEvent::[01;35m[KMouseButtonPress[m[K) {
+      |                                                                  [01;35m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/arussim_node.cpp:[m[K In member function ‘[01m[Kvoid Simulator::on_fast_timer()[m[K’:
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/arussim_node.cpp:273:12:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kdt[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  273 |     double [01;35m[Kdt[m[K = 1.0 / kStateUpdateRate;
+      |            [01;35m[K^~[m[K
+[ 84%] [32m[1mLinking CXX executable sensors_exec[0m
+[ 84%] Built target sensors_exec
+[ 88%] [32m[1mLinking CXX executable supervisor_exec[0m
+[ 88%] Built target supervisor_exec
+[ 92%] [32m[1mLinking CXX shared library libmain_interface_exec.so[0m
+[ 92%] Built target main_interface_exec
+[ 96%] [32m[1mLinking CXX shared library libplot_interface_exec.so[0m
+[ 96%] Built target plot_interface_exec
+[100%] [32m[1mLinking CXX executable arussim_exec[0m
+[100%] Built target arussim_exec
+-- Install configuration: ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libmain_interface_exec.so
+-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libmain_interface_exec.so" to ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libplot_interface_exec.so
+-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libplot_interface_exec.so" to ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/traction_control.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/info
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/info/exclude
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/branches
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/COMMIT_EDITMSG
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/heads
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/heads/main
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes/origin
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes/origin/main
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/HEAD
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/index
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/config
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/heads
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/heads/main
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/tags
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes/origin
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes/origin/main
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/HEAD
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/description
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-push.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-applypatch.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/fsmonitor-watchman.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/push-to-checkout.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/post-update.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/prepare-commit-msg.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-receive.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-rebase.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-merge-commit.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/commit-msg.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-commit.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/applypatch-msg.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/update.sample
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/info
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6f
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6f/31bd99fcfa17ad3ecd05fefc867720bb76eb78
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d1
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d1/51d54e3347fccc3756563f96fc3778e33efbe4
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d4
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d4/19ade9a1d6c842837085dbe86d593251a900d0
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9e
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9e/3e810bde3140818cb7e844b070460ce75d30fe
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/07
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/07/bdebc3baede12107fa5b68686ce378477a8410
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0e
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0e/f21704e7aa5abca4a3fecee4e3a73daabb8b08
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/63
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/63/05c378cf91caef39863752eddd3049bc9a2d35
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9f
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9f/4eaaca9db7bab404d46032c6fb1f2331748c99
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a1
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a1/15c1d72e52760c820488d2bac3653956d69f64
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/62
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/62/c1052d3fe81c1821ecd4071698dfa148dceb79
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6d
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6d/80e94b5bc13363becdced103dd184d0f718cf1
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/68
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/68/44e47eead5ea23e5ecdeaff21ede4cb35df8a0
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0d
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0d/1f1e2ee2dc93f968bf6132cc185182fafa7665
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6c
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6c/b1d02b63647746151c9eff791e5c135b479e83
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/32
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/32/5a29c1887add41eaf3e54f126fba2a99d8423d
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/74
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/74/6c73cf1a082177f52b831de064cba7ef6e700a
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/1e
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/1e/ac0c283655603cd9d5324fde7ecfdc54aeef61
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/44
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/44/a6d68d510666e6df8059b9ab9017f99e937fd8
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a0
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a0/483f9895ed8482a856e7ed87a41b99b6a43207
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/84
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/84/34f35056a7c2161820bbd1092c0f0b5250dc4d
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/e6
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/e6/9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/3d
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/3d/c4403e23ad004814db755a567824b4bb96a117
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/72
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/72/a6bbcbe1c1050978eeb49886596a49f5e4898a
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/40
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/40/7c548120622fd6ffac24edc9b3a38f92171445
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/pack
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/bb
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/bb/30f56dc342e7cf34bdaedd8346c64fcc1f8b89
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/7f
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/7f/3075735a5aa2fe724817691cf150cf527821bc
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/06
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/06/d54ce1e13c95db38e264676537857fcbd87184
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/f9
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/f9/1f805bdcfc49f4ac087451efa81c763ebe2922
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/5f
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/5f/94d2ca8b4fded96163e9ccbcb196fd34843540
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/99
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/99/febb023de6f818cd415845f7bfed430ded1bca
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/42
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/42/536dc920625f0bd621256721a5ffef952b56ae
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/27
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/27/f0acf712458cb7b11c0000c6d7fd665b232e79
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/torque_vectoring.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode/settings.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode/c_cpp_properties.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/controller_sim.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/power_limitation.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/estimation.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/arussim_node.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/sensors.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/plot_interface.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/supervisor.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/csv_generator.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/vehicle_dynamics.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/ConeXYZColorScore.h
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/main_interface.hpp
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/main_interface.xml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/plot_interface.xml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/arussim_exec
+-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/arussim_exec" to ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/sensors_exec
+-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/sensors_exec" to ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/supervisor_exec
+-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/supervisor_exec" to ""
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch/sim_automatic_launch.py
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch/arussim_launch.py
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/simulator_config.yaml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/supervisor_config.yaml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/sensors_config.yaml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/arussim_rviz_config.rviz
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/whole_car.stl
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/cone.stl
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/ART24D.stl
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test27F.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSEast23.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/acceleration.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/slam_track.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG24.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test27F.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG24.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test15M.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/skidpad.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/acceleration.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test15M.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSEast23.pcd
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test1.json
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test1.pcd
+-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/main_interface.xml
+-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/plot_interface.xml
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/package_run_dependencies/arussim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/parent_prefix_path/arussim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/ament_prefix_path.sh
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/ament_prefix_path.dsv
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/path.sh
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/path.dsv
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.bash
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.sh
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.zsh
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.dsv
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/package.dsv
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/packages/arussim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/rviz_common__pluginlib__plugin/arussim
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/export_main_interfaceExport.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/export_main_interfaceExport-noconfig.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/ament_cmake_export_include_directories-extras.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/ament_cmake_export_targets-extras.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/arussimConfig.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/arussimConfig-version.cmake
+-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/package.xml

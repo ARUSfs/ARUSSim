@@ -84,6 +84,12 @@ Simulator::Simulator() : Node("simulator")
     
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
+    
+    // Create a timer for ControllerSim of 100 Hz (10 ms)
+    controller_sim_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(10), // 10ms for 100Hz
+        std::bind(&Simulator::on_controller_sim_timer, this)
+    );
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
@@ -221,7 +227,33 @@ void Simulator::on_slow_timer()
 
     cone_visualization();
 }
+void Simulator::on_controller_sim_timer() {
+    // Actualizar el estado del vehículo en ControllerSim
+    controller_sim_.set_state(
+        vehicle_dynamics_.vx_,
+        vehicle_dynamics_.vy_,
+        vehicle_dynamics_.r_,
+        vehicle_dynamics_.ax_,
+        vehicle_dynamics_.ay_,
+        vehicle_dynamics_.delta_,
+        vehicle_dynamics_.delta_v_
+    );
 
+    // Actualizar wheel_speed_ en ControllerSim
+    controller_sim_.set_wheel_speed(
+        vehicle_dynamics_.wheel_speed_.fl_,
+        vehicle_dynamics_.wheel_speed_.fr_,
+        vehicle_dynamics_.wheel_speed_.rl_,
+        vehicle_dynamics_.wheel_speed_.rr_
+    );
+
+    // Obtener los comandos de torque
+    auto torque_cmd = controller_sim_.get_torque_cmd(input_acc_);
+
+    // Actualizar la simulación en VehicleDynamics
+    double dt = 1.0 / 100.0; // 100 Hz
+    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd, dt, controller_sim_);
+}
 
 /**
  * @brief Fast timer callback for state updates.
@@ -238,28 +270,28 @@ void Simulator::on_fast_timer()
         input_acc_ = 0;
     }
 
-    double dt = 1.0 / kStateUpdateRate;
-    ControllerSim controller_sim;
+    //double dt = 1.0 / kStateUpdateRate;
+    //ControllerSim controller_sim;
     //controller_sim.get_torque_cmd(input_delta_, input_acc_); 
     // Actualizar el estado del vehículo en controller_sim
-    controller_sim.set_state(
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_,
-        vehicle_dynamics_.r_,
-        vehicle_dynamics_.ax_,
-        vehicle_dynamics_.ay_,
-        vehicle_dynamics_.delta_,
-        vehicle_dynamics_.delta_v_
-    );
-    // Actualizar wheel_speed_ en controller_sim antes de llamar a get_torque_cmd
-    controller_sim.set_wheel_speed(
-        vehicle_dynamics_.wheel_speed_.fl_,
-        vehicle_dynamics_.wheel_speed_.fr_,
-        vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_
-    );
-
-    vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt, controller_sim);
+    //controller_sim.set_state(
+    //    vehicle_dynamics_.vx_,
+    //    vehicle_dynamics_.vy_,
+    //    vehicle_dynamics_.r_,
+    //    vehicle_dynamics_.ax_,
+    //    vehicle_dynamics_.ay_,
+    //    vehicle_dynamics_.delta_,
+    //    vehicle_dynamics_.delta_v_
+    //);
+    //// Actualizar wheel_speed_ en controller_sim antes de llamar a get_torque_cmd
+    //controller_sim.set_wheel_speed(
+    //    vehicle_dynamics_.wheel_speed_.fl_,
+    //    vehicle_dynamics_.wheel_speed_.fr_,
+    //    vehicle_dynamics_.wheel_speed_.rl_,
+    //    vehicle_dynamics_.wheel_speed_.rr_
+    //);
+//
+    //vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt, controller_sim);
 
     if(use_tpl_){
         check_lap();

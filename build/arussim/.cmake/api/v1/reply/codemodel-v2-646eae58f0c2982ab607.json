@@ -1,0 +1,160 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-5f3fe1a83bbbe928bc63.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "arussim",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "arussim_exec::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arussim_exec-06585cb289b782e5e936.json",
+					"name" : "arussim_exec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arussim_exec_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arussim_exec_autogen-b24f8528d2e0af214066.json",
+					"name" : "arussim_exec_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arussim_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arussim_uninstall-9555b9d732a2393f279a.json",
+					"name" : "arussim_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "main_interface_exec::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-main_interface_exec-e77bbbd53290c8f7d8d9.json",
+					"name" : "main_interface_exec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "main_interface_exec_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-main_interface_exec_autogen-d1c3e176695fdca220a5.json",
+					"name" : "main_interface_exec_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "plot_interface_exec::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-plot_interface_exec-da5ad7bdc888916354a0.json",
+					"name" : "plot_interface_exec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "plot_interface_exec_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-plot_interface_exec_autogen-1becf40842b717128fea.json",
+					"name" : "plot_interface_exec_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensors_exec::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensors_exec-87bf8257ac98f1a2b3cb.json",
+					"name" : "sensors_exec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensors_exec_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensors_exec_autogen-563d719cad5bcc73eac8.json",
+					"name" : "sensors_exec_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "supervisor_exec::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-supervisor_exec-307b4ef74f0fa70d949f.json",
+					"name" : "supervisor_exec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "supervisor_exec_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-supervisor_exec_autogen-7ffe8d6b9e6ac91af872.json",
+					"name" : "supervisor_exec_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-cb2dc1651aca2f82c2d5.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/josedag31/Arus/ws/src/ARUSSim/build/arussim",
+		"source" : "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

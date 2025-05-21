@@ -1,0 +1,20 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from arussim_msgs/msg/Cmd4WD.msg
+// generated code does not contain a copyright notice
+
+#include "arussim_msgs/msg/FourWheelDrive.idl"
+#include "std_msgs/msg/Header.idl"
+
+module arussim_msgs {
+  module msg {
+    struct Cmd4WD {
+      std_msgs::msg::Header header;
+
+      arussim_msgs::msg::FourWheelDrive acc;
+
+      @verbatim (language="comment", text=
+        "radians")
+      float delta;
+    };
+  };
+};

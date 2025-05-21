@@ -1,0 +1,4 @@
+source;share/automatic_simulations/local_setup.bash
+source;share/automatic_simulations/local_setup.dsv
+source;share/automatic_simulations/local_setup.sh
+source;share/automatic_simulations/local_setup.zsh

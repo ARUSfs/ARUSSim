@@ -1,0 +1,801 @@
+[0.000000] (-) TimerEvent: {}
+[0.001056] (arussim_msgs) JobQueued: {'identifier': 'arussim_msgs', 'dependencies': OrderedDict()}
+[0.001221] (automatic_simulations) JobQueued: {'identifier': 'automatic_simulations', 'dependencies': OrderedDict()}
+[0.001281] (arussim) JobQueued: {'identifier': 'arussim', 'dependencies': OrderedDict([('arussim_msgs', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs')])}
+[0.001343] (arussim_msgs) JobStarted: {'identifier': 'arussim_msgs'}
+[0.008466] (automatic_simulations) JobStarted: {'identifier': 'automatic_simulations'}
+[0.017280] (arussim_msgs) JobProgress: {'identifier': 'arussim_msgs', 'progress': 'cmake'}
+[0.018536] (arussim_msgs) JobProgress: {'identifier': 'arussim_msgs', 'progress': 'build'}
+[0.019978] (arussim_msgs) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs', '--', '-j8', '-l8'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[0.025941] (automatic_simulations) JobProgress: {'identifier': 'automatic_simulations', 'progress': 'cmake'}
+[0.027278] (automatic_simulations) JobProgress: {'identifier': 'automatic_simulations', 'progress': 'build'}
+[0.028041] (automatic_simulations) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations', '--', '-j8', '-l8'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[0.099706] (-) TimerEvent: {}
+[0.111179] (automatic_simulations) StdoutLine: {'line': b'[100%] Built target automatic_simulations_exec\n'}
+[0.113422] (arussim_msgs) StdoutLine: {'line': b'[  1%] Built target arussim_msgs__cpp\n'}
+[0.121470] (arussim_msgs) StdoutLine: {'line': b'[ 12%] Built target arussim_msgs__rosidl_generator_c\n'}
+[0.137414] (arussim_msgs) StdoutLine: {'line': b'[ 12%] Built target ament_cmake_python_copy_arussim_msgs\n'}
+[0.146163] (automatic_simulations) CommandEnded: {'returncode': 0}
+[0.148363] (automatic_simulations) JobProgress: {'identifier': 'automatic_simulations', 'progress': 'install'}
+[0.161552] (automatic_simulations) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[0.172184] (automatic_simulations) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[0.173142] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/lib/automatic_simulations/automatic_simulations_exec\n'}
+[0.173993] (arussim_msgs) StdoutLine: {'line': b'[ 35%] Built target arussim_msgs__rosidl_typesupport_introspection_cpp\n'}
+[0.174254] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/config\n'}
+[0.174752] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/config/automatic_simulations_config.yaml\n'}
+[0.175764] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/package_run_dependencies/automatic_simulations\n'}
+[0.175958] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/parent_prefix_path/automatic_simulations\n'}
+[0.176073] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.sh\n'}
+[0.176172] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.dsv\n'}
+[0.176264] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.sh\n'}
+[0.176360] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.dsv\n'}
+[0.176460] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.bash\n'}
+[0.176569] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.sh\n'}
+[0.176794] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.zsh\n'}
+[0.177124] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.dsv\n'}
+[0.177308] (automatic_simulations) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.dsv\n'}
+[0.177442] (arussim_msgs) StdoutLine: {'line': b'[ 33%] Built target arussim_msgs__rosidl_typesupport_cpp\n'}
+[0.177820] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/packages/automatic_simulations\n'}
+[0.178306] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig.cmake\n'}
+[0.178441] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig-version.cmake\n'}
+[0.178554] (automatic_simulations) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.xml\n'}
+[0.178661] (arussim_msgs) StdoutLine: {'line': b'[ 46%] Built target arussim_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[0.178790] (arussim_msgs) StdoutLine: {'line': b'[ 57%] Built target arussim_msgs__rosidl_typesupport_fastrtps_c\n'}
+[0.180603] (arussim_msgs) StdoutLine: {'line': b'[ 69%] Built target arussim_msgs__rosidl_typesupport_introspection_c\n'}
+[0.181370] (automatic_simulations) CommandEnded: {'returncode': 0}
+[0.188649] (arussim_msgs) StdoutLine: {'line': b'[ 80%] Built target arussim_msgs__rosidl_typesupport_c\n'}
+[0.200077] (-) TimerEvent: {}
+[0.215102] (automatic_simulations) JobEnded: {'identifier': 'automatic_simulations', 'rc': 0}
+[0.221828] (arussim_msgs) StdoutLine: {'line': b'[ 80%] Built target arussim_msgs\n'}
+[0.265059] (arussim_msgs) StdoutLine: {'line': b'[ 81%] Built target arussim_msgs__py\n'}
+[0.300215] (-) TimerEvent: {}
+[0.304044] (arussim_msgs) StdoutLine: {'line': b'[ 91%] Built target arussim_msgs__rosidl_generator_py\n'}
+[0.343689] (arussim_msgs) StdoutLine: {'line': b'[ 94%] Built target arussim_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[0.345981] (arussim_msgs) StdoutLine: {'line': b'[ 97%] Built target arussim_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[0.346644] (arussim_msgs) StdoutLine: {'line': b'[100%] Built target arussim_msgs__rosidl_typesupport_c__pyext\n'}
+[0.400345] (-) TimerEvent: {}
+[0.500704] (-) TimerEvent: {}
+[0.520970] (arussim_msgs) StdoutLine: {'line': b'running egg_info\n'}
+[0.521869] (arussim_msgs) StdoutLine: {'line': b'writing arussim_msgs.egg-info/PKG-INFO\n'}
+[0.522161] (arussim_msgs) StdoutLine: {'line': b'writing dependency_links to arussim_msgs.egg-info/dependency_links.txt\n'}
+[0.522340] (arussim_msgs) StdoutLine: {'line': b'writing top-level names to arussim_msgs.egg-info/top_level.txt\n'}
+[0.525315] (arussim_msgs) StdoutLine: {'line': b"reading manifest file 'arussim_msgs.egg-info/SOURCES.txt'\n"}
+[0.526329] (arussim_msgs) StdoutLine: {'line': b"writing manifest file 'arussim_msgs.egg-info/SOURCES.txt'\n"}
+[0.568403] (arussim_msgs) StdoutLine: {'line': b'[100%] Built target ament_cmake_python_build_arussim_msgs_egg\n'}
+[0.586721] (arussim_msgs) CommandEnded: {'returncode': 0}
+[0.587807] (arussim_msgs) JobProgress: {'identifier': 'arussim_msgs', 'progress': 'install'}
+[0.588983] (arussim_msgs) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[0.600296] (arussim_msgs) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[0.600750] (-) TimerEvent: {}
+[0.601073] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/ament_index/resource_index/rosidl_interfaces/arussim_msgs\n'}
+[0.601447] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.601677] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.601982] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/cmd.h\n'}
+[0.602229] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/state.h\n'}
+[0.602448] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.602666] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__functions.h\n'}
+[0.603132] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__functions.c\n'}
+[0.603397] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__functions.c\n'}
+[0.603617] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__struct.h\n'}
+[0.603834] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__functions.c\n'}
+[0.604152] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__struct.h\n'}
+[0.604369] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__type_support.h\n'}
+[0.604586] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__struct.h\n'}
+[0.605233] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__functions.c\n'}
+[0.605472] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__type_support.h\n'}
+[0.605693] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__type_support.h\n'}
+[0.606107] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__functions.c\n'}
+[0.606391] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__type_support.h\n'}
+[0.606544] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__struct.h\n'}
+[0.606650] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__struct.h\n'}
+[0.606756] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__functions.h\n'}
+[0.606916] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__functions.c\n'}
+[0.606994] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__struct.h\n'}
+[0.607065] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__functions.h\n'}
+[0.607243] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__functions.h\n'}
+[0.607490] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__type_support.h\n'}
+[0.607713] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__functions.h\n'}
+[0.608009] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__type_support.h\n'}
+[0.608257] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__functions.h\n'}
+[0.608495] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/trajectory.h\n'}
+[0.608856] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/cmd4_wd.h\n'}
+[0.609239] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/four_wheel_drive.h\n'}
+[0.609481] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/rosidl_generator_c__visibility_control.h\n'}
+[0.609708] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/point_xy.h\n'}
+[0.610162] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/library_path.sh\n'}
+[0.610571] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/library_path.dsv\n'}
+[0.610796] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_generator_c.so\n'}
+[0.611064] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.611290] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.611508] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.611723] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__rosidl_typesupport_fastrtps_c.h\n'}
+[0.611973] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__rosidl_typesupport_fastrtps_c.h\n'}
+[0.612357] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__rosidl_typesupport_fastrtps_c.h\n'}
+[0.612546] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__rosidl_typesupport_fastrtps_c.h\n'}
+[0.612788] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__rosidl_typesupport_fastrtps_c.h\n'}
+[0.613055] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__rosidl_typesupport_fastrtps_c.h\n'}
+[0.613249] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[0.613428] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_fastrtps_c.so\n'}
+[0.613605] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.613783] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.614007] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/point_xy.hpp\n'}
+[0.614237] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/state.hpp\n'}
+[0.614419] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.614598] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__type_support.hpp\n'}
+[0.614783] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__struct.hpp\n'}
+[0.615043] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__struct.hpp\n'}
+[0.615306] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__traits.hpp\n'}
+[0.615580] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__builder.hpp\n'}
+[0.615835] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__traits.hpp\n'}
+[0.616152] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__struct.hpp\n'}
+[0.616391] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__struct.hpp\n'}
+[0.616624] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__type_support.hpp\n'}
+[0.616814] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__builder.hpp\n'}
+[0.617030] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__traits.hpp\n'}
+[0.617235] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__struct.hpp\n'}
+[0.617407] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__builder.hpp\n'}
+[0.617576] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__builder.hpp\n'}
+[0.617743] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__traits.hpp\n'}
+[0.617938] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__builder.hpp\n'}
+[0.618122] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__type_support.hpp\n'}
+[0.618321] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__type_support.hpp\n'}
+[0.618495] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__struct.hpp\n'}
+[0.618663] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__type_support.hpp\n'}
+[0.618829] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__traits.hpp\n'}
+[0.619045] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__builder.hpp\n'}
+[0.619222] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__type_support.hpp\n'}
+[0.619389] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__traits.hpp\n'}
+[0.619557] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/cmd.hpp\n'}
+[0.619750] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/four_wheel_drive.hpp\n'}
+[0.619957] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/rosidl_generator_cpp__visibility_control.hpp\n'}
+[0.620136] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/cmd4_wd.hpp\n'}
+[0.620346] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/trajectory.hpp\n'}
+[0.620516] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.620683] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.620868] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.621059] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.621229] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.621399] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.621565] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.621736] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.621929] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/dds_fastrtps\n'}
+[0.622113] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.622285] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[0.622454] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_fastrtps_cpp.so\n'}
+[0.622623] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.622790] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.623005] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.623181] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__rosidl_typesupport_introspection_c.h\n'}
+[0.623378] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__rosidl_typesupport_introspection_c.h\n'}
+[0.623550] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__type_support.c\n'}
+[0.623753] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__rosidl_typesupport_introspection_c.h\n'}
+[0.623960] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__type_support.c\n'}
+[0.624148] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__rosidl_typesupport_introspection_c.h\n'}
+[0.624328] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__type_support.c\n'}
+[0.624499] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__rosidl_typesupport_introspection_c.h\n'}
+[0.624722] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__type_support.c\n'}
+[0.624945] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__type_support.c\n'}
+[0.625154] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__rosidl_typesupport_introspection_c.h\n'}
+[0.625369] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__type_support.c\n'}
+[0.625545] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[0.625809] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_introspection_c.so\n'}
+[0.626049] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_c.so\n'}
+[0.626242] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs\n'}
+[0.626420] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg\n'}
+[0.626600] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail\n'}
+[0.626781] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__type_support.cpp\n'}
+[0.627004] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.627191] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__type_support.cpp\n'}
+[0.627376] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__type_support.cpp\n'}
+[0.627550] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__type_support.cpp\n'}
+[0.627761] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/state__type_support.cpp\n'}
+[0.628039] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.628260] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__type_support.cpp\n'}
+[0.628445] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/four_wheel_drive__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.628647] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/cmd4_wd__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.628830] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/trajectory__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.629039] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/include/arussim_msgs/arussim_msgs/msg/detail/point_xy__rosidl_typesupport_introspection_cpp.hpp\n'}
+[0.629225] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_introspection_cpp.so\n'}
+[0.629409] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_typesupport_cpp.so\n'}
+[0.629591] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/pythonpath.sh\n'}
+[0.629765] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/pythonpath.dsv\n'}
+[0.629981] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs-0.0.0-py3.10.egg-info\n'}
+[0.630176] (arussim_msgs) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[0.630359] (arussim_msgs) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[0.630541] (arussim_msgs) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[0.630719] (arussim_msgs) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[0.630930] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs\n'}
+[0.631130] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/_arussim_msgs_s.ep.rosidl_typesupport_c.c\n'}
+[0.631359] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/_arussim_msgs_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[0.631536] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/__init__.py\n'}
+[0.631717] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.631946] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/_arussim_msgs_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[0.632139] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.632317] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/libarussim_msgs__rosidl_generator_py.so\n'}
+[0.632487] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.632666] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg\n'}
+[0.632858] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_point_xy_s.c\n'}
+[0.633068] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/__init__.py\n'}
+[0.633248] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_state.py\n'}
+[0.633427] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_point_xy.py\n'}
+[0.633672] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_trajectory_s.c\n'}
+[0.633894] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_cmd4_wd.py\n'}
+[0.634099] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_cmd_s.c\n'}
+[0.634269] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_state_s.c\n'}
+[0.634439] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_cmd.py\n'}
+[0.634634] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_trajectory.py\n'}
+[0.634802] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_cmd4_wd_s.c\n'}
+[0.635018] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_four_wheel_drive_s.c\n'}
+[0.635195] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg/_four_wheel_drive.py\n'}
+[0.647490] (arussim_msgs) StdoutLine: {'line': b"Listing '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs'...\n"}
+[0.647816] (arussim_msgs) StdoutLine: {'line': b"Listing '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/msg'...\n"}
+[0.653676] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.654074] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.654323] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages/arussim_msgs/arussim_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[0.654622] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib/libarussim_msgs__rosidl_generator_py.so\n'}
+[0.654934] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Cmd.idl\n'}
+[0.655172] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Cmd4WD.idl\n'}
+[0.655355] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/FourWheelDrive.idl\n'}
+[0.655680] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/PointXY.idl\n'}
+[0.655885] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/State.idl\n'}
+[0.656213] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Trajectory.idl\n'}
+[0.656411] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Cmd.msg\n'}
+[0.656596] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Cmd4WD.msg\n'}
+[0.656774] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/FourWheelDrive.msg\n'}
+[0.657027] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/PointXY.msg\n'}
+[0.657260] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/State.msg\n'}
+[0.657868] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/msg/Trajectory.msg\n'}
+[0.658303] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/ament_index/resource_index/package_run_dependencies/arussim_msgs\n'}
+[0.658767] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/ament_index/resource_index/parent_prefix_path/arussim_msgs\n'}
+[0.659171] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/ament_prefix_path.sh\n'}
+[0.659402] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/ament_prefix_path.dsv\n'}
+[0.659567] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/path.sh\n'}
+[0.659725] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/environment/path.dsv\n'}
+[0.659913] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/local_setup.bash\n'}
+[0.660097] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/local_setup.sh\n'}
+[0.660285] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/local_setup.zsh\n'}
+[0.660443] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/local_setup.dsv\n'}
+[0.660605] (arussim_msgs) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/package.dsv\n'}
+[0.660766] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/ament_index/resource_index/packages/arussim_msgs\n'}
+[0.660961] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_generator_cExport.cmake\n'}
+[0.661131] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_generator_cExport-noconfig.cmake\n'}
+[0.661377] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[0.661550] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[0.661719] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_generator_cppExport.cmake\n'}
+[0.661956] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[0.662402] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[0.662695] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_introspection_cExport.cmake\n'}
+[0.662866] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[0.664070] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_cExport.cmake\n'}
+[0.664523] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[0.664758] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[0.665064] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[0.665349] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_cppExport.cmake\n'}
+[0.665536] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgs__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[0.665718] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_generator_pyExport.cmake\n'}
+[0.666055] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/export_arussim_msgs__rosidl_generator_pyExport-noconfig.cmake\n'}
+[0.666300] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/rosidl_cmake-extras.cmake\n'}
+[0.666516] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[0.666728] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[0.667209] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[0.667445] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[0.667629] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[0.667822] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[0.668087] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgsConfig.cmake\n'}
+[0.668325] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/cmake/arussim_msgsConfig-version.cmake\n'}
+[0.668513] (arussim_msgs) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/share/arussim_msgs/package.xml\n'}
+[0.668701] (arussim_msgs) CommandEnded: {'returncode': 0}
+[0.700898] (-) TimerEvent: {}
+[0.714204] (arussim_msgs) JobEnded: {'identifier': 'arussim_msgs', 'rc': 0}
+[0.716623] (arussim) JobStarted: {'identifier': 'arussim'}
+[0.732309] (arussim) JobProgress: {'identifier': 'arussim', 'progress': 'cmake'}
+[0.734210] (arussim) JobProgress: {'identifier': 'arussim', 'progress': 'build'}
+[0.735679] (arussim) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim', '--', '-j8', '-l8'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs:/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs:/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[0.801047] (-) TimerEvent: {}
+[0.819128] (arussim) StdoutLine: {'line': b'[  8%] \x1b[34m\x1b[1mAutomatic MOC for target arussim_exec\x1b[0m\n'}
+[0.820207] (arussim) StdoutLine: {'line': b'[  8%] \x1b[34m\x1b[1mAutomatic MOC for target plot_interface_exec\x1b[0m\n'}
+[0.820353] (arussim) StdoutLine: {'line': b'[ 12%] \x1b[34m\x1b[1mAutomatic MOC for target main_interface_exec\x1b[0m\n'}
+[0.820716] (arussim) StdoutLine: {'line': b'[ 16%] \x1b[34m\x1b[1mAutomatic MOC for target sensors_exec\x1b[0m\n'}
+[0.823305] (arussim) StdoutLine: {'line': b'[ 20%] \x1b[34m\x1b[1mAutomatic MOC for target supervisor_exec\x1b[0m\n'}
+[0.852449] (arussim) StdoutLine: {'line': b'[ 20%] Built target plot_interface_exec_autogen\n'}
+[0.853467] (arussim) StdoutLine: {'line': b'[ 20%] Built target arussim_exec_autogen\n'}
+[0.857191] (arussim) StdoutLine: {'line': b'[ 20%] Built target main_interface_exec_autogen\n'}
+[0.861946] (arussim) StdoutLine: {'line': b'[ 20%] Built target supervisor_exec_autogen\n'}
+[0.862249] (arussim) StdoutLine: {'line': b'[ 20%] Built target sensors_exec_autogen\n'}
+[0.901170] (-) TimerEvent: {}
+[0.904303] (arussim) StdoutLine: {'line': b'[ 40%] Built target plot_interface_exec\n'}
+[0.906299] (arussim) StdoutLine: {'line': b'[ 52%] Built target supervisor_exec\n'}
+[0.906821] (arussim) StdoutLine: {'line': b'[ 72%] Built target main_interface_exec\n'}
+[0.907258] (arussim) StdoutLine: {'line': b'[ 84%] Built target sensors_exec\n'}
+[0.912338] (arussim) StdoutLine: {'line': b'[ 88%] \x1b[32mBuilding CXX object CMakeFiles/arussim_exec.dir/src/arussim_node.cpp.o\x1b[0m\n'}
+[1.001283] (-) TimerEvent: {}
+[1.101629] (-) TimerEvent: {}
+[1.202085] (-) TimerEvent: {}
+[1.302504] (-) TimerEvent: {}
+[1.402883] (-) TimerEvent: {}
+[1.503373] (-) TimerEvent: {}
+[1.603903] (-) TimerEvent: {}
+[1.704408] (-) TimerEvent: {}
+[1.804816] (-) TimerEvent: {}
+[1.905282] (-) TimerEvent: {}
+[2.005686] (-) TimerEvent: {}
+[2.106188] (-) TimerEvent: {}
+[2.206634] (-) TimerEvent: {}
+[2.307065] (-) TimerEvent: {}
+[2.407484] (-) TimerEvent: {}
+[2.507960] (-) TimerEvent: {}
+[2.608469] (-) TimerEvent: {}
+[2.709017] (-) TimerEvent: {}
+[2.809464] (-) TimerEvent: {}
+[2.909900] (-) TimerEvent: {}
+[3.010272] (-) TimerEvent: {}
+[3.110731] (-) TimerEvent: {}
+[3.211161] (-) TimerEvent: {}
+[3.311570] (-) TimerEvent: {}
+[3.412027] (-) TimerEvent: {}
+[3.512401] (-) TimerEvent: {}
+[3.612866] (-) TimerEvent: {}
+[3.713307] (-) TimerEvent: {}
+[3.813731] (-) TimerEvent: {}
+[3.914111] (-) TimerEvent: {}
+[4.014534] (-) TimerEvent: {}
+[4.114929] (-) TimerEvent: {}
+[4.215309] (-) TimerEvent: {}
+[4.315748] (-) TimerEvent: {}
+[4.416216] (-) TimerEvent: {}
+[4.516647] (-) TimerEvent: {}
+[4.617144] (-) TimerEvent: {}
+[4.717594] (-) TimerEvent: {}
+[4.818071] (-) TimerEvent: {}
+[4.918518] (-) TimerEvent: {}
+[5.018968] (-) TimerEvent: {}
+[5.119433] (-) TimerEvent: {}
+[5.219904] (-) TimerEvent: {}
+[5.320292] (-) TimerEvent: {}
+[5.420650] (-) TimerEvent: {}
+[5.521023] (-) TimerEvent: {}
+[5.621369] (-) TimerEvent: {}
+[5.721720] (-) TimerEvent: {}
+[5.822077] (-) TimerEvent: {}
+[5.922902] (-) TimerEvent: {}
+[6.023341] (-) TimerEvent: {}
+[6.123759] (-) TimerEvent: {}
+[6.224455] (-) TimerEvent: {}
+[6.325150] (-) TimerEvent: {}
+[6.425833] (-) TimerEvent: {}
+[6.526282] (-) TimerEvent: {}
+[6.626705] (-) TimerEvent: {}
+[6.727182] (-) TimerEvent: {}
+[6.827612] (-) TimerEvent: {}
+[6.928051] (-) TimerEvent: {}
+[7.028415] (-) TimerEvent: {}
+[7.128887] (-) TimerEvent: {}
+[7.229364] (-) TimerEvent: {}
+[7.330019] (-) TimerEvent: {}
+[7.430699] (-) TimerEvent: {}
+[7.531363] (-) TimerEvent: {}
+[7.632024] (-) TimerEvent: {}
+[7.732685] (-) TimerEvent: {}
+[7.833142] (-) TimerEvent: {}
+[7.933806] (-) TimerEvent: {}
+[8.034266] (-) TimerEvent: {}
+[8.134707] (-) TimerEvent: {}
+[8.235185] (-) TimerEvent: {}
+[8.335644] (-) TimerEvent: {}
+[8.436114] (-) TimerEvent: {}
+[8.536551] (-) TimerEvent: {}
+[8.637001] (-) TimerEvent: {}
+[8.737447] (-) TimerEvent: {}
+[8.837920] (-) TimerEvent: {}
+[8.938346] (-) TimerEvent: {}
+[9.038790] (-) TimerEvent: {}
+[9.139256] (-) TimerEvent: {}
+[9.239696] (-) TimerEvent: {}
+[9.340114] (-) TimerEvent: {}
+[9.444297] (-) TimerEvent: {}
+[9.544646] (-) TimerEvent: {}
+[9.645027] (-) TimerEvent: {}
+[9.745433] (-) TimerEvent: {}
+[9.845787] (-) TimerEvent: {}
+[9.946164] (-) TimerEvent: {}
+[10.046510] (-) TimerEvent: {}
+[10.146902] (-) TimerEvent: {}
+[10.247317] (-) TimerEvent: {}
+[10.347731] (-) TimerEvent: {}
+[10.448106] (-) TimerEvent: {}
+[10.548466] (-) TimerEvent: {}
+[10.648895] (-) TimerEvent: {}
+[10.749250] (-) TimerEvent: {}
+[10.849596] (-) TimerEvent: {}
+[10.949950] (-) TimerEvent: {}
+[11.050383] (-) TimerEvent: {}
+[11.150800] (-) TimerEvent: {}
+[11.251233] (-) TimerEvent: {}
+[11.351643] (-) TimerEvent: {}
+[11.452072] (-) TimerEvent: {}
+[11.552487] (-) TimerEvent: {}
+[11.652911] (-) TimerEvent: {}
+[11.753311] (-) TimerEvent: {}
+[11.853731] (-) TimerEvent: {}
+[11.954197] (-) TimerEvent: {}
+[12.054631] (-) TimerEvent: {}
+[12.155096] (-) TimerEvent: {}
+[12.255514] (-) TimerEvent: {}
+[12.355945] (-) TimerEvent: {}
+[12.456355] (-) TimerEvent: {}
+[12.556763] (-) TimerEvent: {}
+[12.657193] (-) TimerEvent: {}
+[12.757594] (-) TimerEvent: {}
+[12.858049] (-) TimerEvent: {}
+[12.958452] (-) TimerEvent: {}
+[13.058806] (-) TimerEvent: {}
+[13.159240] (-) TimerEvent: {}
+[13.259663] (-) TimerEvent: {}
+[13.360114] (-) TimerEvent: {}
+[13.460567] (-) TimerEvent: {}
+[13.560992] (-) TimerEvent: {}
+[13.661426] (-) TimerEvent: {}
+[13.761880] (-) TimerEvent: {}
+[13.862397] (-) TimerEvent: {}
+[13.962841] (-) TimerEvent: {}
+[14.063293] (-) TimerEvent: {}
+[14.163716] (-) TimerEvent: {}
+[14.264167] (-) TimerEvent: {}
+[14.364572] (-) TimerEvent: {}
+[14.464988] (-) TimerEvent: {}
+[14.565440] (-) TimerEvent: {}
+[14.665895] (-) TimerEvent: {}
+[14.766355] (-) TimerEvent: {}
+[14.866815] (-) TimerEvent: {}
+[14.967275] (-) TimerEvent: {}
+[15.067688] (-) TimerEvent: {}
+[15.168133] (-) TimerEvent: {}
+[15.268584] (-) TimerEvent: {}
+[15.369057] (-) TimerEvent: {}
+[15.469512] (-) TimerEvent: {}
+[15.569971] (-) TimerEvent: {}
+[15.670414] (-) TimerEvent: {}
+[15.770882] (-) TimerEvent: {}
+[15.871347] (-) TimerEvent: {}
+[15.971813] (-) TimerEvent: {}
+[16.072315] (-) TimerEvent: {}
+[16.172791] (-) TimerEvent: {}
+[16.273298] (-) TimerEvent: {}
+[16.373976] (-) TimerEvent: {}
+[16.474453] (-) TimerEvent: {}
+[16.575107] (-) TimerEvent: {}
+[16.675582] (-) TimerEvent: {}
+[16.776077] (-) TimerEvent: {}
+[16.876534] (-) TimerEvent: {}
+[16.977001] (-) TimerEvent: {}
+[17.077468] (-) TimerEvent: {}
+[17.177946] (-) TimerEvent: {}
+[17.278426] (-) TimerEvent: {}
+[17.378910] (-) TimerEvent: {}
+[17.479335] (-) TimerEvent: {}
+[17.579777] (-) TimerEvent: {}
+[17.680259] (-) TimerEvent: {}
+[17.780706] (-) TimerEvent: {}
+[17.881199] (-) TimerEvent: {}
+[17.981654] (-) TimerEvent: {}
+[18.082097] (-) TimerEvent: {}
+[18.182638] (-) TimerEvent: {}
+[18.283087] (-) TimerEvent: {}
+[18.383540] (-) TimerEvent: {}
+[18.483984] (-) TimerEvent: {}
+[18.584416] (-) TimerEvent: {}
+[18.684831] (-) TimerEvent: {}
+[18.785294] (-) TimerEvent: {}
+[18.885691] (-) TimerEvent: {}
+[18.986101] (-) TimerEvent: {}
+[19.086500] (-) TimerEvent: {}
+[19.186909] (-) TimerEvent: {}
+[19.287306] (-) TimerEvent: {}
+[19.387683] (-) TimerEvent: {}
+[19.488115] (-) TimerEvent: {}
+[19.588532] (-) TimerEvent: {}
+[19.688948] (-) TimerEvent: {}
+[19.789361] (-) TimerEvent: {}
+[19.889775] (-) TimerEvent: {}
+[19.990226] (-) TimerEvent: {}
+[20.090633] (-) TimerEvent: {}
+[20.191072] (-) TimerEvent: {}
+[20.291482] (-) TimerEvent: {}
+[20.391893] (-) TimerEvent: {}
+[20.492258] (-) TimerEvent: {}
+[20.592543] (-) TimerEvent: {}
+[20.692833] (-) TimerEvent: {}
+[20.793170] (-) TimerEvent: {}
+[20.893545] (-) TimerEvent: {}
+[20.993869] (-) TimerEvent: {}
+[21.094173] (-) TimerEvent: {}
+[21.194459] (-) TimerEvent: {}
+[21.294760] (-) TimerEvent: {}
+[21.395072] (-) TimerEvent: {}
+[21.495359] (-) TimerEvent: {}
+[21.595705] (-) TimerEvent: {}
+[21.696225] (-) TimerEvent: {}
+[21.796671] (-) TimerEvent: {}
+[21.897180] (-) TimerEvent: {}
+[21.997643] (-) TimerEvent: {}
+[22.098153] (-) TimerEvent: {}
+[22.198601] (-) TimerEvent: {}
+[22.299101] (-) TimerEvent: {}
+[22.399540] (-) TimerEvent: {}
+[22.499973] (-) TimerEvent: {}
+[22.600400] (-) TimerEvent: {}
+[22.700825] (-) TimerEvent: {}
+[22.801289] (-) TimerEvent: {}
+[22.901712] (-) TimerEvent: {}
+[23.002174] (-) TimerEvent: {}
+[23.102594] (-) TimerEvent: {}
+[23.203044] (-) TimerEvent: {}
+[23.303474] (-) TimerEvent: {}
+[23.403898] (-) TimerEvent: {}
+[23.504296] (-) TimerEvent: {}
+[23.604709] (-) TimerEvent: {}
+[23.705134] (-) TimerEvent: {}
+[23.805542] (-) TimerEvent: {}
+[23.905946] (-) TimerEvent: {}
+[24.006338] (-) TimerEvent: {}
+[24.106656] (-) TimerEvent: {}
+[24.206996] (-) TimerEvent: {}
+[24.307319] (-) TimerEvent: {}
+[24.407709] (-) TimerEvent: {}
+[24.508119] (-) TimerEvent: {}
+[24.608555] (-) TimerEvent: {}
+[24.709056] (-) TimerEvent: {}
+[24.809479] (-) TimerEvent: {}
+[24.909931] (-) TimerEvent: {}
+[25.010371] (-) TimerEvent: {}
+[25.110781] (-) TimerEvent: {}
+[25.211238] (-) TimerEvent: {}
+[25.311640] (-) TimerEvent: {}
+[25.412091] (-) TimerEvent: {}
+[25.512498] (-) TimerEvent: {}
+[25.612932] (-) TimerEvent: {}
+[25.713341] (-) TimerEvent: {}
+[25.813760] (-) TimerEvent: {}
+[25.914218] (-) TimerEvent: {}
+[26.014581] (-) TimerEvent: {}
+[26.115054] (-) TimerEvent: {}
+[26.215413] (-) TimerEvent: {}
+[26.315784] (-) TimerEvent: {}
+[26.416267] (-) TimerEvent: {}
+[26.516611] (-) TimerEvent: {}
+[26.616959] (-) TimerEvent: {}
+[26.717324] (-) TimerEvent: {}
+[26.817689] (-) TimerEvent: {}
+[26.918067] (-) TimerEvent: {}
+[27.018468] (-) TimerEvent: {}
+[27.118974] (-) TimerEvent: {}
+[27.219345] (-) TimerEvent: {}
+[27.319711] (-) TimerEvent: {}
+[27.420149] (-) TimerEvent: {}
+[27.520531] (-) TimerEvent: {}
+[27.620995] (-) TimerEvent: {}
+[27.721463] (-) TimerEvent: {}
+[27.748057] (arussim) StdoutLine: {'line': b'[ 92%] \x1b[32m\x1b[1mLinking CXX executable arussim_exec\x1b[0m\n'}
+[27.821619] (-) TimerEvent: {}
+[27.922139] (-) TimerEvent: {}
+[28.022711] (-) TimerEvent: {}
+[28.123255] (-) TimerEvent: {}
+[28.223778] (-) TimerEvent: {}
+[28.324341] (-) TimerEvent: {}
+[28.424933] (-) TimerEvent: {}
+[28.525432] (-) TimerEvent: {}
+[28.625937] (-) TimerEvent: {}
+[28.726396] (-) TimerEvent: {}
+[28.826904] (-) TimerEvent: {}
+[28.927414] (-) TimerEvent: {}
+[29.027966] (-) TimerEvent: {}
+[29.128498] (-) TimerEvent: {}
+[29.229072] (-) TimerEvent: {}
+[29.329626] (-) TimerEvent: {}
+[29.430186] (-) TimerEvent: {}
+[29.530613] (-) TimerEvent: {}
+[29.631106] (-) TimerEvent: {}
+[29.731544] (-) TimerEvent: {}
+[29.832037] (-) TimerEvent: {}
+[29.932451] (-) TimerEvent: {}
+[30.032889] (-) TimerEvent: {}
+[30.133322] (-) TimerEvent: {}
+[30.233735] (-) TimerEvent: {}
+[30.334159] (-) TimerEvent: {}
+[30.434586] (-) TimerEvent: {}
+[30.535004] (-) TimerEvent: {}
+[30.635394] (-) TimerEvent: {}
+[30.735805] (-) TimerEvent: {}
+[30.747551] (arussim) StdoutLine: {'line': b'[100%] Built target arussim_exec\n'}
+[30.777656] (arussim) CommandEnded: {'returncode': 0}
+[30.780776] (arussim) JobProgress: {'identifier': 'arussim', 'progress': 'install'}
+[30.781166] (arussim) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim'], 'cwd': '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'es:en'), ('USER', 'josedag31'), ('LC_TIME', 'es_ES.UTF-8'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/common_msgs/lib:/home/josedag31/Arus/ws/install/arussim_msgs/lib:/home/josedag31/Arus/ws/install/arussim/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/josedag31'), ('OLDPWD', '/home/josedag31/Arus/ws'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('LC_MONETARY', 'es_ES.UTF-8'), ('SYSTEMD_EXEC_PID', '2244'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/josedag31/Arus/ws/install'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'josedag31'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'josedag31'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/josedag31:@/tmp/.ICE-unix/1950,unix/josedag31:/tmp/.ICE-unix/1950'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'es_ES.UTF-8'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/1c80c908_a599_4da2_ba81_f54a58182ec2'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':1'), ('LANG', 'es_ES.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'es_ES.UTF-8'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.90'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs:/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'es_ES.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LC_MEASUREMENT', 'es_ES.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'es_ES.UTF-8'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/josedag31/Arus/ws/src/ARUSSim/build/arussim'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/home/josedag31/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/common_msgs/local/lib/python3.10/dist-packages:/home/josedag31/Arus/ws/install/arussim_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'es_ES.UTF-8'), ('LC_PAPER', 'es_ES.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/josedag31/Arus/ws/src/ARUSSim/install/arussim_msgs:/home/josedag31/Arus/ws/install/visualization:/home/josedag31/Arus/ws/install/trajectory_optimization:/home/josedag31/Arus/ws/install/skidpad_planning:/home/josedag31/Arus/ws/install/perception:/home/josedag31/Arus/ws/install/path_planning:/home/josedag31/Arus/ws/install/inspection_control:/home/josedag31/Arus/ws/install/icp_slam:/home/josedag31/Arus/ws/install/graph_slam:/home/josedag31/Arus/ws/install/epos_interface:/home/josedag31/Arus/ws/install/controller:/home/josedag31/Arus/ws/install/car_state:/home/josedag31/Arus/ws/install/common_msgs:/home/josedag31/Arus/ws/install/common_meta:/home/josedag31/Arus/ws/install/can_interface:/home/josedag31/Arus/ws/install/automatic_simulations:/home/josedag31/Arus/ws/install/arussim_msgs:/home/josedag31/Arus/ws/install/arussim_interface:/home/josedag31/Arus/ws/install/arussim:/home/josedag31/Arus/ws/install/acc_planning:/opt/ros/humble')]), 'shell': False}
+[30.801577] (arussim) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[30.801896] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libmain_interface_exec.so\n'}
+[30.802338] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/libplot_interface_exec.so\n'}
+[30.802593] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include\n'}
+[30.802840] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim\n'}
+[30.803092] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/traction_control.hpp\n'}
+[30.803254] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git\n'}
+[30.803410] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/info\n'}
+[30.803562] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/info/exclude\n'}
+[30.803717] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/branches\n'}
+[30.804009] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/COMMIT_EDITMSG\n'}
+[30.804169] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs\n'}
+[30.804322] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs\n'}
+[30.804474] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/heads\n'}
+[30.804628] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/heads/main\n'}
+[30.804783] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes\n'}
+[30.805112] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes/origin\n'}
+[30.805272] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/refs/remotes/origin/main\n'}
+[30.805421] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/logs/HEAD\n'}
+[30.805576] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/index\n'}
+[30.805729] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/config\n'}
+[30.805991] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs\n'}
+[30.806158] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/heads\n'}
+[30.806312] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/heads/main\n'}
+[30.806466] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/tags\n'}
+[30.806619] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes\n'}
+[30.806794] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes/origin\n'}
+[30.807078] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/refs/remotes/origin/main\n'}
+[30.807236] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/HEAD\n'}
+[30.807393] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/description\n'}
+[30.807622] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks\n'}
+[30.807756] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-push.sample\n'}
+[30.807981] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-applypatch.sample\n'}
+[30.808269] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/fsmonitor-watchman.sample\n'}
+[30.808472] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/push-to-checkout.sample\n'}
+[30.808608] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/post-update.sample\n'}
+[30.808917] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/prepare-commit-msg.sample\n'}
+[30.809104] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-receive.sample\n'}
+[30.809260] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-rebase.sample\n'}
+[30.809380] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-merge-commit.sample\n'}
+[30.809493] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/commit-msg.sample\n'}
+[30.809629] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/pre-commit.sample\n'}
+[30.809766] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/applypatch-msg.sample\n'}
+[30.809933] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/hooks/update.sample\n'}
+[30.810095] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects\n'}
+[30.810213] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/info\n'}
+[30.810332] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6f\n'}
+[30.810448] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6f/31bd99fcfa17ad3ecd05fefc867720bb76eb78\n'}
+[30.810563] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d1\n'}
+[30.810680] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d1/51d54e3347fccc3756563f96fc3778e33efbe4\n'}
+[30.810796] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d4\n'}
+[30.810930] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/d4/19ade9a1d6c842837085dbe86d593251a900d0\n'}
+[30.811054] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9e\n'}
+[30.811170] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9e/3e810bde3140818cb7e844b070460ce75d30fe\n'}
+[30.811287] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/07\n'}
+[30.811402] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/07/bdebc3baede12107fa5b68686ce378477a8410\n'}
+[30.811519] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0e\n'}
+[30.811634] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0e/f21704e7aa5abca4a3fecee4e3a73daabb8b08\n'}
+[30.811770] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/63\n'}
+[30.811899] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/63/05c378cf91caef39863752eddd3049bc9a2d35\n'}
+[30.812029] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9f\n'}
+[30.812147] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/9f/4eaaca9db7bab404d46032c6fb1f2331748c99\n'}
+[30.812267] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a1\n'}
+[30.812378] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a1/15c1d72e52760c820488d2bac3653956d69f64\n'}
+[30.812490] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/62\n'}
+[30.812630] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/62/c1052d3fe81c1821ecd4071698dfa148dceb79\n'}
+[30.812744] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6d\n'}
+[30.812882] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6d/80e94b5bc13363becdced103dd184d0f718cf1\n'}
+[30.813013] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/68\n'}
+[30.813130] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/68/44e47eead5ea23e5ecdeaff21ede4cb35df8a0\n'}
+[30.813246] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0d\n'}
+[30.813362] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/0d/1f1e2ee2dc93f968bf6132cc185182fafa7665\n'}
+[30.813475] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6c\n'}
+[30.813587] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/6c/b1d02b63647746151c9eff791e5c135b479e83\n'}
+[30.813703] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/32\n'}
+[30.813820] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/32/5a29c1887add41eaf3e54f126fba2a99d8423d\n'}
+[30.813960] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/74\n'}
+[30.814074] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/74/6c73cf1a082177f52b831de064cba7ef6e700a\n'}
+[30.814189] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/1e\n'}
+[30.814309] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/1e/ac0c283655603cd9d5324fde7ecfdc54aeef61\n'}
+[30.814425] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/44\n'}
+[30.814546] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/44/a6d68d510666e6df8059b9ab9017f99e937fd8\n'}
+[30.814662] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a0\n'}
+[30.814777] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/a0/483f9895ed8482a856e7ed87a41b99b6a43207\n'}
+[30.814932] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/84\n'}
+[30.815055] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/84/34f35056a7c2161820bbd1092c0f0b5250dc4d\n'}
+[30.815169] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/e6\n'}
+[30.815285] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/e6/9de29bb2d1d6434b8b29ae775ad8c2e48c5391\n'}
+[30.815419] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/3d\n'}
+[30.815538] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/3d/c4403e23ad004814db755a567824b4bb96a117\n'}
+[30.815649] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/72\n'}
+[30.815757] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/72/a6bbcbe1c1050978eeb49886596a49f5e4898a\n'}
+[30.815880] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/40\n'}
+[30.816007] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/40/7c548120622fd6ffac24edc9b3a38f92171445\n'}
+[30.816120] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/pack\n'}
+[30.816233] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/bb\n'}
+[30.816346] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/bb/30f56dc342e7cf34bdaedd8346c64fcc1f8b89\n'}
+[30.816459] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/7f\n'}
+[30.816596] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/7f/3075735a5aa2fe724817691cf150cf527821bc\n'}
+[30.816710] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/06\n'}
+[30.816823] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/06/d54ce1e13c95db38e264676537857fcbd87184\n'}
+[30.816963] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/f9\n'}
+[30.817079] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/f9/1f805bdcfc49f4ac087451efa81c763ebe2922\n'}
+[30.817192] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/5f\n'}
+[30.817305] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/5f/94d2ca8b4fded96163e9ccbcb196fd34843540\n'}
+[30.817419] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/99\n'}
+[30.817528] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/99/febb023de6f818cd415845f7bfed430ded1bca\n'}
+[30.817655] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/42\n'}
+[30.817768] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/42/536dc920625f0bd621256721a5ffef952b56ae\n'}
+[30.817905] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/27\n'}
+[30.818025] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.git/objects/27/f0acf712458cb7b11c0000c6d7fd665b232e79\n'}
+[30.818135] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/torque_vectoring.hpp\n'}
+[30.818248] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode\n'}
+[30.818361] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode/settings.json\n'}
+[30.818474] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/.vscode/c_cpp_properties.json\n'}
+[30.818587] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/controller_sim.hpp\n'}
+[30.818697] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/power_limitation.hpp\n'}
+[30.818806] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/controller_sim/estimation.hpp\n'}
+[30.818947] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim\n'}
+[30.819084] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/arussim_node.hpp\n'}
+[30.819197] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/sensors.hpp\n'}
+[30.819310] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/plot_interface.hpp\n'}
+[30.819425] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/supervisor.hpp\n'}
+[30.819542] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/csv_generator.hpp\n'}
+[30.819658] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/vehicle_dynamics.hpp\n'}
+[30.819775] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/ConeXYZColorScore.h\n'}
+[30.819909] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/include/arussim/main_interface.hpp\n'}
+[30.820042] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/main_interface.xml\n'}
+[30.820159] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/plot_interface.xml\n'}
+[30.820275] (arussim) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/arussim_exec\n'}
+[30.831205] (arussim) StdoutLine: {'line': b'-- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/arussim_exec" to ""\n'}
+[30.831505] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/sensors_exec\n'}
+[30.831779] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/lib/arussim/supervisor_exec\n'}
+[30.832039] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch\n'}
+[30.832383] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch/sim_automatic_launch.py\n'}
+[30.832917] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/launch/arussim_launch.py\n'}
+[30.833170] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config\n'}
+[30.833407] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/simulator_config.yaml\n'}
+[30.833561] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/supervisor_config.yaml\n'}
+[30.833729] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/sensors_config.yaml\n'}
+[30.833873] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/config/arussim_rviz_config.rviz\n'}
+[30.834054] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources\n'}
+[30.834174] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes\n'}
+[30.834547] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/whole_car.stl\n'}
+[30.834722] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/cone.stl\n'}
+[30.834863] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/meshes/ART24D.stl\n'}
+[30.834990] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks\n'}
+[30.835109] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test27F.json\n'}
+[30.835239] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSEast23.json\n'}
+[30.835383] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/acceleration.pcd\n'}
+[30.835502] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/slam_track.pcd\n'}
+[30.835619] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG24.pcd\n'}
+[30.835734] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test27F.pcd\n'}
+[30.835861] (-) TimerEvent: {}
+[30.835997] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG.pcd\n'}
+[30.836154] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG24.json\n'}
+[30.836367] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test15M.json\n'}
+[30.836484] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/skidpad.pcd\n'}
+[30.836596] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSG.json\n'}
+[30.836713] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/acceleration.json\n'}
+[30.836836] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test15M.pcd\n'}
+[30.836998] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/FSEast23.pcd\n'}
+[30.837115] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test1.json\n'}
+[30.837227] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/resources/tracks/test1.pcd\n'}
+[30.837344] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/main_interface.xml\n'}
+[30.837485] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/plot_interface.xml\n'}
+[30.837626] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/package_run_dependencies/arussim\n'}
+[30.837823] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/parent_prefix_path/arussim\n'}
+[30.837972] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/ament_prefix_path.sh\n'}
+[30.838093] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/ament_prefix_path.dsv\n'}
+[30.838212] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/path.sh\n'}
+[30.838330] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/environment/path.dsv\n'}
+[30.838450] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.bash\n'}
+[30.838587] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.sh\n'}
+[30.838976] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.zsh\n'}
+[30.839111] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/local_setup.dsv\n'}
+[30.839242] (arussim) StdoutLine: {'line': b'-- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/package.dsv\n'}
+[30.839377] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/packages/arussim\n'}
+[30.839498] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/ament_index/resource_index/rviz_common__pluginlib__plugin/arussim\n'}
+[30.839619] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/export_main_interfaceExport.cmake\n'}
+[30.839825] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/export_main_interfaceExport-noconfig.cmake\n'}
+[30.840369] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[30.840494] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[30.840607] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/arussimConfig.cmake\n'}
+[30.840718] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/cmake/arussimConfig-version.cmake\n'}
+[30.841421] (arussim) StdoutLine: {'line': b'-- Up-to-date: /home/josedag31/Arus/ws/src/ARUSSim/install/arussim/share/arussim/package.xml\n'}
+[30.841570] (arussim) CommandEnded: {'returncode': 0}
+[30.860100] (arussim) JobEnded: {'identifier': 'arussim', 'rc': 0}
+[30.861241] (-) EventReactorShutdown: {}

@@ -1,0 +1,9 @@
+[0m** WARNING ** io features related to pcap will be disabled[0m
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/plot_interface.cpp:[m[K In member function ‘[01m[Kvirtual bool plot_interface::PlotInterface::eventFilter(QObject*, QEvent*)[m[K’:
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/plot_interface.cpp:264:66:[m[K [01;35m[Kwarning: [m[Kenum constant in boolean context [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wint-in-bool-context-Wint-in-bool-context]8;;[m[K]
+  264 |         } else if (event->type() == QEvent::MouseMove && QEvent::[01;35m[KMouseButtonPress[m[K) {
+      |                                                                  [01;35m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/arussim_node.cpp:[m[K In member function ‘[01m[Kvoid Simulator::on_fast_timer()[m[K’:
+[01m[K/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/src/arussim_node.cpp:273:12:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kdt[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  273 |     double [01;35m[Kdt[m[K = 1.0 / kStateUpdateRate;
+      |            [01;35m[K^~[m[K

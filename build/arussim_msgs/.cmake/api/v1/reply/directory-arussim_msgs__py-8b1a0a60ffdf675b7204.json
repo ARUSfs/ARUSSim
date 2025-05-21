@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "arussim_msgs__py",
+		"source" : "/home/josedag31/Arus/ws/src/ARUSSim/build/arussim_msgs/arussim_msgs__py"
+	}
+}

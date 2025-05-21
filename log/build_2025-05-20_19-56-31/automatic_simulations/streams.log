@@ -1,0 +1,62 @@
+[0.020s] Invoking command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/josedag31/Arus/ws/src/ARUSSim/src/automatic_simulations -DCMAKE_INSTALL_PREFIX=/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations
+[0.260s] -- The C compiler identification is GNU 11.4.0
+[0.423s] -- The CXX compiler identification is GNU 11.4.0
+[0.434s] -- Detecting C compiler ABI info
+[0.555s] -- Detecting C compiler ABI info - done
+[0.571s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.571s] -- Detecting C compile features
+[0.572s] -- Detecting C compile features - done
+[0.577s] -- Detecting CXX compiler ABI info
+[0.718s] -- Detecting CXX compiler ABI info - done
+[0.731s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.731s] -- Detecting CXX compile features
+[0.732s] -- Detecting CXX compile features - done
+[0.747s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.065s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.268s] -- Found rclcpp: 16.0.11 (/opt/ros/humble/share/rclcpp/cmake)
+[1.359s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.372s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.394s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.427s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.462s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.577s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.590s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[1.782s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[1.825s] -- Found FastRTPS: /opt/ros/humble/include  
+[1.884s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.905s] -- Looking for pthread.h
+[2.014s] -- Looking for pthread.h - found
+[2.015s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.133s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2.135s] -- Found Threads: TRUE  
+[2.371s] -- Configuring done
+[2.388s] -- Generating done
+[2.394s] -- Build files have been written to: /home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations
+[2.408s] Invoked command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/josedag31/Arus/ws/src/ARUSSim/src/automatic_simulations -DCMAKE_INSTALL_PREFIX=/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations
+[2.412s] Invoking command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations -- -j8 -l8
+[2.491s] [ 50%] [32mBuilding CXX object CMakeFiles/automatic_simulations_exec.dir/src/automatic_simulations.cpp.o[0m
+[18.986s] [100%] [32m[1mLinking CXX executable automatic_simulations_exec[0m
+[19.793s] [100%] Built target automatic_simulations_exec
+[19.813s] Invoked command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations -- -j8 -l8
+[19.816s] Invoking command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations
+[19.828s] -- Install configuration: ""
+[19.829s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/lib/automatic_simulations/automatic_simulations_exec
+[19.837s] -- Set runtime path of "/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/lib/automatic_simulations/automatic_simulations_exec" to ""
+[19.837s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/config
+[19.837s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/config/automatic_simulations_config.yaml
+[19.838s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/package_run_dependencies/automatic_simulations
+[19.839s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/parent_prefix_path/automatic_simulations
+[19.839s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.sh
+[19.839s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.dsv
+[19.840s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.sh
+[19.840s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.dsv
+[19.840s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.bash
+[19.841s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.sh
+[19.841s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.zsh
+[19.842s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.dsv
+[19.842s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.dsv
+[19.842s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/packages/automatic_simulations
+[19.843s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig.cmake
+[19.843s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig-version.cmake
+[19.843s] -- Installing: /home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.xml
+[19.847s] Invoked command in '/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations

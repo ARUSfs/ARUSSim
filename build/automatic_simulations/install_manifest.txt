@@ -1,0 +1,17 @@
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/lib/automatic_simulations/automatic_simulations_exec
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/config/automatic_simulations_config.yaml
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/package_run_dependencies/automatic_simulations
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/parent_prefix_path/automatic_simulations
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.sh
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/ament_prefix_path.dsv
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.sh
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/environment/path.dsv
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.bash
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.sh
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.zsh
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/local_setup.dsv
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.dsv
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/ament_index/resource_index/packages/automatic_simulations
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig.cmake
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/cmake/automatic_simulationsConfig-version.cmake
+/home/josedag31/Arus/ws/src/ARUSSim/install/automatic_simulations/share/automatic_simulations/package.xml

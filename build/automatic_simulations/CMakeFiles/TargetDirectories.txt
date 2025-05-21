@@ -1,0 +1,10 @@
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/uninstall.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/automatic_simulations_uninstall.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/automatic_simulations_exec.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/test.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/edit_cache.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/rebuild_cache.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/list_install_components.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/install.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/install/local.dir
+/home/josedag31/Arus/ws/src/ARUSSim/build/automatic_simulations/CMakeFiles/install/strip.dir

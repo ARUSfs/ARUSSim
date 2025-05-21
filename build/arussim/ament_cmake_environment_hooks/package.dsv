@@ -1,0 +1,4 @@
+source;share/arussim/local_setup.bash
+source;share/arussim/local_setup.dsv
+source;share/arussim/local_setup.sh
+source;share/arussim/local_setup.zsh

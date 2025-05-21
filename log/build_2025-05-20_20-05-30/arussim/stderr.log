@@ -1,0 +1,6 @@
+/usr/bin/ld: CMakeFiles/arussim_exec.dir/src/arussim_node.cpp.o: en la función `Simulator::Simulator()':
+arussim_node.cpp:(.text+0x3374): referencia a `Simulator::on_controller_sim_timer()' sin definir
+collect2: error: ld returned 1 exit status
+gmake[2]: *** [CMakeFiles/arussim_exec.dir/build.make:373: arussim_exec] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:202: CMakeFiles/arussim_exec.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

@@ -1,0 +1,4 @@
+-DROS_PACKAGE_NAME="arussim"
+-o
+/home/josedag31/Arus/ws/src/ARUSSim/build/arussim/include/arussim/moc_main_interface.cpp
+/home/josedag31/Arus/ws/src/ARUSSim/src/arussim/include/arussim/main_interface.hpp

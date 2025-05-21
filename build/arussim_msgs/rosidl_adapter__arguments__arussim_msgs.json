@@ -1,0 +1,11 @@
+{
+  "package_name": "arussim_msgs",
+  "non_idl_tuples": [
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/Cmd.msg",
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/Cmd4WD.msg",
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/FourWheelDrive.msg",
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/PointXY.msg",
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/State.msg",
+    "/home/josedag31/Arus/ws/src/ARUSSim/src/arussim_msgs:msg/Trajectory.msg"
+  ]
+}

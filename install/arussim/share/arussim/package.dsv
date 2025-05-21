@@ -1,0 +1,11 @@
+source;share/arussim/hook/cmake_prefix_path.ps1
+source;share/arussim/hook/cmake_prefix_path.dsv
+source;share/arussim/hook/cmake_prefix_path.sh
+source;share/arussim/hook/ld_library_path_lib.ps1
+source;share/arussim/hook/ld_library_path_lib.dsv
+source;share/arussim/hook/ld_library_path_lib.sh
+source;share/arussim/local_setup.bash
+source;share/arussim/local_setup.dsv
+source;share/arussim/local_setup.ps1
+source;share/arussim/local_setup.sh
+source;share/arussim/local_setup.zsh
