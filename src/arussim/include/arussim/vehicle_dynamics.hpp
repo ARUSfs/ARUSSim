@@ -20,6 +20,8 @@ class VehicleDynamics
         double ax_;
         double ay_;
         double delta_;
+        double delta_fl_;
+        double delta_fr_;
         double delta_v_;
 
         struct {
@@ -47,14 +49,35 @@ class VehicleDynamics
     
     private:
 
-        double kMass = 270.0;
-        double kMassDistributionRear = 0.55;
+        double kMass = 240.0;
+        double kNsMassF = 25;
+        double kNsMassR = 25;
+        double kSMass = kMass - kNsMassF - kNsMassR;
+        double kIzz = 180;
+
+        double kMassDistributionRear = 0.54;
+        double kSMassF = kSMass * (1-kMassDistributionRear);
+        double kSMassR = kSMass * kMassDistributionRear;
+
         double kWheelBase = 1.533;
         double kTrackWidth = 1.22;
-        double kHCog = 0.28;
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
-        double kIzz = 180;
+
+        double kHCog = 0.28;
+        double kHCogNsF = 0.225;
+        double kHCogNsR = 0.225;
+        double kHRollCenterF = 0.033;
+        double kHRollCenterR = 0.097;
+        double kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
+
+        double kWheelRateF = 500*175.13 / std::pow(1.1,2); // spring_stiffness (N/m) / motion_ratio ^ 2
+        double kWheelRateR = 500*175.13 / std::pow(1.1,2);
+        double kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
+        double kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
+        double kRollStiffness = kRollStiffnessF + kRollStiffnessR;
+
+        double kAckermann = 0.6;
 
         double kTireDynRadius = 0.202;
         double kTireInertia = 0.5;
@@ -133,6 +156,7 @@ class VehicleDynamics
         double calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr);
 
         void calculate_tire_loads();
+        void calculate_ackermann();
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
         void kinematic_correction();
