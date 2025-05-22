@@ -64,7 +64,7 @@ class VehicleDynamics
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
 
-        double kHCog = 0.28;
+        double kHCog = 0.26;
         double kHCogNsF = 0.225;
         double kHCogNsR = 0.225;
         double kHRollCenterF = 0.033;
@@ -79,8 +79,8 @@ class VehicleDynamics
 
         double kAckermann = 0.6;
 
-        double kTireDynRadius = 0.202;
-        double kTireInertia = 0.5;
+        double kTireDynRadius = 0.225;
+        double kTireInertia = 0.4;
 
         struct {
             double Dlat = -1.3323;
@@ -102,11 +102,11 @@ class VehicleDynamics
         } pac_param_;
 
         double kRollingResistance = 100;
-        double kCDA = 1;
-        double kCLA = 3.5;
-        double kCOPx = 0.5; //longitudinal distribution (rear)
-        double kCOPy = kHCog;
-        double kAirDensity = 1.1;
+        double kCDA = 1.97;
+        double kCLA = 4.75;
+        double kCOPx = 0.4604; //longitudinal distribution (rear)
+        double kCOPy = 0.517;
+        double kAirDensity = 1.225;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
