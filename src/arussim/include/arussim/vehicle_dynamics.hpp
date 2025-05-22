@@ -83,16 +83,22 @@ class VehicleDynamics
         double kTireInertia = 0.5;
 
         struct {
-            double Dlat = -1.537;
-            double Clat = 1.54;
-            double Blat = 9.0;
+            double Dlat = -1.3323;
+            double Clat = 1.7230;
+            double Blat = 12.7;
+            double Elat = 0.4035;
 
-            double Dlon = 1.38;
-            double Clon = 1.5;
-            double Blon = 12.4;
+            double Dlon = 1.1976;
+            double Clon = 1.9503;
+            double Blon = 17.49;
+            double Elon = 0.999;
 
-            double kAlphaP = 0.1809;
-            double kLambdaP = 0.1397;
+            double Gx1 = 25000;
+            double bx = 0.2367;
+            double a = 93733;
+            double c = 0.1689;
+            double Gy1 = 38.21;
+            double by = 0.5365;
         } pac_param_;
 
         double kRollingResistance = 100;
