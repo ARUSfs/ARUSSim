@@ -1,0 +1,5 @@
+<map id="Supervisor::reset_callback" name="Supervisor::reset_callback">
+<area shape="rect" id="Node000001" title="Callback for receiving reset commands." alt="" coords="221,5,415,31"/>
+<area shape="rect" id="Node000002" href="$classSupervisor.html#a9d7eafc36b5429092ba0f758bc7841c4" title="Construct a new Supervisor object." alt="" coords="5,5,173,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,21,173,21,173,15,207,15"/>
+</map>

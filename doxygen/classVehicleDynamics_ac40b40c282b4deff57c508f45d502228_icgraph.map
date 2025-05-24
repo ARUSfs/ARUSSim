@@ -1,0 +1,9 @@
+<map id="VehicleDynamics::update_torque_cmd" name="VehicleDynamics::update_torque_cmd">
+<area shape="rect" id="Node000001" title=" " alt="" coords="633,5,820,45"/>
+<area shape="rect" id="Node000002" href="$classVehicleDynamics.html#ac493383113ca5e857d8e21ffa7f5e22a" title=" " alt="" coords="399,5,585,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="620,28,586,28,586,23,620,23"/>
+<area shape="rect" id="Node000003" href="$classSimulator.html#a3aab87c85abfcdbb564f119f86468015" title="Callback function for the fast timer." alt="" coords="209,5,351,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="385,28,351,28,351,23,385,23"/>
+<area shape="rect" id="Node000004" href="$classSimulator.html#a031573bfcfe2e0f5c9539bcc1c7fc5d9" title="Constructor for the Simulator class." alt="" coords="5,13,161,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="196,28,162,28,162,23,196,23"/>
+</map>

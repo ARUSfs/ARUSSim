@@ -1,0 +1,12 @@
+<map id="drawView.drawView.mouseMoveEvent" name="drawView.drawView.mouseMoveEvent">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,63,241,103"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="73,63,69,53,78,44,96,38,123,36,155,39,172,46,170,51,154,44,123,41,97,43,80,48,75,54,78,61"/>
+<area shape="rect" id="Node000002" href="$classdrawView_1_1drawView.html#a0006b5ad6c38f3a078d5220cd2f4c248" title=" " alt="" coords="298,5,499,45"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="219,60,288,46,289,51,221,65"/>
+<area shape="rect" id="Node000003" href="$classdrawView_1_1drawView.html#a0d7c096169339fb1946253cb016cc15d" title=" " alt="" coords="293,70,504,95"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="241,80,280,80,280,85,241,85"/>
+<area shape="rect" id="Node000005" href="$classdrawView_1_1drawScene.html#aef454c4076d8389a9a1048d68dd681dd" title=" " alt="" coords="289,119,508,145"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="236,100,314,114,313,120,235,105"/>
+<area shape="rect" id="Node000004" href="$classdrawView_1_1frameOrigin.html#a2c1908d401b12bceed97114f4d3081c4" title=" " alt="" coords="556,63,747,103"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="504,80,542,80,542,85,504,85"/>
+</map>

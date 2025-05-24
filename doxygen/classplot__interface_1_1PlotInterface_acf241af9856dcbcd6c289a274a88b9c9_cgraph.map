@@ -1,0 +1,15 @@
+<map id="plot_interface::PlotInterface::onInitialize" name="plot_interface::PlotInterface::onInitialize">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,69,208,109"/>
+<area shape="rect" id="Node000002" href="$classplot__interface_1_1PlotInterface.html#a9f451c3bf89e0430eba64b2e0a6d76ba" title="Callback for the reset button." alt="" coords="256,5,459,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,67,265,46,266,51,186,72"/>
+<area shape="rect" id="Node000003" href="$classplot__interface_1_1PlotInterface.html#acd0a1f64679397845b91efa2f588c48d" title="Update the telemetry labels." alt="" coords="256,69,459,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="208,87,242,87,242,92,208,92"/>
+<area shape="rect" id="Node000004" href="$classplot__interface_1_1PlotInterface.html#a87a52fa3fda19629129284f1d6e18219" title="Update the telemetry bars." alt="" coords="256,133,459,173"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="186,107,266,127,265,133,185,112"/>
+<area shape="rect" id="Node000005" href="$classplot__interface_1_1PlotInterface.html#a1e19f3e1339deb60f327f330ed2fb574" title=" " alt="" coords="507,69,709,109"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="436,131,515,110,517,115,437,136"/>
+<area shape="rect" id="Node000006" href="$classplot__interface_1_1PlotInterface.html#a9a820e294264a3d7d5672c920eb1f8ef" title=" " alt="" coords="507,133,709,173"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="459,151,493,151,493,156,459,156"/>
+<area shape="rect" id="Node000007" href="$classplot__interface_1_1PlotInterface.html#a109ade20eea30267623b1d34993e201d" title=" " alt="" coords="507,197,709,237"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="437,171,517,191,515,197,436,176"/>
+</map>

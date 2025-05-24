@@ -1,0 +1,8 @@
+<map id="main.Ui_MainWindow.changeLandmarkType" name="main.Ui_MainWindow.changeLandmarkType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,220,45"/>
+<area shape="rect" id="Node000002" href="$classmain_1_1Ui__MainWindow.html#a37aac9e3109bbe334d433605572f8aca" title=" " alt="" coords="531,5,753,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="220,20,268,19,483,19,517,19,517,25,483,24,268,24,220,25"/>
+<area shape="rect" id="Node000003" href="$classmain_1_1Ui__MainWindow.html#a4e99f95ee2505fd014a325f830ae2ffc" title=" " alt="" coords="268,33,483,73"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="220,34,255,38,254,43,220,39"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="483,39,517,36,517,41,483,45"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="Supervisor::tpl_signal_callback" name="Supervisor::tpl_signal_callback">
+<area shape="rect" id="Node000001" title="Callback to check if the car is between two TPLs." alt="" coords="221,5,384,45"/>
+<area shape="rect" id="Node000002" href="$classSupervisor.html#a9d7eafc36b5429092ba0f758bc7841c4" title="Construct a new Supervisor object." alt="" coords="5,13,173,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,28,173,28,173,23,207,23"/>
+</map>

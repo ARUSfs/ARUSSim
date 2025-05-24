@@ -1,0 +1,13 @@
+<map id="main_interface::MainInterface" name="main_interface::MainInterface">
+<area shape="rect" id="Node000001" title=" " alt="" coords="239,299,458,324"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,159,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,44,100,93,120,155,153,219,174,248,200,273,221,286,245,296,243,301,219,291,196,277,170,251,148,222,115,157,94,94,83,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="183,5,250,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,45,207,92,205,153,208,185,215,216,227,246,244,273,259,287,277,296,275,301,256,291,240,276,222,249,210,218,203,186,200,153,202,92,208,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="295,5,402,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="351,44,351,298,346,298,346,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="444,5,523,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="486,44,482,168,473,233,466,258,456,276,440,291,420,301,418,296,437,287,452,273,461,256,468,231,477,168,481,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="642,5,701,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="680,44,688,93,690,155,686,188,678,220,664,250,644,277,614,293,568,304,514,310,458,313,458,308,514,305,567,299,612,288,640,273,659,248,673,219,681,187,684,155,682,93,675,45"/>
+</map>

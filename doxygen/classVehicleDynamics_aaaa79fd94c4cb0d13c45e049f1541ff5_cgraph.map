@@ -1,0 +1,11 @@
+<map id="VehicleDynamics::calculate_dynamics" name="VehicleDynamics::calculate_dynamics">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,87,207,127"/>
+<area shape="rect" id="Node000002" href="$classVehicleDynamics.html#aa58a4015c34109c3c624d8a2744559d2" title=" " alt="" coords="255,5,476,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,85,198,62,254,41,286,31,288,37,256,46,200,67,150,89"/>
+<area shape="rect" id="Node000003" href="$classVehicleDynamics.html#a3aed1433e1242e56c5806e6b8b5a92e5" title=" " alt="" coords="265,55,466,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="207,92,251,87,251,92,207,98"/>
+<area shape="rect" id="Node000004" href="$classVehicleDynamics.html#ad8c032175bca97d28b29c19abda90c4c" title=" " alt="" coords="265,119,466,159"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="207,117,251,123,251,128,207,122"/>
+<area shape="rect" id="Node000005" href="$classVehicleDynamics.html#a489679a4d19f838743eb4119fea71405" title=" " alt="" coords="265,183,466,223"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="151,125,256,169,278,177,277,182,254,174,149,130"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="VehicleDynamics::set_torque_vectoring" name="VehicleDynamics::set_torque_vectoring">
+<area shape="rect" id="Node000001" title=" " alt="" coords="209,5,372,45"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a031573bfcfe2e0f5c9539bcc1c7fc5d9" title="Constructor for the Simulator class." alt="" coords="5,13,161,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,28,161,28,161,23,196,23"/>
+</map>

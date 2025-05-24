@@ -1,0 +1,7 @@
+<map id="main.Ui_MainWindow.conesOnMap" name="main.Ui_MainWindow.conesOnMap">
+<area shape="rect" id="Node000001" title=" " alt="" coords="541,5,747,45"/>
+<area shape="rect" id="Node000002" href="$classmain_1_1Ui__MainWindow.html#a68afa32cf87ccf1a71e058d4c42c3bfc" title=" " alt="" coords="285,5,493,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="528,28,494,28,494,23,528,23"/>
+<area shape="rect" id="Node000003" href="$classmain_1_1Ui__MainWindow.html#a1d8885447e02bb62d08f7b678657a1ec" title=" " alt="" coords="5,5,237,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="271,28,237,28,237,23,271,23"/>
+</map>

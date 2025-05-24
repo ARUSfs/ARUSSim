@@ -1,0 +1,7 @@
+<map id="main_interface::MainInterface::process_output" name="main_interface::MainInterface::process_output">
+<area shape="rect" id="Node000001" title="Process the output from the simulation." alt="" coords="539,5,757,45"/>
+<area shape="rect" id="Node000002" href="$classmain__interface_1_1MainInterface.html#ab153f394be095e95d95d61f36deb10a1" title="Callback for the launch button." alt="" coords="272,5,491,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="525,28,491,28,491,23,525,23"/>
+<area shape="rect" id="Node000003" href="$classmain__interface_1_1MainInterface.html#a1ae66855f3b0e574504a5f3a9a7f643d" title=" " alt="" coords="5,5,224,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="258,28,224,28,224,23,258,23"/>
+</map>

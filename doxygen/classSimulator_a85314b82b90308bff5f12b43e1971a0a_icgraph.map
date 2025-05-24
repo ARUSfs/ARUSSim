@@ -1,0 +1,8 @@
+<map id="Simulator::load_track" name="Simulator::load_track">
+<area shape="rect" id="Node000001" title="Loads the track and the fixed path from resources." alt="" coords="444,31,605,56"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a2b91ecb6fe1f80b57516ed02f551740c" title="Callback for receiving reset commands." alt="" coords="209,5,396,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="430,35,396,31,396,26,430,30"/>
+<area shape="rect" id="Node000003" href="$classSimulator.html#a031573bfcfe2e0f5c9539bcc1c7fc5d9" title="Constructor for the Simulator class." alt="" coords="5,31,161,56"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="430,46,162,46,162,41,430,41"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="196,33,162,37,161,32,195,28"/>
+</map>

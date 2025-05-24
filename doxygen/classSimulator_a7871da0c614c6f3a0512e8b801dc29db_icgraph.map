@@ -1,0 +1,7 @@
+<map id="Simulator::cone_visualization" name="Simulator::cone_visualization">
+<area shape="rect" id="Node000001" title="Make a MarkerArray of all cones of the track." alt="" coords="404,13,619,38"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a74b2099f433dc2894e46829503e78b5a" title="Callback function for the slow timer." alt="" coords="209,5,356,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="390,28,356,28,356,23,390,23"/>
+<area shape="rect" id="Node000003" href="$classSimulator.html#a031573bfcfe2e0f5c9539bcc1c7fc5d9" title="Constructor for the Simulator class." alt="" coords="5,13,161,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="196,28,161,28,161,23,196,23"/>
+</map>

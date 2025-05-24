@@ -1,0 +1,5 @@
+<map id="Sensors::state_callback" name="Sensors::state_callback">
+<area shape="rect" id="Node000001" title="Callback function for the state subscriber." alt="" coords="185,5,360,31"/>
+<area shape="rect" id="Node000002" href="$classSensors.html#a68ef7a2ec8dd0ffd9b35b70b50c0ab09" title="Construct a new Sensors object." alt="" coords="5,5,137,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,21,137,21,137,15,171,15"/>
+</map>

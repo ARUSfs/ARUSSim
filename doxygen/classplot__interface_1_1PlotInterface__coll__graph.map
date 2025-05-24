@@ -1,0 +1,13 @@
+<map id="plot_interface::PlotInterface" name="plot_interface::PlotInterface">
+<area shape="rect" id="Node000001" title=" " alt="" coords="253,299,455,324"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,159,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,44,99,93,119,155,152,219,173,248,198,273,224,289,253,299,252,304,222,293,195,277,169,251,147,222,114,157,94,94,83,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="183,5,250,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,45,207,92,205,153,208,185,215,217,227,246,244,273,259,286,277,296,275,301,256,291,240,276,222,249,210,218,203,186,200,153,201,92,208,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="301,5,407,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="357,44,357,298,351,298,351,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="449,5,528,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="492,44,488,168,479,233,471,258,461,276,445,291,426,301,423,296,442,287,457,273,466,256,473,231,482,168,486,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="647,5,706,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="685,44,693,93,695,155,691,188,683,220,669,250,649,277,636,286,617,294,570,305,513,311,456,313,456,308,513,305,569,299,616,289,633,281,645,273,665,248,678,219,686,187,690,155,688,93,680,45"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="Sensors::Sensors" name="Sensors::Sensors">
+<area shape="rect" id="Node000001" title="Construct a new Sensors object." alt="" coords="5,119,137,145"/>
+<area shape="rect" id="Node000002" href="$classSensors.html#a4a8d30a256900ce6570080d2586439f0" title="Timer function for the extensometer." alt="" coords="187,5,359,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,117,130,87,184,55,198,48,200,53,187,60,133,91,91,121"/>
+<area shape="rect" id="Node000003" href="$classSensors.html#a4d825e6e7baadb20ac9925ec5519b751" title="Timer function for the IMU." alt="" coords="199,70,347,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="123,117,206,96,207,101,124,122"/>
+<area shape="rect" id="Node000004" href="$classSensors.html#a276d5f9001d875fc69e61b868b3f4094" title="Callback function for the state subscriber." alt="" coords="185,119,360,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="138,129,172,129,172,135,138,135"/>
+<area shape="rect" id="Node000005" href="$classSensors.html#aa885445fdc92954c1a950a26f6226ac8" title="Timer function for the 4WD torque." alt="" coords="193,169,352,209"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="117,142,190,163,188,168,116,147"/>
+<area shape="rect" id="Node000006" href="$classSensors.html#af24e2c094cee3036016c6aba39980921" title="Timer function for the wheel speed sensors." alt="" coords="189,233,356,273"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="88,143,130,180,187,219,199,225,197,230,184,224,127,184,84,147"/>
+</map>

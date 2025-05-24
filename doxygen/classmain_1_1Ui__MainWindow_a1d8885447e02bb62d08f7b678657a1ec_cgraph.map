@@ -1,0 +1,17 @@
+<map id="main.Ui_MainWindow.saveTrackEditorSettings" name="main.Ui_MainWindow.saveTrackEditorSettings">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,41,237,81"/>
+<area shape="rect" id="Node000002" href="$classmain_1_1Ui__MainWindow.html#a68afa32cf87ccf1a71e058d4c42c3bfc" title=" " alt="" coords="285,41,493,81"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="238,58,271,58,271,63,238,63"/>
+<area shape="rect" id="Node000003" href="$classmain_1_1Ui__MainWindow.html#ab788ebad23906a5c21b9f8d56e7f165b" title=" " alt="" coords="541,9,747,49"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="493,45,527,41,528,46,494,50"/>
+<area shape="rect" id="Node000004" href="$namespacepoints__to__circuit.html#a4220b443cec6983b5267e3300d1f7a76" title=" " alt="" coords="553,73,735,113"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="494,71,539,77,539,82,493,76"/>
+<area shape="rect" id="Node000005" href="$namespacepoints__to__circuit.html#a332d1976b192a552bece68bd519a9350" title=" " alt="" coords="802,5,990,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="710,70,746,58,794,39,821,32,823,37,796,45,748,63,712,75"/>
+<area shape="rect" id="Node000006" href="$namespacepoints__to__circuit.html#a33d6daa24b5c80a2d85c49a962ff3169" title=" " alt="" coords="805,55,987,80"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="735,81,791,75,792,80,736,86"/>
+<area shape="rect" id="Node000007" href="$namespacepoints__to__circuit.html#ac4bf8b5c59889fe15e8e52bcc4ede5d0" title=" " alt="" coords="804,104,988,129"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="736,99,790,104,790,109,735,104"/>
+<area shape="rect" id="Node000008" href="$namespacepoints__to__circuit.html#a6c87dd6809d0d599699d2e57082111d1" title=" " alt="" coords="795,153,997,179"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="705,110,795,138,829,147,828,152,794,143,704,115"/>
+</map>

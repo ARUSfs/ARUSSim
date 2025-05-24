@@ -1,0 +1,7 @@
+<map id="points_to_circuit.circuit_to_midpoints" name="points_to_circuit.circuit_to_midpoints">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,179,63"/>
+<area shape="rect" id="Node000002" href="$namespacepoints__to__circuit.html#a332d1976b192a552bece68bd519a9350" title=" " alt="" coords="227,5,415,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,31,213,27,213,33,179,36"/>
+<area shape="rect" id="Node000003" href="$namespacepoints__to__circuit.html#a33d6daa24b5c80a2d85c49a962ff3169" title=" " alt="" coords="230,55,411,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="179,50,216,54,216,59,178,55"/>
+</map>

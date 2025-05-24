@@ -1,0 +1,9 @@
+<map id="Simulator" name="Simulator">
+<area shape="rect" id="Node000001" title="The Simulator class is responsible for simulating the vehicle dynamics, sensor data,..." alt="" coords="61,196,146,221"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,108,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="72,144,99,194,95,197,67,147"/>
+<area shape="rect" id="Node000003" href="$classVehicleDynamics.html" title=" " alt="" coords="132,108,267,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="178,144,118,197,115,193,175,140"/>
+<area shape="rect" id="Node000004" href="$structVehicleDynamics_1_1Tire__force.html" title=" " alt="" coords="116,5,283,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="202,59,202,108,197,108,197,59"/>
+</map>

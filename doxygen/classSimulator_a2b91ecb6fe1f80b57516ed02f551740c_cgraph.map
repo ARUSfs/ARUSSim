@@ -1,0 +1,5 @@
+<map id="Simulator::reset_callback" name="Simulator::reset_callback">
+<area shape="rect" id="Node000001" title="Callback for receiving reset commands." alt="" coords="5,5,192,31"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a85314b82b90308bff5f12b43e1971a0a" title="Loads the track and the fixed path from resources." alt="" coords="240,5,401,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,15,226,15,226,21,192,21"/>
+</map>

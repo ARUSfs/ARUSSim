@@ -1,0 +1,11 @@
+<map id="points_to_circuit.smooth_and_expand_points" name="points_to_circuit.smooth_and_expand_points">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,73,188,113"/>
+<area shape="rect" id="Node000002" href="$namespacepoints__to__circuit.html#a332d1976b192a552bece68bd519a9350" title=" " alt="" coords="243,5,431,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,70,235,39,264,31,266,37,237,45,150,75"/>
+<area shape="rect" id="Node000003" href="$namespacepoints__to__circuit.html#a33d6daa24b5c80a2d85c49a962ff3169" title=" " alt="" coords="247,55,428,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="188,80,233,76,233,81,189,86"/>
+<area shape="rect" id="Node000004" href="$namespacepoints__to__circuit.html#ac4bf8b5c59889fe15e8e52bcc4ede5d0" title=" " alt="" coords="245,104,429,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="189,99,232,103,231,109,188,104"/>
+<area shape="rect" id="Node000005" href="$namespacepoints__to__circuit.html#a6c87dd6809d0d599699d2e57082111d1" title=" " alt="" coords="236,153,439,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="153,110,237,138,270,147,269,153,235,143,151,115"/>
+</map>

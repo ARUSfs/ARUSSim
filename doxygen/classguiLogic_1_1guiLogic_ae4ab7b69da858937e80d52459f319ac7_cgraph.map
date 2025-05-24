@@ -1,0 +1,7 @@
+<map id="guiLogic.guiLogic.getMinTrackWidth" name="guiLogic.guiLogic.getMinTrackWidth">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,27,188,67"/>
+<area shape="rect" id="Node000002" href="$classguiLogic_1_1guiLogic.html#a641d7b065286d7aac69db1349adc6a2e" title=" " alt="" coords="236,5,463,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,34,226,30,227,35,189,39"/>
+<area shape="rect" id="Node000003" href="$classguiLogic_1_1guiLogic.html#a344ebb84806aa4af79fd242d9f60ec95" title=" " alt="" coords="257,55,442,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="189,55,243,61,243,66,188,60"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="Sensors::imu_timer" name="Sensors::imu_timer">
+<area shape="rect" id="Node000001" title="Timer function for the IMU." alt="" coords="185,5,333,31"/>
+<area shape="rect" id="Node000002" href="$classSensors.html#a68ef7a2ec8dd0ffd9b35b70b50c0ab09" title="Construct a new Sensors object." alt="" coords="5,5,137,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,21,137,21,137,15,172,15"/>
+</map>

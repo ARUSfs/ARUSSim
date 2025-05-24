@@ -1,0 +1,11 @@
+<map id="points_to_circuit.distance" name="points_to_circuit.distance">
+<area shape="rect" id="Node000001" title=" " alt="" coords="772,45,960,70"/>
+<area shape="rect" id="Node000002" href="$namespacepoints__to__circuit.html#ae6eb459a2eb61c3933b1411a000fa45a" title=" " alt="" coords="546,5,719,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="759,45,719,40,720,35,760,40"/>
+<area shape="rect" id="Node000003" href="$namespacepoints__to__circuit.html#a4220b443cec6983b5267e3300d1f7a76" title=" " alt="" coords="541,69,724,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="760,75,724,79,724,74,759,69"/>
+<area shape="rect" id="Node000004" href="$classmain_1_1Ui__MainWindow.html#a68afa32cf87ccf1a71e058d4c42c3bfc" title=" " alt="" coords="285,69,493,109"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="527,92,494,92,494,87,527,87"/>
+<area shape="rect" id="Node000005" href="$classmain_1_1Ui__MainWindow.html#a1d8885447e02bb62d08f7b678657a1ec" title=" " alt="" coords="5,69,237,109"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="271,92,237,92,237,87,271,87"/>
+</map>

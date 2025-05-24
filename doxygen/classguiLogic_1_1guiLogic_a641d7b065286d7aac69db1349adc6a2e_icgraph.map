@@ -1,0 +1,7 @@
+<map id="guiLogic.guiLogic.getClosestInd" name="guiLogic.guiLogic.getClosestInd">
+<area shape="rect" id="Node000001" title=" " alt="" coords="236,45,463,70"/>
+<area shape="rect" id="Node000002" href="$classguiLogic_1_1guiLogic.html#ad9e3c233ae70988bf57718934192211b" title=" " alt="" coords="5,5,188,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="235,46,188,40,188,34,236,40"/>
+<area shape="rect" id="Node000003" href="$classguiLogic_1_1guiLogic.html#ae4ab7b69da858937e80d52459f319ac7" title=" " alt="" coords="5,69,188,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="236,74,188,80,188,75,235,69"/>
+</map>

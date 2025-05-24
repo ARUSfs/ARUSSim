@@ -1,0 +1,5 @@
+<map id="Simulator::reset_callback" name="Simulator::reset_callback">
+<area shape="rect" id="Node000001" title="Callback for receiving reset commands." alt="" coords="209,5,396,31"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a031573bfcfe2e0f5c9539bcc1c7fc5d9" title="Constructor for the Simulator class." alt="" coords="5,5,161,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,21,162,21,162,15,195,15"/>
+</map>

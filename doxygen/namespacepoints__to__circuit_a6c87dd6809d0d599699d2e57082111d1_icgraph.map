@@ -1,0 +1,9 @@
+<map id="points_to_circuit.translation" name="points_to_circuit.translation">
+<area shape="rect" id="Node000001" title=" " alt="" coords="772,13,975,38"/>
+<area shape="rect" id="Node000002" href="$namespacepoints__to__circuit.html#a4220b443cec6983b5267e3300d1f7a76" title=" " alt="" coords="541,5,724,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="758,28,724,28,724,23,758,23"/>
+<area shape="rect" id="Node000003" href="$classmain_1_1Ui__MainWindow.html#a68afa32cf87ccf1a71e058d4c42c3bfc" title=" " alt="" coords="285,5,493,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="527,28,494,28,494,23,527,23"/>
+<area shape="rect" id="Node000004" href="$classmain_1_1Ui__MainWindow.html#a1d8885447e02bb62d08f7b678657a1ec" title=" " alt="" coords="5,5,237,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="271,28,237,28,237,23,271,23"/>
+</map>

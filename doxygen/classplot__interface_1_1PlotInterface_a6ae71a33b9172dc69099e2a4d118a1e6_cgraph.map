@@ -1,0 +1,11 @@
+<map id="plot_interface::PlotInterface::PlotInterface" name="plot_interface::PlotInterface::PlotInterface">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,101,208,141"/>
+<area shape="rect" id="Node000002" href="$classplot__interface_1_1PlotInterface.html#af846a649075ce2bfaa3f242b7b26bbf0" title=" " alt="" coords="256,5,459,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,99,255,55,276,47,278,52,257,60,153,104"/>
+<area shape="rect" id="Node000003" href="$classplot__interface_1_1PlotInterface.html#a017cbe2fcc409fd5f8ca98399b8d2ec1" title=" " alt="" coords="256,69,459,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="208,106,242,101,243,107,208,111"/>
+<area shape="rect" id="Node000004" href="$classplot__interface_1_1PlotInterface.html#a39a83ac9ec420356263ea5398518047e" title=" " alt="" coords="256,133,459,173"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="208,132,243,136,242,141,208,137"/>
+<area shape="rect" id="Node000005" href="$classplot__interface_1_1PlotInterface.html#acd17cd27bd9fac41bda62aaa278be4f6" title=" " alt="" coords="256,197,459,237"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="153,139,257,183,278,190,276,195,255,188,151,144"/>
+</map>

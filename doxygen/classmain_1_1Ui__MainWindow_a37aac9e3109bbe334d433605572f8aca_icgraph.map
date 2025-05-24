@@ -1,0 +1,14 @@
+<map id="main.Ui_MainWindow.deactiveOptionsExcept" name="main.Ui_MainWindow.deactiveOptionsExcept">
+<area shape="rect" id="Node000001" title=" " alt="" coords="751,99,973,139"/>
+<area shape="rect" id="Node000002" href="$classmain_1_1Ui__MainWindow.html#abbff9e4fe199554e34feeab9115e3a68" title=" " alt="" coords="483,5,703,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="799,96,702,60,665,48,666,43,704,55,800,91"/>
+<area shape="rect" id="Node000003" href="$classmain_1_1Ui__MainWindow.html#ac645ebb4792daed97ea3451783816737" title=" " alt="" coords="483,69,703,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="737,108,703,104,703,99,738,102"/>
+<area shape="rect" id="Node000004" href="$classmain_1_1Ui__MainWindow.html#ac9112ca36e696b731812ecc9f5f801c3" title=" " alt="" coords="220,156,435,196"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="737,135,435,167,434,162,737,129"/>
+<area shape="rect" id="Node000006" href="$classmain_1_1Ui__MainWindow.html#a4e99f95ee2505fd014a325f830ae2ffc" title=" " alt="" coords="485,184,700,224"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="786,145,657,187,656,181,784,140"/>
+<area shape="rect" id="Node000005" href="$classmain_1_1Ui__MainWindow.html#a98fb4010a0c9fa6980e9371d7e49364c" title=" " alt="" coords="5,156,172,196"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="206,179,172,179,172,173,206,173"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="472,194,434,190,435,185,472,189"/>
+</map>

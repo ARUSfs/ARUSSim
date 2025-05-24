@@ -1,0 +1,29 @@
+<map id="Simulator::on_fast_timer" name="Simulator::on_fast_timer">
+<area shape="rect" id="Node000001" title="Callback function for the fast timer." alt="" coords="5,158,147,198"/>
+<area shape="rect" id="Node000002" href="$classSimulator.html#a499c721275fbcf17a2a3543863cc9dcc" title="Broadcasts the vehicle&#39;s current pose to the ROS TF system." alt="" coords="209,37,367,77"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,156,140,121,193,86,207,80,209,84,196,91,143,125,101,160"/>
+<area shape="rect" id="Node000003" href="$classSimulator.html#a2ff2b4d43cf2a818aac5c672f29e3e68" title="Checks if car has started acc event." alt="" coords="208,101,368,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,156,199,142,201,147,148,161"/>
+<area shape="rect" id="Node000004" href="$classSimulator.html#a5d0f24f89f872d226720a28eef05dad3" title="Detects if the vehicle is between two TPLs." alt="" coords="209,165,367,191"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="147,175,195,175,195,181,147,181"/>
+<area shape="rect" id="Node000005" href="$classVehicleDynamics.html#ac493383113ca5e857d8e21ffa7f5e22a" title=" " alt="" coords="195,215,381,255"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="148,195,201,209,199,214,146,200"/>
+<area shape="rect" id="Node000014" href="$classVehicleDynamics.html#a204be05e1c1639d578b7cb894c8123cc" title=" " alt="" coords="201,279,375,319"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="101,196,143,231,196,265,209,272,207,276,193,270,140,235,98,200"/>
+<area shape="rect" id="Node000006" href="$classVehicleDynamics.html#aaaa79fd94c4cb0d13c45e049f1541ff5" title=" " alt="" coords="429,119,631,159"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="346,213,380,200,470,162,472,167,382,204,347,218"/>
+<area shape="rect" id="Node000011" href="$classVehicleDynamics.html#a54979b1c08eaceffc09d9aa1aecfb46f" title=" " alt="" coords="429,215,631,255"/>
+<area shape="poly" id="edge10_Node000005_Node000011" title=" " alt="" coords="382,233,416,233,416,238,382,238"/>
+<area shape="rect" id="Node000013" href="$classVehicleDynamics.html#ac40b40c282b4deff57c508f45d502228" title=" " alt="" coords="437,279,623,319"/>
+<area shape="poly" id="edge12_Node000005_Node000013" title=" " alt="" coords="365,253,442,273,440,278,364,258"/>
+<area shape="rect" id="Node000007" href="$classVehicleDynamics.html#aa58a4015c34109c3c624d8a2744559d2" title=" " alt="" coords="679,5,900,31"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="555,117,609,78,678,41,703,32,704,37,680,46,612,83,558,121"/>
+<area shape="rect" id="Node000008" href="$classVehicleDynamics.html#a3aed1433e1242e56c5806e6b8b5a92e5" title=" " alt="" coords="689,55,890,95"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="611,117,694,96,695,101,612,122"/>
+<area shape="rect" id="Node000009" href="$classVehicleDynamics.html#ad8c032175bca97d28b29c19abda90c4c" title=" " alt="" coords="689,119,890,159"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="631,137,675,137,675,142,631,142"/>
+<area shape="rect" id="Node000010" href="$classVehicleDynamics.html#a489679a4d19f838743eb4119fea71405" title=" " alt="" coords="689,183,890,223"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="612,157,695,177,694,183,611,162"/>
+<area shape="rect" id="Node000012" href="$classVehicleDynamics.html#a19286014c041af121a40c9e4cd77356c" title=" " alt="" coords="686,247,893,287"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="631,245,673,250,672,256,631,250"/>
+</map>

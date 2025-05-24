@@ -1,0 +1,15 @@
+<map id="main.Ui_MainWindow.deleteAndNewCircuit" name="main.Ui_MainWindow.deleteAndNewCircuit">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,41,213,81"/>
+<area shape="rect" id="Node000002" href="$classmain_1_1Ui__MainWindow.html#ab788ebad23906a5c21b9f8d56e7f165b" title=" " alt="" coords="261,9,467,49"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,45,247,41,248,46,214,50"/>
+<area shape="rect" id="Node000003" href="$namespacepoints__to__circuit.html#a4220b443cec6983b5267e3300d1f7a76" title=" " alt="" coords="273,73,455,113"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,71,259,77,259,82,213,76"/>
+<area shape="rect" id="Node000004" href="$namespacepoints__to__circuit.html#a332d1976b192a552bece68bd519a9350" title=" " alt="" coords="522,5,710,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="430,70,466,58,514,39,541,32,543,37,516,45,468,63,432,75"/>
+<area shape="rect" id="Node000005" href="$namespacepoints__to__circuit.html#a33d6daa24b5c80a2d85c49a962ff3169" title=" " alt="" coords="525,55,707,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="455,81,511,75,512,80,456,86"/>
+<area shape="rect" id="Node000006" href="$namespacepoints__to__circuit.html#ac4bf8b5c59889fe15e8e52bcc4ede5d0" title=" " alt="" coords="524,104,708,129"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="456,99,510,104,510,109,455,104"/>
+<area shape="rect" id="Node000007" href="$namespacepoints__to__circuit.html#a6c87dd6809d0d599699d2e57082111d1" title=" " alt="" coords="515,153,717,179"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="425,110,515,138,549,147,548,152,514,143,424,115"/>
+</map>
