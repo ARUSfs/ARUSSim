@@ -30,6 +30,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_build/doxygen
           publish_branch: gh-pages
+          force_orphan: true
           keep_files: false
 
       
