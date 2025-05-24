@@ -19,7 +19,7 @@ jobs:
       - name: Generate Doxygen documentation
         run: |
             mkdir -p docs/_build/doxygen
-            doxygen -u /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/Doxyfile
+            doxygen /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/Doxyfile
 
       - name: List generated docs
         run: ls -R docs/*
