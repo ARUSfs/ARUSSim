@@ -27,3 +27,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_build
           publish_branch: gh-pages
+          keep_files: false
+
+      - name: List generated docs
+        run: ls -R docs/_build/doxygen
