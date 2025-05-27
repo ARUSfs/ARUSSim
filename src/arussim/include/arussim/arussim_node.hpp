@@ -81,6 +81,7 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr controller_sim_timer_; // New timer for ControllerSim
     ControllerSim controller_sim_; // Instance of ControllerSim
     
+    std::vector<double> torque_cmd_; // Variable to store torque command
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;

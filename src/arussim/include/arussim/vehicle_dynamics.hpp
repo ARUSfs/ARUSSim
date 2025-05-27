@@ -8,7 +8,7 @@ class VehicleDynamics
 {
     public:
         VehicleDynamics();
-        void update_simulation(double input_delta, std::vector<double>, double dt, ControllerSim& controller_sim);
+        void update_simulation(double input_delta, std::vector<double>, double dt);
         void set_torque_vectoring(bool value);
 
         double x_;

@@ -21,12 +21,7 @@ VehicleDynamics::VehicleDynamics(){
 
 void VehicleDynamics::update_simulation(double input_delta, 
                                         std::vector<double> input_torque, 
-                                        double dt,
-                                        ControllerSim& controller_sim){
-    printf("update_simulation called at time: %ld ms\n", 
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now().time_since_epoch()
-                ).count());
+                                        double dt){
     input_delta_ = input_delta;
     torque_cmd_.fl_ = input_torque[0];
     torque_cmd_.fr_ = input_torque[1];
@@ -39,10 +34,10 @@ void VehicleDynamics::update_simulation(double input_delta,
     calculate_dynamics();
     integrate_dynamics();
     // Pasar los valores de wheel_speed_ a ControllerSim
-    controller_sim.set_wheel_speed(wheel_speed_.fl_,
-                                   wheel_speed_.fr_,
-                                   wheel_speed_.rl_,
-                                   wheel_speed_.rr_);                              
+    //controller_sim.set_wheel_speed(wheel_speed_.fl_,
+    //                               wheel_speed_.fr_,
+    //                               wheel_speed_.rl_,
+    //                               wheel_speed_.rr_);                              
     }
 
 void VehicleDynamics::calculate_dynamics(){

@@ -110,6 +110,8 @@ Simulator::Simulator() : Node("simulator")
 
     // Set Torque Vectoring parameter 
     vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
+    //Initialize torque variable 
+    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     // Set CSV file
     if (kCSVState) {
@@ -228,7 +230,7 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 void Simulator::on_controller_sim_timer() {
-    // Actualizar el estado del vehículo en ControllerSim
+    // Update the state of the vehicle in ControllerSim
     controller_sim_.set_state(
         vehicle_dynamics_.vx_,
         vehicle_dynamics_.vy_,
@@ -239,7 +241,7 @@ void Simulator::on_controller_sim_timer() {
         vehicle_dynamics_.delta_v_
     );
 
-    // Actualizar wheel_speed_ en ControllerSim
+    // Update wheel speeds in ControllerSim
     controller_sim_.set_wheel_speed(
         vehicle_dynamics_.wheel_speed_.fl_,
         vehicle_dynamics_.wheel_speed_.fr_,
@@ -247,12 +249,15 @@ void Simulator::on_controller_sim_timer() {
         vehicle_dynamics_.wheel_speed_.rr_
     );
 
-    // Obtener los comandos de torque
-    auto torque_cmd = controller_sim_.get_torque_cmd(input_acc_);
+    // Get and update the torque
+    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_);
 
-    // Actualizar la simulación en VehicleDynamics
-    double dt = 1.0 / 100.0; // 100 Hz
-    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd, dt, controller_sim_);
+    // Get the torque commands
+    //auto torque_cmd = controller_sim_.get_torque_cmd(input_acc_);
+    // Update the simulation in VehicleDynamics
+    //double dt = 1.0 / 100.0; // 100 Hz
+    //vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt, controller_sim_);
+    
 }
 
 /**
@@ -270,7 +275,7 @@ void Simulator::on_fast_timer()
         input_acc_ = 0;
     }
 
-    //double dt = 1.0 / kStateUpdateRate;
+    double dt = 1.0 / kStateUpdateRate;
     //ControllerSim controller_sim;
     //controller_sim.get_torque_cmd(input_delta_, input_acc_); 
     // Actualizar el estado del vehículo en controller_sim
@@ -291,7 +296,7 @@ void Simulator::on_fast_timer()
     //    vehicle_dynamics_.wheel_speed_.rr_
     //);
 //
-    //vehicle_dynamics_.update_simulation(input_delta_, controller_sim.get_torque_cmd(input_acc_), dt, controller_sim);
+    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt);
 
     if(use_tpl_){
         check_lap();
