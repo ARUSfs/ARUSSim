@@ -153,8 +153,8 @@ class VehicleDynamics
         double kCoefDelta = 306.3;
         double kCoefV = 25.69;
         double kCoefInput = 307;
-        double kSteeringAMax = 125;
-        double kSteeringVMax = 125;
+        double kSteeringAMax = 3.0;
+        double kSteeringVMax = 2.3;
 
         void calculate_dynamics();
         void integrate_dynamics();
