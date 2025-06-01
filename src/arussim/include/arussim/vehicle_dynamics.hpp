@@ -49,7 +49,7 @@ class VehicleDynamics
     
     private:
 
-        double kMass = 240.0;
+        double kMass = 260.0;
         double kNsMassF = 25;
         double kNsMassR = 25;
         double kSMass = kMass - kNsMassF - kNsMassR;
@@ -59,7 +59,7 @@ class VehicleDynamics
         double kSMassF = kSMass * (1-kMassDistributionRear);
         double kSMassR = kSMass * kMassDistributionRear;
 
-        double kWheelBase = 1.533;
+        double kWheelBase = 1.535;
         double kTrackWidth = 1.22;
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
@@ -83,12 +83,12 @@ class VehicleDynamics
         double kTireInertia = 0.4;
 
         struct {
-            double Dlat = -1.3323;
+            double Dlat = -1.6323;
             double Clat = 1.7230;
             double Blat = 12.7;
             double Elat = 0.4035;
 
-            double Dlon = 1.1976;
+            double Dlon = 1.3976;
             double Clon = 1.9503;
             double Blon = 17.49;
             double Elon = 0.999;

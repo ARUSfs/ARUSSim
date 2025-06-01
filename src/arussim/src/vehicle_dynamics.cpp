@@ -165,7 +165,7 @@ void VehicleDynamics::calculate_tire_loads(){
 }
 
 void VehicleDynamics::calculate_ackermann(){
-    double delta_in_ackermann = std::atan( kWheelBase * std::tan(delta_) / (kWheelBase - std::tan(delta_) * kTrackWidth));
+    double delta_in_ackermann = std::atan( kWheelBase * std::tan(delta_) / (kWheelBase - std::abs(std::tan(delta_)) * kTrackWidth));
 
     if(delta_ > 0){
         delta_fl_ = kAckermann * (delta_in_ackermann - delta_) + delta_;
@@ -183,8 +183,8 @@ void VehicleDynamics::calculate_tire_slip(){
     double vx_right = vx_ + r_ * kTrackWidth / 2;
 
     if(vx_ > 1){
-        tire_slip_.alpha_fl_ = std::atan(vy_front / vx_left) - delta_;
-        tire_slip_.alpha_fr_ = std::atan(vy_front / vx_right) - delta_;
+        tire_slip_.alpha_fl_ = std::atan(vy_front / vx_left) - delta_fl_;
+        tire_slip_.alpha_fr_ = std::atan(vy_front / vx_right) - delta_fr_;
         tire_slip_.alpha_rl_ = std::atan(vy_rear / vx_left);
         tire_slip_.alpha_rr_ = std::atan(vy_rear / vx_right);
     }
