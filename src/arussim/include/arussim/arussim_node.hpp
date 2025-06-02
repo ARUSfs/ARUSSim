@@ -40,6 +40,12 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
+#include "controller_sim/controller_sim.hpp"
+#include "controller_sim/estimation.hpp"
+#include "controller_sim/power_limitation.hpp"
+#include "controller_sim/traction_control.hpp"
+#include "controller_sim/torque_vectoring.hpp"
+
 /**
  * @class Simulator
  * @brief The Simulator class is responsible for simulating the vehicle dynamics, 
@@ -63,6 +69,7 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
+    ControllerSim controller_sim_;
 
     std::string kTrackName;
     double kStateUpdateRate;
@@ -74,14 +81,7 @@ class Simulator : public rclcpp::Node
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
-
-    //Timer for ControllerSim
-    void on_controller_sim_timer(); // New callback for ControllerSim
-
-    rclcpp::TimerBase::SharedPtr controller_sim_timer_; // New timer for ControllerSim
-    ControllerSim controller_sim_; // Instance of ControllerSim
     
-    std::vector<double> torque_cmd_; // Variable to store torque command
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
@@ -91,13 +91,13 @@ class Simulator : public rclcpp::Node
     rclcpp::Time time_last_cmd_;
     double input_acc_;
     double input_delta_;
+    std::vector<double> torque_cmd_;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
     arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
     std::string prev_circuit_;
     std::string track_name_;
-
 
     std::vector<std::pair<double, double>> tpl_cones_;
 
@@ -127,6 +127,14 @@ class Simulator : public rclcpp::Node
      * such as the track and perception point clouds.
      */
     void on_slow_timer();
+
+    /**
+     * @brief Callback function for the controller timer.
+     * 
+     * This method is called at regular intervals to update and publish low level controller
+     * action, simulating vehicle control unit from real car.
+     */
+    void on_controller_sim_timer();
 
     /**
      * @brief Callback function for the fast timer.
@@ -198,6 +206,7 @@ class Simulator : public rclcpp::Node
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
+    rclcpp::TimerBase::SharedPtr controller_sim_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;

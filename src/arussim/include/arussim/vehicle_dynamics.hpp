@@ -8,8 +8,7 @@ class VehicleDynamics
 {
     public:
         VehicleDynamics();
-        void update_simulation(double input_delta, std::vector<double>, double dt);
-        void set_torque_vectoring(bool value);
+        void update_simulation(double input_delta, std::vector<double> input_torque, double dt);
 
         double x_;
         double y_;
@@ -166,7 +165,6 @@ class VehicleDynamics
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
         void kinematic_correction();
-        void update_torque_cmd();
 
         std::shared_ptr<CSVGenerator> csv_generator_vehicle_dynamics_;
 };

@@ -29,17 +29,11 @@ void VehicleDynamics::update_simulation(double input_delta,
     torque_cmd_.fr_ = input_torque[1];
     torque_cmd_.rl_ = input_torque[2];
     torque_cmd_.rr_ = input_torque[3];
-    dt_ = dt;
-
-    
+    dt_ = dt;  
 
     calculate_dynamics();
     integrate_dynamics();
-    // Pasar los valores de wheel_speed_ a ControllerSim
-    //controller_sim.set_wheel_speed(wheel_speed_.fl_,
-    //                               wheel_speed_.fr_,
-    //                               wheel_speed_.rl_,
-    //                               wheel_speed_.rr_);                              
+
     }
 
 void VehicleDynamics::calculate_dynamics(){
@@ -248,41 +242,6 @@ void VehicleDynamics::kinematic_correction(){
 
     r_ = lambda * r_kinematic + (1 - lambda) * r_;
     vy_ = lambda * vy_kinematic + (1 - lambda) * vy_;
-}
-
-void VehicleDynamics::set_torque_vectoring(bool value)
-{
-    kTorqueVectoring = value;
-}
-
-void VehicleDynamics::update_torque_cmd(){
-    double total_fx_cmd = input_acc_ * kMass;
-
-    if(kTorqueVectoring){
-        double target_r = vx_ * std::tan(delta_) / kWheelBase;
-
-        double target_mz = kTVKp * (target_r - r_);
-
-        double fz_total = kMass * kG + 0.5 * kAirDensity * kCLA * vx_*vx_;
-        double fz_front_mean = 0.5*(tire_loads_.fl_ + tire_loads_.fr_);
-        double fz_rear_mean = 0.5*(tire_loads_.rl_ + tire_loads_.rr_);
-
-        torque_cmd_.fl_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd - tire_loads_.fl_ * 2*target_mz/kTrackWidth);
-        torque_cmd_.fr_ = kTireDynRadius / fz_total * (fz_front_mean * total_fx_cmd + tire_loads_.fr_ * 2*target_mz/kTrackWidth);
-        torque_cmd_.rl_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd - tire_loads_.rl_ * 2*target_mz/kTrackWidth);
-        torque_cmd_.rr_ = kTireDynRadius / fz_total * (fz_rear_mean * total_fx_cmd + tire_loads_.rr_ * 2*target_mz/kTrackWidth);
-    }else{
-        torque_cmd_.fl_ = 0.2 * total_fx_cmd * kTireDynRadius;
-        torque_cmd_.fr_ = 0.2 * total_fx_cmd * kTireDynRadius;
-        torque_cmd_.rl_ = 0.3 * total_fx_cmd * kTireDynRadius;
-        torque_cmd_.rr_ = 0.3 * total_fx_cmd * kTireDynRadius;
-    }
-
-    torque_cmd_.fl_ = std::clamp(torque_cmd_.fl_, kTorqueMin, kTorqueMax);
-    torque_cmd_.fr_ = std::clamp(torque_cmd_.fr_, kTorqueMin, kTorqueMax);
-    torque_cmd_.rl_ = std::clamp(torque_cmd_.rl_, kTorqueMin, kTorqueMax);
-    torque_cmd_.rr_ = std::clamp(torque_cmd_.rr_, kTorqueMin, kTorqueMax);
-
 }
 
 void VehicleDynamics::write_csv_row(){
