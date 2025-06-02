@@ -17,10 +17,10 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
+    this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
-    this->declare_parameter<bool>("vehicle.torque_vectoring", true);
     this->declare_parameter<double>("sensor.fov_radius", 20);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
@@ -31,10 +31,10 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
+    this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
-    this->get_parameter("vehicle.torque_vectoring", kTorqueVectoring);
     this->get_parameter("sensor.fov_radius", kFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
@@ -70,7 +70,7 @@ Simulator::Simulator() : Node("simulator")
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
     controller_sim_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(10), // TODO: config
+        std::chrono::milliseconds((int)(1000/kControllerRate)),
         std::bind(&Simulator::on_controller_sim_timer, this));
 
     cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
