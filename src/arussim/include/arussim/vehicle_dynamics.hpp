@@ -3,12 +3,12 @@
 #include <iostream>
 #include "arussim/csv_generator.hpp"
 #include <fstream>
-
+#include "controller_sim/controller_sim.hpp"
 class VehicleDynamics
 {
     public:
         VehicleDynamics();
-        void update_simulation(double input_delta, double input_acc, double dt);
+        void update_simulation(double input_delta, std::vector<double>, double dt);
         void set_torque_vectoring(bool value);
 
         double x_;
