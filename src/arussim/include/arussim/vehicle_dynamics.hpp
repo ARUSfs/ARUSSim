@@ -142,12 +142,6 @@ class VehicleDynamics
 
         Tire_force force;
 
-        // Control parameters
-        double kTVKp = 1000;
-        bool kTorqueVectoring = true;
-        double kTorqueMax = 252;
-        double kTorqueMin = -252;
-
         // Steering dynamics
         double kCoefDelta = 306.3;
         double kCoefV = 25.69;

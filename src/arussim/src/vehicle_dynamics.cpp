@@ -47,11 +47,10 @@ void VehicleDynamics::calculate_dynamics(){
     Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_);
     Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_);
 
-    force.fy = force_fl.fy;
-    force.fx = force_fl.fx;
-
     double fy_front = force_fl.fy + force_fr.fy;
     double fy_rear = force_rl.fy + force_rr.fy;
+
+    // TODO: calculate forces with individual wheels (because of ackermann)
 
     ax_ = calculate_fx(force_fl, force_fr, force_rl, force_rr) / kMass;
     double total_fy = fy_front * std::cos(delta_) + fy_rear;
