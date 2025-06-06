@@ -240,7 +240,7 @@ void Simulator::on_controller_sim_timer() {
     );
 
     // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_);
+    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
     
 }
 
@@ -335,6 +335,7 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 {
     input_acc_ = msg->acc;
     input_delta_ = msg->delta;
+    target_r_ = msg->target_r;
     time_last_cmd_ = clock_->now();
 }
 

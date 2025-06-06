@@ -92,6 +92,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Time time_last_cmd_;
     double input_acc_;
     double input_delta_;
+    double target_r_;
     std::vector<double> torque_cmd_;
 
     visualization_msgs::msg::Marker marker_;
