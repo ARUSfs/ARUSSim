@@ -3,13 +3,12 @@
 #include <iostream>
 #include "arussim/csv_generator.hpp"
 #include <fstream>
-
+#include "controller_sim/controller_sim.hpp"
 class VehicleDynamics
 {
     public:
         VehicleDynamics();
-        void update_simulation(double input_delta, double input_acc, double dt);
-        void set_torque_vectoring(bool value);
+        void update_simulation(double input_delta, std::vector<double> input_torque, double dt);
 
         double x_;
         double y_;
@@ -143,12 +142,6 @@ class VehicleDynamics
 
         Tire_force force;
 
-        // Control parameters
-        double kTVKp = 1000;
-        bool kTorqueVectoring = true;
-        double kTorqueMax = 252;
-        double kTorqueMin = -252;
-
         // Steering dynamics
         double kCoefDelta = 306.3;
         double kCoefV = 25.69;
@@ -166,7 +159,6 @@ class VehicleDynamics
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
         void kinematic_correction();
-        void update_torque_cmd();
 
         std::shared_ptr<CSVGenerator> csv_generator_vehicle_dynamics_;
 };
