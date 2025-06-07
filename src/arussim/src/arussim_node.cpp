@@ -17,10 +17,10 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
+    this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
-    this->declare_parameter<bool>("vehicle.torque_vectoring", true);
     this->declare_parameter<double>("sensor.fov_radius", 20);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_sigma", 0.01);
@@ -31,10 +31,10 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
+    this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
-    this->get_parameter("vehicle.torque_vectoring", kTorqueVectoring);
     this->get_parameter("sensor.fov_radius", kFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_sigma", kNoisePerception);
@@ -69,6 +69,9 @@ Simulator::Simulator() : Node("simulator")
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
+    controller_sim_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kControllerRate)),
+        std::bind(&Simulator::on_controller_sim_timer, this));
 
     cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
@@ -97,8 +100,8 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    // Set Torque Vectoring parameter 
-    vehicle_dynamics_.set_torque_vectoring(kTorqueVectoring);
+    //Initialize torque variable 
+    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     // Set CSV file
     if (kCSVState) {
@@ -190,7 +193,7 @@ void Simulator::on_slow_timer()
         if (d < kFOV)
         {
             ConeXYZColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen) - kPosLidarX;
+            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist(gen);
             p.z = 0.0;
             p.color = point.color;
@@ -217,6 +220,29 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 
+void Simulator::on_controller_sim_timer() {
+    // Update the state of the vehicle in ControllerSim
+    controller_sim_.set_state(
+        vehicle_dynamics_.vx_,
+        vehicle_dynamics_.vy_,
+        vehicle_dynamics_.r_,
+        vehicle_dynamics_.ax_,
+        vehicle_dynamics_.ay_,
+        vehicle_dynamics_.delta_,
+        vehicle_dynamics_.delta_v_
+    );
+
+    controller_sim_.set_wheel_speed(
+        vehicle_dynamics_.wheel_speed_.fl_,
+        vehicle_dynamics_.wheel_speed_.fr_,
+        vehicle_dynamics_.wheel_speed_.rl_,
+        vehicle_dynamics_.wheel_speed_.rr_
+    );
+
+    // Torque command calculation
+    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
+    
+}
 
 /**
  * @brief Fast timer callback for state updates.
@@ -235,7 +261,7 @@ void Simulator::on_fast_timer()
 
     double dt = 1.0 / kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(input_delta_, input_acc_, dt);
+    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt);
 
     if(use_tpl_){
         check_lap();
@@ -309,6 +335,7 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 {
     input_acc_ = msg->acc;
     input_delta_ = msg->delta;
+    target_r_ = msg->target_r;
     time_last_cmd_ = clock_->now();
 }
 
@@ -316,6 +343,8 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 {
     input_acc_ = 0.0;
     input_delta_ = 0.0;
+    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+
     vehicle_dynamics_ = VehicleDynamics();
 
     started_acc_ = false;

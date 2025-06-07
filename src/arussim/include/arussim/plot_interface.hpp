@@ -127,7 +127,7 @@ private:
   double delta_ = 0.0;
 
   double bar_size_;
-  double max_torque_value_ = 90.0;
+  double max_torque_value_ = 21*12.48;
   double scale_factor_;
   double center_y_;
 

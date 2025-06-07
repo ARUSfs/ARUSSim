@@ -211,10 +211,10 @@ void Sensors::wheel_speed_timer()
     std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    wheel_speed_.fr_ = wheel_speed.front_right * 0.202 + dist_front_right(gen);
-    wheel_speed_.fl_ = wheel_speed.front_left * 0.202 + dist_front_left(gen);
-    wheel_speed_.rr_ = wheel_speed.rear_right * 0.202 + dist_rear_right(gen);
-    wheel_speed_.rl_ = wheel_speed.rear_left * 0.202 + dist_rear_left(gen);
+    wheel_speed_.fr_ = wheel_speed.front_right * 0.225 + dist_front_right(gen);
+    wheel_speed_.fl_ = wheel_speed.front_left * 0.225 + dist_front_left(gen);
+    wheel_speed_.rr_ = wheel_speed.rear_right * 0.225 + dist_rear_right(gen);
+    wheel_speed_.rl_ = wheel_speed.rear_left * 0.225 + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto msg_fr = std_msgs::msg::Float32();
