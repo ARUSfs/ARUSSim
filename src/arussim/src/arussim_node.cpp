@@ -193,7 +193,7 @@ void Simulator::on_slow_timer()
         if (d < kFOV)
         {
             ConeXYZColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen) - kPosLidarX;
+            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist(gen);
             p.z = 0.0;
             p.color = point.color;
