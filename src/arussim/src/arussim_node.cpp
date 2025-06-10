@@ -186,17 +186,26 @@ void Simulator::on_slow_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist(0.0, kNoisePerception);
 
-    auto perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
+    auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
     for (auto &point : track_.points)
     {
         double d = std::sqrt(std::pow(point.x - (x + kPosLidarX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosLidarX*std::sin(yaw)), 2));
         if (d < kFOV)
         {
-            ConeXYZColorScore p;
+            PointXYZProbColorScore p;
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist(gen);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist(gen);
             p.z = 0.0;
-            p.color = point.color;
+            if (point.color == 1) {
+                p.prob_yellow = 1.0;
+                p.prob_blue = 0.0;
+            } else if (point.color == 0) {
+                p.prob_yellow = 0.0;
+                p.prob_blue = 1.0;
+            } else {
+                p.prob_yellow = -1;
+                p.prob_blue = -1;
+            }
             p.score = 1.0;
             if (p.x > kMinPerceptionX) {
                 perception_cloud.push_back(p);

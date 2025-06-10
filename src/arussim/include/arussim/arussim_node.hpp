@@ -30,6 +30,7 @@
 #include <pcl/io/pcd_io.h>
 #include <iostream>
 #include "ConeXYZColorScore.h"
+#include "PointXYZProbColorScore.h"
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
