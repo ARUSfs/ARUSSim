@@ -80,9 +80,11 @@ class Simulator : public rclcpp::Node
     double kPosLidarX;
     double kSensorRate;
     double kNoisePerception;
+    double kNoiseColor;
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
+    bool kDebug;
     
     //Car boundaries
     double kCOGFrontDist;
