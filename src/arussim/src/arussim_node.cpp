@@ -229,13 +229,6 @@ void Simulator::on_slow_timer()
                 msg.y = point.y;
                 hit_cones_pub_->publish(msg);
             }
-            if (kDebug) {
-                RCLCPP_INFO(
-                    rclcpp::get_logger("rclcpp"),
-                    "Cone: (%.2f, %.2f, %.2f), Prob Yellow: %.2f, Prob Blue: %.2f, Score: %.2f",
-                    p.x, p.y, p.z, p.prob_yellow, p.prob_blue, p.score
-                );
-            }
         }
     }
 
