@@ -273,16 +273,17 @@ void Simulator::on_controller_sim_timer() {
     msg.vx = controller_sim_.vx_;
     msg.vy = controller_sim_.vy_;
     msg.r = controller_sim_.r_;
-    //  FOR SLIP RATIO DEBUG
-    msg.torque.front_left = controller_sim_.slip_ratio_.fl_;
-    msg.torque.front_right = controller_sim_.slip_ratio_.fr_;
-    msg.torque.rear_left = controller_sim_.slip_ratio_.rl_;
-    msg.torque.rear_right = controller_sim_.slip_ratio_.rr_;
 
-    msg.wheel_speeds.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
-    msg.wheel_speeds.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
-    msg.wheel_speeds.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
-    msg.wheel_speeds.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
+    // //  FOR SLIP RATIO DEBUG
+    // msg.torque.front_left = controller_sim_.slip_ratio_.fl_;
+    // msg.torque.front_right = controller_sim_.slip_ratio_.fr_;
+    // msg.torque.rear_left = controller_sim_.slip_ratio_.rl_;
+    // msg.torque.rear_right = controller_sim_.slip_ratio_.rr_;
+
+    // msg.wheel_speeds.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    // msg.wheel_speeds.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    // msg.wheel_speeds.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    // msg.wheel_speeds.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
     
     estimated_state_pub_->publish(msg);
 }
