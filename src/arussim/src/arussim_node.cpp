@@ -18,6 +18,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
+    this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -34,6 +35,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
+    this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -106,8 +108,8 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    // Set controller_sim period
-    controller_sim_.set_period(1/kControllerRate);
+    // Set controller_sim period and GSS usage
+    controller_sim_.init(1/kControllerRate, kUseGSS);
 
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -257,7 +259,9 @@ void Simulator::on_controller_sim_timer() {
         vehicle_dynamics_.wheel_speed_.fl_,
         vehicle_dynamics_.wheel_speed_.fr_,
         vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_
+        vehicle_dynamics_.wheel_speed_.rr_,
+        vehicle_dynamics_.vx_,
+        vehicle_dynamics_.vy_
     );
 
     // Torque command calculation
@@ -269,6 +273,16 @@ void Simulator::on_controller_sim_timer() {
     msg.vx = controller_sim_.vx_;
     msg.vy = controller_sim_.vy_;
     msg.r = controller_sim_.r_;
+    //  FOR SLIP RATIO DEBUG
+    msg.torque.front_left = controller_sim_.slip_ratio_.fl_;
+    msg.torque.front_right = controller_sim_.slip_ratio_.fr_;
+    msg.torque.rear_left = controller_sim_.slip_ratio_.rl_;
+    msg.torque.rear_right = controller_sim_.slip_ratio_.rr_;
+
+    msg.wheel_speeds.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    msg.wheel_speeds.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    msg.wheel_speeds.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    msg.wheel_speeds.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
     
     estimated_state_pub_->publish(msg);
 }

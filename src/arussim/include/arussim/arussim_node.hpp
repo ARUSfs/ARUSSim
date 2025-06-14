@@ -75,6 +75,7 @@ class Simulator : public rclcpp::Node
     std::string kTrackName;
     double kStateUpdateRate;
     double kControllerRate; 
+    bool kUseGSS;
     double kWheelBase;
     double kFOV;
     double kPosLidarX;
