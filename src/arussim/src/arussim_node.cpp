@@ -104,7 +104,10 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    //Initialize torque variable 
+    // Set controller_sim period
+    controller_sim_.set_period(1/kControllerRate);
+
+    // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     // Set CSV file
@@ -242,18 +245,13 @@ void Simulator::on_slow_timer()
 }
 
 void Simulator::on_controller_sim_timer() {
-    // Update the state of the vehicle in ControllerSim
-    controller_sim_.set_state(
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_,
-        vehicle_dynamics_.r_,
+    // Update sensor data in ControllerSim
+    // TO DO: use sensors with noise instead of ground truth
+    controller_sim_.set_sensors(
         vehicle_dynamics_.ax_,
         vehicle_dynamics_.ay_,
+        vehicle_dynamics_.r_,
         vehicle_dynamics_.delta_,
-        vehicle_dynamics_.delta_v_
-    );
-
-    controller_sim_.set_wheel_speed(
         vehicle_dynamics_.wheel_speed_.fl_,
         vehicle_dynamics_.wheel_speed_.fr_,
         vehicle_dynamics_.wheel_speed_.rl_,
