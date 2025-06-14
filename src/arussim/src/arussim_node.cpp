@@ -52,6 +52,8 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
+    estimated_state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
+        "/controller_sim/estimated_state", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -261,6 +263,14 @@ void Simulator::on_controller_sim_timer() {
     // Torque command calculation
     torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
     
+    // Publish state message
+    auto msg = arussim_msgs::msg::State();
+
+    msg.vx = controller_sim_.vx_;
+    msg.vy = controller_sim_.vy_;
+    msg.r = controller_sim_.r_;
+    
+    estimated_state_pub_->publish(msg);
 }
 
 /**
