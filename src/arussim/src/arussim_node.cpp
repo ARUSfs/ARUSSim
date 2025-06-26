@@ -219,7 +219,7 @@ void Simulator::on_slow_timer()
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
             p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
-            if (p.x > kMinPerceptionX) {
+            if (p.x > kPosLidarX + kMinPerceptionX) {
                 perception_cloud.push_back(p);
             }
             if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
