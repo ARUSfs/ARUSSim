@@ -36,6 +36,18 @@ class VehicleDynamics
             double rl_ = 0;
             double rr_ = 0;
         } torque_cmd_;
+
+        struct {
+            double alpha_fl_ = 0;
+            double alpha_fr_ = 0;
+            double alpha_rl_ = 0;
+            double alpha_rr_ = 0;
+
+            double lambda_fl_ = 0;
+            double lambda_fr_ = 0;
+            double lambda_rl_ = 0;
+            double lambda_rr_ = 0;
+        } tire_slip_;
         
         double input_delta_;
         double input_acc_;
@@ -113,17 +125,7 @@ class VehicleDynamics
 
         double kG = 9.81;
 
-        struct {
-            double alpha_fl_ = 0;
-            double alpha_fr_ = 0;
-            double alpha_rl_ = 0;
-            double alpha_rr_ = 0;
-
-            double lambda_fl_ = 0;
-            double lambda_fr_ = 0;
-            double lambda_rl_ = 0;
-            double lambda_rr_ = 0;
-        } tire_slip_;
+        
 
         double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
         double kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;

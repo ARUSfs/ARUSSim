@@ -18,6 +18,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
+    this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -34,6 +35,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
+    this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -52,6 +54,12 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
+    control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_vx", 10);
+    control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_vy", 10);
+    control_r_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_r", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -104,7 +112,10 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    //Initialize torque variable 
+    // Set controller_sim period and GSS usage
+    controller_sim_.init(1/kControllerRate, kUseGSS);
+
+    // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     // Set CSV file
@@ -242,27 +253,36 @@ void Simulator::on_slow_timer()
 }
 
 void Simulator::on_controller_sim_timer() {
-    // Update the state of the vehicle in ControllerSim
-    controller_sim_.set_state(
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_,
-        vehicle_dynamics_.r_,
+    // Update sensor data in ControllerSim
+    // TO DO: use sensors with noise instead of ground truth
+    controller_sim_.set_sensors(
         vehicle_dynamics_.ax_,
         vehicle_dynamics_.ay_,
+        vehicle_dynamics_.r_,
         vehicle_dynamics_.delta_,
-        vehicle_dynamics_.delta_v_
-    );
-
-    controller_sim_.set_wheel_speed(
         vehicle_dynamics_.wheel_speed_.fl_,
         vehicle_dynamics_.wheel_speed_.fr_,
         vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_
+        vehicle_dynamics_.wheel_speed_.rr_,
+        vehicle_dynamics_.vx_,
+        vehicle_dynamics_.vy_
     );
 
     // Torque command calculation
     torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
     
+    // Publish control estimation 
+    std_msgs::msg::Float32 control_vx_msg;
+    control_vx_msg.data = controller_sim_.vx_;
+    control_vx_pub_->publish(control_vx_msg);
+
+    std_msgs::msg::Float32 control_vy_msg;
+    control_vy_msg.data = controller_sim_.vy_;
+    control_vy_pub_->publish(control_vy_msg);   
+
+    std_msgs::msg::Float32 control_r_msg;   
+    control_r_msg.data = controller_sim_.r_;
+    control_r_pub_->publish(control_r_msg);
 }
 
 /**
