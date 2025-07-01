@@ -54,8 +54,12 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
-    estimated_state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
-        "/controller_sim/estimated_state", 10);
+    control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_vx", 10);
+    control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_vy", 10);
+    control_r_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/control_r", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
     perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -267,25 +271,18 @@ void Simulator::on_controller_sim_timer() {
     // Torque command calculation
     torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
     
-    // Publish state message
-    auto msg = arussim_msgs::msg::State();
+    // Publish control estimation 
+    std_msgs::msg::Float32 control_vx_msg;
+    control_vx_msg.data = controller_sim_.vx_;
+    control_vx_pub_->publish(control_vx_msg);
 
-    msg.vx = controller_sim_.vx_;
-    msg.vy = controller_sim_.vy_;
-    msg.r = controller_sim_.r_;
+    std_msgs::msg::Float32 control_vy_msg;
+    control_vy_msg.data = controller_sim_.vy_;
+    control_vy_pub_->publish(control_vy_msg);   
 
-    // //  FOR SLIP RATIO DEBUG
-    // msg.torque.front_left = controller_sim_.slip_ratio_.fl_;
-    // msg.torque.front_right = controller_sim_.slip_ratio_.fr_;
-    // msg.torque.rear_left = controller_sim_.slip_ratio_.rl_;
-    // msg.torque.rear_right = controller_sim_.slip_ratio_.rr_;
-
-    // msg.wheel_speeds.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
-    // msg.wheel_speeds.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
-    // msg.wheel_speeds.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
-    // msg.wheel_speeds.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
-    
-    estimated_state_pub_->publish(msg);
+    std_msgs::msg::Float32 control_r_msg;   
+    control_r_msg.data = controller_sim_.r_;
+    control_r_pub_->publish(control_r_msg);
 }
 
 /**

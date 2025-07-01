@@ -216,7 +216,9 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
-    rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr estimated_state_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr perception_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
