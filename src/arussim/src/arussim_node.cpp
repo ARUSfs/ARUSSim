@@ -22,13 +22,18 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
-    this->declare_parameter<double>("sensor.fov_radius", 20);
+    this->declare_parameter<double>("sensor.lidar_fov", 20);
+    this->declare_parameter<double>("sensor.camera_fov", 10);
     this->declare_parameter<double>("sensor.pub_rate", 10);
-    this->declare_parameter<double>("sensor.noise_prob_perception", 0.2);
-    this->declare_parameter<double>("sensor.noise_position_perception", 0.01);
-    this->declare_parameter<double>("sensor.noise_color", 0.01);
+    this->declare_parameter<double>("sensor.noise_position_lidar_perception", 0.01);
+    this->declare_parameter<double>("sensor.noise_prob_lidar_perception", 0.2);
+    this->declare_parameter<double>("sensor.noise_lidar_color", 0.01);
+    this->declare_parameter<double>("sensor.noise_camera_perception", 0.01);
+    this->declare_parameter<double>("sensor.noise_camera_color", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
     this->declare_parameter<double>("sensor.position_lidar_x", 1.5);
+    this->declare_parameter<double>("sensor.position_camera_x", 0.0);
+    this->declare_parameter<double>("sensor.camera_color_probability", 0.85);
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
     this->declare_parameter<bool>("debug", false);
@@ -40,13 +45,18 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
-    this->get_parameter("sensor.fov_radius", kFOV);
+    this->get_parameter("sensor.lidar_fov", kLidarFOV);
+    this->get_parameter("sensor.camera_fov", kCameraFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
-    this->get_parameter("sensor.noise_position_perception", kNoisePosPerception);
-    this->get_parameter("sensor.noise_prob_perception", kNoiseProbPerception);
-    this->get_parameter("sensor.noise_color", kNoiseColor);
+    this->get_parameter("sensor.noise_position_lidar_perception", kNoiseLidarPosPerception);
+    this->get_parameter("sensor.noise_prob_lidar_perception", kNoiseLidarProbPerception);
+    this->get_parameter("sensor.noise_lidar_color", kNoiseLidarColor);
+    this->get_parameter("sensor.noise_camera_perception", kNoiseCameraPerception);
+    this->get_parameter("sensor.noise_camera_color", kNoiseCameraColor);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
+    this->get_parameter("sensor.position_camera_x", kPosCameraX);
+    this->get_parameter("sensor.camera_color_probability", kCameraColorProbability);
     this->get_parameter("csv_state", kCSVState);
     this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
     this->get_parameter("debug", kDebug);
@@ -64,7 +74,7 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/control_r", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
-    perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
+    lidar_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/perception", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
         "/arussim/vehicle_visualization", 1);
@@ -76,6 +86,8 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/hit_cones", 10);
     fixed_trajectory_pub_ = this->create_publisher<arussim_msgs::msg::Trajectory>(
         "/arussim/fixed_trajectory", 10);
+    camera_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
+        "/arussim/camera_perception", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -198,33 +210,34 @@ void Simulator::on_slow_timer()
 
     fixed_trajectory_pub_->publish(fixed_trajectory_msg_);
 
-    // Random noise generation for position
+    // Random noise generation for position (lidar)
     std::random_device rd_p; 
     std::mt19937 gen_p(rd_p());
-    std::normal_distribution<> dist_p(0.0, kNoisePosPerception);
+    std::normal_distribution<> dist_p(0.0, kNoiseLidarPosPerception);
 
-    // Random noise generation for visualization
+    // Random noise generation for visualization (lidar)
     std::random_device rd_v; 
     std::mt19937 gen_v(rd_v());
-    std::uniform_real_distribution<double> dist_v(0.0, kNoiseProbPerception);  
+    std::uniform_real_distribution<double> dist_v(0.0, kNoiseLidarProbPerception);  
 
-    // Random noise generation for color
+    // Random noise generation for color (lidar)
     std::random_device rd_c; 
     std::mt19937 gen_c(rd_c());
-    std::uniform_real_distribution<double> dist_c(0.0, kNoiseColor);
+    std::uniform_real_distribution<double> dist_c(0.0, kNoiseLidarColor);
 
+    // Lidar perception simulation
     auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
     for (auto &point : track_.points)
     {
         double d = std::sqrt(std::pow(point.x - (x + kPosLidarX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosLidarX*std::sin(yaw)), 2));
-        if (d < kFOV)
+        if (d < kLidarFOV)
         {
             PointXYZProbColorScore p;
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
             p.z = 0.0;
             double p_r = std::exp(-0.005 * d);  // Exponential decay for color
-            double a = std::log(2.0) / kFOV; // Calculate 'a' paramater for exponential decay based on max distance
+            double a = std::log(2.0) / kLidarFOV; // Calculate 'a' paramater for exponential decay based on max distance
             double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
             if (point.color == 0) {
                 p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
@@ -256,7 +269,55 @@ void Simulator::on_slow_timer()
     pcl::toROSMsg(perception_cloud, perception_msg);
     perception_msg.header.stamp = clock_->now();
     perception_msg.header.frame_id="arussim/vehicle_cog";
-    perception_pub_->publish(perception_msg);
+    lidar_perception_pub_->publish(perception_msg);
+
+
+    // Random noise generation for position (camera)
+    std::random_device rd_pc; 
+    std::mt19937 gen_pc(rd_pc());
+    std::normal_distribution<> dist_pc(0.0, kNoiseCameraPerception);
+
+    // Random noise generation for color (camera)
+    std::random_device rd_cc; 
+    std::mt19937 gen_cc(rd_cc());
+    std::uniform_real_distribution<double> dist_cc(0.0, kNoiseCameraColor);
+
+    // Camera perception simulation
+    auto camera_perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
+    for (auto &point : track_.points)
+    {
+        double d = std::sqrt(std::pow(point.x - (x + kPosCameraX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosCameraX*std::sin(yaw)), 2));
+        if (d < kCameraFOV)
+        {
+            PointXYZProbColorScore p;
+            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_pc(gen_pc);
+            p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_pc(gen_pc);
+            p.z = 0.0;
+            if (point.color == 0) {
+                p.prob_yellow = (1 - kCameraColorProbability + dist_cc(gen_cc));
+                p.prob_blue = (kCameraColorProbability - dist_cc(gen_cc));
+            } else if (point.color == 1) {
+                p.prob_yellow = (kCameraColorProbability - dist_cc(gen_cc));
+                p.prob_blue = (1 - kCameraColorProbability + dist_cc(gen_cc));
+            } else {
+                p.prob_yellow = 0.0 + dist_cc(gen_cc);
+                p.prob_blue = 0.0 + dist_cc(gen_cc);
+            }
+            p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
+            p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
+            p.score = 1.0;
+            if (p.x > kPosCameraX) {
+                camera_perception_cloud.push_back(p);
+            }
+
+        }
+    }
+
+    sensor_msgs::msg::PointCloud2 camera_perception_msg;
+    pcl::toROSMsg(camera_perception_cloud, camera_perception_msg);
+    camera_perception_msg.header.stamp = clock_->now();
+    camera_perception_msg.header.frame_id = "arussim/vehicle_cog";
+    camera_perception_pub_->publish(camera_perception_msg);
 
     cone_visualization();
 }
