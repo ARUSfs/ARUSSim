@@ -24,7 +24,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("sensor.fov_radius", 20);
     this->declare_parameter<double>("sensor.pub_rate", 10);
-    this->declare_parameter<double>("sensor.noise_sigma", 0.01);
+    this->declare_parameter<double>("sensor.noise_prob_perception", 0.2);
+    this->declare_parameter<double>("sensor.noise_position_perception", 0.01);
     this->declare_parameter<double>("sensor.noise_color", 0.01);
     this->declare_parameter<double>("sensor.cut_cones_below_x", -1);
     this->declare_parameter<double>("sensor.position_lidar_x", 1.5);
@@ -41,7 +42,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.fov_radius", kFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
-    this->get_parameter("sensor.noise_sigma", kNoisePerception);
+    this->get_parameter("sensor.noise_position_perception", kNoisePosPerception);
+    this->get_parameter("sensor.noise_prob_perception", kNoiseProbPerception);
     this->get_parameter("sensor.noise_color", kNoiseColor);
     this->get_parameter("sensor.cut_cones_below_x", kMinPerceptionX);
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
@@ -199,7 +201,12 @@ void Simulator::on_slow_timer()
     // Random noise generation for position
     std::random_device rd_p; 
     std::mt19937 gen_p(rd_p());
-    std::normal_distribution<> dist_p(0.0, kNoisePerception);
+    std::normal_distribution<> dist_p(0.0, kNoisePosPerception);
+
+    // Random noise generation for visualization
+    std::random_device rd_v; 
+    std::mt19937 gen_v(rd_v());
+    std::uniform_real_distribution<double> dist_v(0.0, kNoiseProbPerception);  
 
     // Random noise generation for color
     std::random_device rd_c; 
@@ -216,7 +223,9 @@ void Simulator::on_slow_timer()
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
             p.z = 0.0;
-            double p_r = std::exp(-0.015 * d);  // Exponential decay
+            double p_r = std::exp(-0.005 * d);  // Exponential decay for color
+            double a = std::log(2.0) / kFOV; // Calculate 'a' paramater for exponential decay based on max distance
+            double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
             if (point.color == 0) {
                 p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
                 p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
@@ -230,7 +239,7 @@ void Simulator::on_slow_timer()
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
             p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
-            if (p.x > kPosLidarX + kMinPerceptionX) {
+            if (p.x > kMinPerceptionX && p_v > 0.5) {
                 perception_cloud.push_back(p);
             }
             if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)

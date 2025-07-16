@@ -80,7 +80,8 @@ class Simulator : public rclcpp::Node
     double kFOV;
     double kPosLidarX;
     double kSensorRate;
-    double kNoisePerception;
+    double kNoiseProbPerception;
+    double kNoisePosPerception;
     double kNoiseColor;
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
