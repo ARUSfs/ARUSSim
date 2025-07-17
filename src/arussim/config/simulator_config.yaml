@@ -20,10 +20,10 @@ arussim:
       noise_prob_lidar_perception: 0.1          # %   Noise standard deviation for probability of perception
       noise_lidar_color:        0.25            # m   Noise standard deviation for color perception
       noise_camera_perception: 0.01             # m   Noise standard deviation for camera perception
-      noise_camera_color:       0.25            # m   Noise standard deviation for camera
+      noise_camera_color:       0.15            # m   Noise standard deviation for camera
       cut_cones_below_x:  -1.0                  # m   Cut cones that are further than this distance in x car axis
       position_lidar_x:   1.5                   # m   Position of the lidar in x car axis
       position_camera_x:  0.0                   # m   Position of the camera in x car axis
-      camera_color_probability: 0.85            # Probability of a cone being colored by the camera
+      camera_color_probability: 0.98            # Probability of a cone being colored by the camera
 
     debug: false
