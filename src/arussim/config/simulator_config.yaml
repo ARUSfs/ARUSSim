@@ -13,7 +13,7 @@ arussim:
       car_width:          0.8     # m
 
     sensor:
-      lidar_fov:         40.0                   # m   Perception circular range
+      lidar_fov:         25.0                   # m   Perception circular range
       camera_fov:        15.0                   # m   Perception circular range
       pub_rate:           10.0                  # Hz  Publish rate
       noise_position_lidar_perception:   0.01   # m   Noise standard deviation
