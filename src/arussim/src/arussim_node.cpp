@@ -283,29 +283,27 @@ void Simulator::on_slow_timer()
     std::uniform_real_distribution<double> dist_cc(0.0, kNoiseCameraColor);
 
     // Camera perception simulation
-    auto camera_perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
+    auto camera_perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)
     {
         double d = std::sqrt(std::pow(point.x - (x + kPosCameraX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosCameraX*std::sin(yaw)), 2));
         if (d < kCameraFOV)
         {
-            PointXYZProbColorScore p;
+            ConeXYZColorScore p;
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_pc(gen_pc);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_pc(gen_pc);
             p.z = 0.0;
             if (point.color == 0) {
-                p.prob_yellow = (1 - kCameraColorProbability + dist_cc(gen_cc));
-                p.prob_blue = (kCameraColorProbability - dist_cc(gen_cc));
+                p.color = point.color;
+                p.score = (kCameraColorProbability - dist_cc(gen_cc));
             } else if (point.color == 1) {
-                p.prob_yellow = (kCameraColorProbability - dist_cc(gen_cc));
-                p.prob_blue = (1 - kCameraColorProbability + dist_cc(gen_cc));
+                p.color = point.color;
+                p.score = (kCameraColorProbability - dist_cc(gen_cc));
             } else {
-                p.prob_yellow = 0.0 + dist_cc(gen_cc);
-                p.prob_blue = 0.0 + dist_cc(gen_cc);
+                p.color = -1;
+                p.score = kCameraColorProbability - dist_cc(gen_cc);
             }
-            p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
-            p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
-            p.score = 1.0;
+            p.score = std::clamp(p.score, 0.0f, 1.0f);
             if (p.x > kPosCameraX) {
                 camera_perception_cloud.push_back(p);
             }
