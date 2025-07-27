@@ -13,12 +13,17 @@ arussim:
       car_width:          0.8     # m
 
     sensor:
-      fov_radius:         25.0    # m   Perception circular range
-      pub_rate:           10.0    # Hz  Publish rate
-      noise_position_perception:   0.01    # m   Noise standard deviation
-      noise_prob_perception: 0.2  # m   Noise standard deviation for probability of perception
-      noise_color:        0.25    # m   Noise standard deviation for color perception
-      cut_cones_below_x:  -1.0    # m   Cut cones that are further than this distance in x car axis
-      position_lidar_x:   1.5     # m   Position of the lidar in x car axis
+      lidar_fov:         25.0                   # m   Perception circular range
+      camera_fov:        15.0                   # m   Perception circular range
+      pub_rate:           10.0                  # Hz  Publish rate
+      noise_position_lidar_perception:   0.01   # m   Noise standard deviation
+      noise_prob_lidar_perception: 0.1          # %   Noise standard deviation for probability of perception
+      noise_lidar_color:        0.25            # m   Noise standard deviation for color perception
+      noise_camera_perception: 0.01             # m   Noise standard deviation for camera perception
+      noise_camera_color:       0.15            # m   Noise standard deviation for camera
+      cut_cones_below_x:  -1.0                  # m   Cut cones that are further than this distance in x car axis
+      position_lidar_x:   1.5                   # m   Position of the lidar in x car axis
+      position_camera_x:  0.0                   # m   Position of the camera in x car axis
+      camera_color_probability: 0.98            # Probability of a cone being colored by the camera
 
     debug: false
