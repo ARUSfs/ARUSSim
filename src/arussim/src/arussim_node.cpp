@@ -105,7 +105,9 @@ Simulator::Simulator() : Node("simulator")
         std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
-    
+    ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/arussim_interface/EBS", 1, std::bind(&Simulator::ebs_callback, this, std::placeholders::_1));
+
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
@@ -446,6 +448,20 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
     input_delta_ = msg->delta;
     target_r_ = msg->target_r;
     time_last_cmd_ = clock_->now();
+}
+
+void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    std::cout << "sa" << std::endl;
+    if (msg->data) {
+        std::cout << "EBS activated, resetting vehicle dynamics." << std::endl;
+        input_acc_ = 0.0;
+        input_delta_ = 0.0;
+        torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+        vehicle_dynamics_.vx_ = 0.0;
+        vehicle_dynamics_.vy_ = 0.0;
+        vehicle_dynamics_.r_ = 0.0;
+    }
 }
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
