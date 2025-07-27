@@ -174,6 +174,15 @@ class Simulator : public rclcpp::Node
      * @param msg The pose message received from RViz.
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+
+    /**
+     * @brief Callback for receiving EBS (Emergency Brake System) commands.
+     * 
+     * This method processes EBS commands to apply emergency braking if necessary.
+     * 
+     * @param msg The EBS command message.
+     */
+    void ebs_callback(const std_msgs::msg::Bool::SharedPtr msg);
     
     /**
      * @brief Callback for receiving reset commands.
@@ -220,6 +229,7 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
@@ -236,4 +246,5 @@ class Simulator : public rclcpp::Node
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
+    
 };
