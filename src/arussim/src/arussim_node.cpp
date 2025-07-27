@@ -452,9 +452,7 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 
 void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
-    std::cout << "sa" << std::endl;
     if (msg->data) {
-        std::cout << "EBS activated, resetting vehicle dynamics." << std::endl;
         input_acc_ = 0.0;
         input_delta_ = 0.0;
         torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
