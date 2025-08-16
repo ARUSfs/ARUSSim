@@ -60,17 +60,17 @@ class VehicleDynamics
     
     private:
 
-        double kMass = 260.0;
+        double kMass = 278.0;
         double kNsMassF = 25;
         double kNsMassR = 25;
         double kSMass = kMass - kNsMassF - kNsMassR;
-        double kIzz = 180;
+        double kIzz = 200;
 
-        double kMassDistributionRear = 0.54;
+        double kMassDistributionRear = 0.57;
         double kSMassF = kSMass * (1-kMassDistributionRear);
         double kSMassR = kSMass * kMassDistributionRear;
 
-        double kWheelBase = 1.535;
+        double kWheelBase = 1.545;
         double kTrackWidth = 1.22;
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
@@ -82,24 +82,24 @@ class VehicleDynamics
         double kHRollCenterR = 0.097;
         double kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
 
-        double kWheelRateF = 500*175.13 / std::pow(1.1,2); // spring_stiffness (N/m) / motion_ratio ^ 2
-        double kWheelRateR = 500*175.13 / std::pow(1.1,2);
+        double kWheelRateF = 350*175.13 / std::pow(1.1,2); // spring_stiffness (N/m) / motion_ratio ^ 2
+        double kWheelRateR = 300*175.13 / std::pow(1.1,2);
         double kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
         double kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
         double kRollStiffness = kRollStiffnessF + kRollStiffnessR;
 
-        double kAckermann = 0.6;
+        double kAckermann = 0.7;
 
         double kTireDynRadius = 0.225;
         double kTireInertia = 0.4;
 
         struct {
-            double Dlat = -1.6323;
+            double Dlat = -1.5323;
             double Clat = 1.7230;
             double Blat = 12.7;
             double Elat = 0.4035;
 
-            double Dlon = 1.3976;
+            double Dlon = 1.2976;
             double Clon = 1.9503;
             double Blon = 17.49;
             double Elon = 0.999;
@@ -114,7 +114,7 @@ class VehicleDynamics
 
         double kRollingResistance = 100;
         double kCDA = 1.97;
-        double kCLA = 4.75;
+        double kCLA = 3.5;
         double kCOPx = 0.4604; //longitudinal distribution (rear)
         double kCOPy = 0.517;
         double kAirDensity = 1.225;
