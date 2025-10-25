@@ -14,6 +14,12 @@
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include <random>
+#include <linux/can.h>       
+#include <linux/can/raw.h>   
+#include <net/if.h>          
+#include <sys/ioctl.h>       
+#include <sys/socket.h>    
+
 
 /**
  * @class Sensors
@@ -27,6 +33,21 @@ public:
      * 
      */
     Sensors(); // Constructor
+
+    //Define CAN frame and signal structures
+    struct CanSignal {
+        int bit_in;
+        int bit_fin;
+        bool is_signed;
+        double scale;
+        double offset;
+    };
+    struct CanFrame {
+        uint32_t id;
+        int size;
+        std::map<std::string, CanSignal> signals;
+    };
+    static std::vector<CanFrame> frames; 
 
 private:
     // Variables
@@ -92,12 +113,6 @@ private:
     void extensometer_timer();
 
     /**
-     * @brief Timer function for the wheel speed sensors
-     * 
-     */
-    void wheel_speed_timer();
-    
-    /**
      * @brief Timer function for the IMU
      * 
      */
@@ -107,9 +122,11 @@ private:
      * @brief Timer function for the 4WD torque
      * 
      */
-    void torque_cmd_timer();
+    void inverter_timer();
     
-    
+    static uint64_t encode_signal(double value, double scale, double offset, int bit_len, bool is_signed);
+    void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values);
+
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
 
@@ -122,11 +139,18 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fl_pub_; // Wheel speed publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
-    rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
 
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
-    rclcpp::TimerBase::SharedPtr torque_timer_; // Torque timer
+    rclcpp::TimerBase::SharedPtr inverter_timer_; // Inverter timer
+
+    //CAN Communication
+    int can_socket_;
+    struct ifreq ifr_{};
+    struct sockaddr_can addr_{};
+    struct can_frame canMsg_{}; 
+    
+    
 };

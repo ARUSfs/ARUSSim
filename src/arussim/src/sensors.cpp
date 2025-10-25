@@ -7,7 +7,7 @@
  * 
  */
 #include "arussim/sensors.hpp"
-
+std::vector<Sensors::CanFrame> Sensors::frames;
 /**
  * @class Sensors
  * @brief Sensors class for ARUSsim
@@ -61,6 +61,13 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
+    //CAN Socket setup
+    can_socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_.ifr_name, "can0");
+    ioctl(can_socket_, SIOCGIFINDEX, &ifr_);
+    addr_.can_family = AF_CAN;
+    addr_.can_ifindex = ifr_.ifr_ifindex;
+    bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
 
     // State subscriber
     state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
@@ -78,21 +85,6 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::imu_timer, this)
     );
 
-    // Wheel speed
-    ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/fr_wheel_speed", 10);
-    ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/fl_wheel_speed", 10);
-    ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/rr_wheel_speed", 10);
-    ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/rl_wheel_speed", 10);
-        
-    ws_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
-        std::bind(&Sensors::wheel_speed_timer, this)
-    );
-
     // Extensometer
     ext_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/extensometer", 10);
 
@@ -101,13 +93,53 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::extensometer_timer, this)
     );
 
-    // Torque cmd
+    // Inverter
     torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque4WD", 10);
 
-    torque_timer_ = this->create_wall_timer(
+    inverter_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kTorqueFrequency)),
-        std::bind(&Sensors::torque_cmd_timer, this)
+        std::bind(&Sensors::inverter_timer, this)
     );
+     ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/fr_wheel_speed", 10);
+    ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/fl_wheel_speed", 10);
+    ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/rr_wheel_speed", 10);
+    ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/rl_wheel_speed", 10);
+
+    frames = {
+        {0x1A3, 4, { // IMU ax, ay
+            {"IMU/ax", {0, 15, true, 0.02, 0.0}},
+            {"IMU/ay", {16, 31, true, 0.02, 0.0}}
+        }},
+        {0x1A4, 2, { // IMU yaw_rate
+            {"IMU/yaw_rate", {0, 15, true, 0.000349065, 0.0}}
+        }},
+        {0x134, 2, { // Extensometer
+            {"extensometer", {0, 15, true, -0.000031688042484, 0.476959989071}}
+        }},
+        {0x102, 5, { // Front Left inverter
+            {"fl_inv_speed", {0, 23, true, 0.00000018879763543, 0.0}},
+            {"fl_inv_torque", {24, 39, true, 0.0098, 0.0}}
+        }},
+        {0x106, 5, { // Front Right inverter
+            {"fr_inv_speed", {0, 23, true, 0.00000018879763543, 0.0}},
+            {"fr_inv_torque", {24, 39,  true, 0.0098, 0.0}}
+        }},
+        {0x110, 5, { // Rear Left inverter
+            {"rl_inv_speed", {0, 23, true, 0.00000018879763543, 0.0}},
+            {"rl_inv_torque", {24, 39,  true, 0.0098, 0.0}}
+        }},
+        {0x114, 5, { // Rear Right inverter
+            {"rr_inv_speed", {0, 23, true, 0.00000018879763543, 0.0}},
+            {"rr_inv_torque", {24, 39, true, 0.0098, 0.0}}
+        }},
+        {0x161, 2, {
+            {"as_status", {8, 15, false, 1.0, 0.0}}
+        }}
+    };
 }
 
 /**
@@ -131,11 +163,21 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     torque_cmd = msg->torque;
 }
 
+//Function to encode a signal into a CAN frame
+uint64_t Sensors::encode_signal(double value, double scale, double offset, int bit_len, bool /*is_signed*/)
+{
+    double raw_f_ = (value - offset) / scale;
+    int64_t raw_i_ = (int64_t) std::round(raw_f_);
+    uint64_t mask_ = (1ULL << (bit_len)) - 1;
+    raw_i_ &= mask_;
+    return (uint64_t)raw_i_;  
+}
+
 /**
  * @brief Timer function for the 4WD torque
  * 
  */
-void Sensors::torque_cmd_timer(){
+void Sensors::inverter_timer(){
     // Random noise generation with different noise for each wheel speed
     std::random_device rd; 
     std::mt19937 gen(rd());
@@ -162,6 +204,47 @@ void Sensors::torque_cmd_timer(){
 
     // Publish the torque message
     torque_pub_->publish(message);
+
+     // Random noise generation with different noise for each wheel speed
+    std::normal_distribution<> dist_front_right(0.0, kNoiseWheelSpeedFrontRight);
+    std::normal_distribution<> dist_front_left(0.0, kNoiseWheelSpeedFrontLeft);
+    std::normal_distribution<> dist_rear_right(0.0, kNoiseWheelSpeedRearRight);
+    std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
+
+    // Apply noise to the state variables
+    wheel_speed_.fr_ = wheel_speed.front_right * 0.225 + dist_front_right(gen);
+    wheel_speed_.fl_ = wheel_speed.front_left * 0.225 + dist_front_left(gen);
+    wheel_speed_.rr_ = wheel_speed.rear_right * 0.225 + dist_rear_right(gen);
+    wheel_speed_.rl_ = wheel_speed.rear_left * 0.225 + dist_rear_left(gen);
+
+    // Create the wheel speed message
+    auto msg_fr = std_msgs::msg::Float32();
+    auto msg_fl = std_msgs::msg::Float32();
+    auto msg_rr = std_msgs::msg::Float32();
+    auto msg_rl = std_msgs::msg::Float32();
+
+    msg_fr.data = wheel_speed_.fr_;    
+    msg_fl.data = wheel_speed_.fl_;
+    msg_rr.data = wheel_speed_.rr_;
+    msg_rl.data = wheel_speed_.rl_;
+
+    // Publish the torque message
+    ws_fr_pub_->publish(msg_fr);
+    ws_fl_pub_->publish(msg_fl);
+    ws_rr_pub_->publish(msg_rr);
+    ws_rl_pub_->publish(msg_rl);
+
+    //Send Inverter CAN frames
+     std::map<std::string,double> values = { {"fl_inv_speed", wheel_speed_.fl_}, {"fl_inv_torque", torque_cmd_.fl_ }, 
+    {"fr_inv_speed", wheel_speed_.fr_}, {"fr_inv_torque", torque_cmd_.fr_}, 
+    {"rl_inv_speed", wheel_speed_.rl_}, {"rl_inv_torque", torque_cmd_.rl_}, 
+    {"rr_inv_speed", wheel_speed_.rr_}, {"rr_inv_torque", torque_cmd_.rr_} 
+    }; 
+
+    for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114) { 
+        send_can_frame(frame, values); 
+    } 
+} 
 }
 
 /**
@@ -194,45 +277,19 @@ void Sensors::imu_timer()
     ax_pub_->publish(msg_ax);
     ay_pub_->publish(msg_ay);
     r_pub_->publish(msg_r);
+    
+    //Send CAN frames for IMU (GSS ids)
+    std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
+    {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x1A3 || frame.id == 0x1A4) { 
+        send_can_frame(frame, values); 
+    } 
 }
 
-/**
- * @brief Timer function for the wheel speed sensors
- * 
- */
-void Sensors::wheel_speed_timer()
-{
-    // Random noise generation with different noise for each wheel speed
-    std::random_device rd; 
-    std::mt19937 gen(rd());
-    std::normal_distribution<> dist_front_right(0.0, kNoiseWheelSpeedFrontRight);
-    std::normal_distribution<> dist_front_left(0.0, kNoiseWheelSpeedFrontLeft);
-    std::normal_distribution<> dist_rear_right(0.0, kNoiseWheelSpeedRearRight);
-    std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
-
-    // Apply noise to the state variables
-    wheel_speed_.fr_ = wheel_speed.front_right * 0.225 + dist_front_right(gen);
-    wheel_speed_.fl_ = wheel_speed.front_left * 0.225 + dist_front_left(gen);
-    wheel_speed_.rr_ = wheel_speed.rear_right * 0.225 + dist_rear_right(gen);
-    wheel_speed_.rl_ = wheel_speed.rear_left * 0.225 + dist_rear_left(gen);
-
-    // Create the wheel speed message
-    auto msg_fr = std_msgs::msg::Float32();
-    auto msg_fl = std_msgs::msg::Float32();
-    auto msg_rr = std_msgs::msg::Float32();
-    auto msg_rl = std_msgs::msg::Float32();
-
-    msg_fr.data = wheel_speed_.fr_;    
-    msg_fl.data = wheel_speed_.fl_;
-    msg_rr.data = wheel_speed_.rr_;
-    msg_rl.data = wheel_speed_.rl_;
-
-    // Publish the torque message
-    ws_fr_pub_->publish(msg_fr);
-    ws_fl_pub_->publish(msg_fl);
-    ws_rr_pub_->publish(msg_rr);
-    ws_rl_pub_->publish(msg_rl);
 }
+
 
 /**
  * @brief Timer function for the extensometer
@@ -249,6 +306,34 @@ void Sensors::extensometer_timer()
     auto message = std_msgs::msg::Float32();
     message.data = delta_ + dist(gen);
     ext_pub_->publish(message);
+
+    //Send CAN frame for extensometer
+    std::map<std::string,double> values = { {"extensometer", delta_ + dist(gen)} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x134) { 
+            send_can_frame(frame, values); 
+        }
+    } 
+}
+
+void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values) { 
+    canMsg_.can_id = frame.id; 
+    canMsg_.can_dlc = frame.size; 
+    std::memset(canMsg_.data, 0, sizeof(canMsg_.data)); 
+    for (auto &sig_pair : frame.signals) { 
+        const auto &topic = sig_pair.first; 
+        const auto &sig = sig_pair.second; 
+        int bit_len = sig.bit_fin - sig.bit_in + 1; 
+        uint64_t raw = encode_signal(values.at(topic), sig.scale, sig.offset, bit_len, sig.is_signed); 
+        int byte_idx = sig.bit_in / 8; 
+        int bit_offset = sig.bit_in % 8; 
+        canMsg_.data[byte_idx] |= (raw << bit_offset) & 0xFF; 
+        if (bit_len + bit_offset > 8 && byte_idx + 1 < frame.size) { 
+            canMsg_.data[byte_idx + 1] |= (raw >> (8 - bit_offset)) & 0xFF; 
+        } 
+    } 
+    write(can_socket_, &canMsg_, sizeof(canMsg_)); 
 }
 
 /**
