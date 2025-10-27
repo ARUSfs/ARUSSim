@@ -98,15 +98,14 @@ Simulator::Simulator() : Node("simulator")
     controller_sim_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kControllerRate)),
         std::bind(&Simulator::on_controller_sim_timer, this));
+    receive_can_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kStateUpdateRate)),
+        std::bind(&Simulator::receive_can, this));
 
-    cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
-        std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
         std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
-    ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/arussim_interface/EBS", 1, std::bind(&Simulator::ebs_callback, this, std::placeholders::_1));
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
@@ -127,13 +126,21 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.b = 70.0/255.0;
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
+    
+    //CAN Socket setup
+    can_socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_.ifr_name, "can0");
+    ioctl(can_socket_, SIOCGIFINDEX, &ifr_);
+    addr_.can_family = AF_CAN;
+    addr_.can_ifindex = ifr_.ifr_ifindex;
+    bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
 
     // Set controller_sim period and GSS usage
     controller_sim_.init(1/kControllerRate, kUseGSS);
 
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-
+    
     // Set CSV file
     if (kCSVState) {
         csv_generator_state_ = std::make_shared<CSVGenerator>("state");
@@ -339,7 +346,7 @@ void Simulator::on_controller_sim_timer() {
     );
 
     // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
+    torque_cmd_ = controller_sim_.get_torque_cmd(can_acc_, can_target_r_);
     
     // Publish control estimation 
     std_msgs::msg::Float32 control_vx_msg;
@@ -367,12 +374,12 @@ void Simulator::on_fast_timer()
     rclcpp::Time current_time = clock_->now();
     if((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
     {
-        input_acc_ = 0;
+        can_acc_ = 0;
     }
 
     double dt = 1.0 / kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt);
+    vehicle_dynamics_.update_simulation(can_delta_, torque_cmd_, dt);
 
     if(use_tpl_){
         check_lap();
@@ -434,38 +441,28 @@ void Simulator::on_fast_timer()
     marker_pub_->publish(marker_);
 }
 
-/**
- * @brief Callback for receiving control commands.
- * 
- * This method updates the vehicle's acceleration and steering angle based on 
- * incoming commands.
- * 
- * @param msg Incoming control command message.
- */
-void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
+ void Simulator::receive_can()
 {
-    input_acc_ = msg->acc;
-    input_delta_ = msg->delta;
-    target_r_ = msg->target_r;
-    time_last_cmd_ = clock_->now();
+    
+    read(can_socket_, &frame_, sizeof(struct can_frame));
+
+        if (frame_.can_id == 0x222) { 
+            int16_t acc_scaled = static_cast<int16_t>((frame_.data[1] << 8) | frame_.data[0]);
+            int16_t yaw_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+            int16_t delta_scaled = static_cast<int16_t>((frame_.data[5] << 8) | frame_.data[4]);
+
+            can_acc_ = static_cast<float>(acc_scaled) / 100.0f;       
+            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f; 
+            can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
+            time_last_cmd_ = clock_->now();
+        }
 }
 
-void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
-{
-    if (msg->data) {
-        input_acc_ = 0.0;
-        input_delta_ = 0.0;
-        torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-        vehicle_dynamics_.vx_ = 0.0;
-        vehicle_dynamics_.vy_ = 0.0;
-        vehicle_dynamics_.r_ = 0.0;
-    }
-}
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    input_acc_ = 0.0;
-    input_delta_ = 0.0;
+    can_acc_ = 0.0;
+    can_delta_ = 0.0;
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     vehicle_dynamics_ = VehicleDynamics();
