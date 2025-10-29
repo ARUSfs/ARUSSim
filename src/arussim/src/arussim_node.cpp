@@ -99,7 +99,7 @@ Simulator::Simulator() : Node("simulator")
         std::chrono::milliseconds((int)(1000/kControllerRate)),
         std::bind(&Simulator::on_controller_sim_timer, this));
     receive_can_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kStateUpdateRate)),
+        std::chrono::milliseconds((int)(1)),
         std::bind(&Simulator::receive_can, this));
 
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
@@ -139,7 +139,7 @@ Simulator::Simulator() : Node("simulator")
     controller_sim_.init(1/kControllerRate, kUseGSS);
 
     // Initialize torque variable 
-    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
     
     // Set CSV file
     if (kCSVState) {
@@ -379,7 +379,7 @@ void Simulator::on_fast_timer()
 
     double dt = 1.0 / kStateUpdateRate;
 
-    vehicle_dynamics_.update_simulation(can_delta_, torque_cmd_, dt);
+    vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
 
     if(use_tpl_){
         check_lap();
@@ -451,10 +451,27 @@ void Simulator::on_fast_timer()
             int16_t yaw_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
             int16_t delta_scaled = static_cast<int16_t>((frame_.data[5] << 8) | frame_.data[4]);
 
-            can_acc_ = static_cast<float>(acc_scaled) / 100.0f;       
-            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f; 
-            can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
+            can_acc_ = static_cast<float>(acc_scaled) / 100.0;       
+            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0; 
+            can_delta_ = static_cast<float>(delta_scaled) / 100.0;
             time_last_cmd_ = clock_->now();
+        }
+
+        else if (frame_.can_id == 0x200){
+            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+            can_torque_cmd_.at(0) = torque_scaled * 9.8 / 1000.0;
+        }
+        else if (frame_.can_id == 0x203){
+            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+            can_torque_cmd_.at(1) = torque_scaled * 9.8 / 1000.0;
+        }
+        else if (frame_.can_id == 0x206){
+            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+            can_torque_cmd_.at(2) = torque_scaled * 9.8 / 1000.0;
+        }
+        else if (frame_.can_id == 0x209){
+            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+            can_torque_cmd_.at(3) = torque_scaled * 9.8 / 1000.0;
         }
 }
 
@@ -463,7 +480,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 {
     can_acc_ = 0.0;
     can_delta_ = 0.0;
-    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     vehicle_dynamics_ = VehicleDynamics();
 

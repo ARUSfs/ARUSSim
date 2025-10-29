@@ -68,6 +68,10 @@ def generate_launch_description():
         create_node(pkg='arussim',
                     exec='supervisor_exec',
                     config='supervisor_config.yaml'),
+        create_node(pkg='arussim',
+                    exec='control_sim_exec',
+                    config='control_sim_config.yaml'),
+
     ])
 
 

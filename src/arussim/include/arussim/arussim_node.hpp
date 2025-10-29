@@ -52,6 +52,7 @@
 #include <net/if.h>          
 #include <sys/ioctl.h>       
 #include <sys/socket.h>    
+#include <fcntl.h>
 
 
 /**
@@ -114,6 +115,7 @@ class Simulator : public rclcpp::Node
     float can_acc_;
     float can_target_r_;
     float can_delta_;
+    std::vector<double> can_torque_cmd_;
   
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;

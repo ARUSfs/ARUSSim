@@ -117,11 +117,22 @@ ament_target_dependencies(supervisor_exec rclcpp
                             tf2_ros
                             tf2)
 
+# generate executable for control_sim.cpp
+add_executable(control_sim_exec src/control_sim/control_sim.cpp)
+ament_target_dependencies(control_sim_exec rclcpp 
+                            std_msgs
+                            geometry_msgs 
+                            sensor_msgs 
+                            arussim_msgs 
+                            tf2_ros
+                            tf2)
+
 # Install both executables
 install(TARGETS
   arussim_exec
   sensors_exec
   supervisor_exec
+  control_sim_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location

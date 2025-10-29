@@ -1,0 +1,5 @@
+arussim:
+  ros__parameters:
+    mass: 250.0
+    rdyn: 0.225
+    gear_ratio: 12.48
