@@ -66,12 +66,6 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
-    control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_vx", 10);
-    control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_vy", 10);
-    control_r_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_r", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
     lidar_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -95,9 +89,6 @@ Simulator::Simulator() : Node("simulator")
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
-    controller_sim_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kControllerRate)),
-        std::bind(&Simulator::on_controller_sim_timer, this));
     receive_can_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1)),
         std::bind(&Simulator::receive_can, this));
@@ -134,9 +125,6 @@ Simulator::Simulator() : Node("simulator")
     addr_.can_family = AF_CAN;
     addr_.can_ifindex = ifr_.ifr_ifindex;
     bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
-
-    // Set controller_sim period and GSS usage
-    controller_sim_.init(1/kControllerRate, kUseGSS);
 
     // Initialize torque variable 
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -329,38 +317,6 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 
-void Simulator::on_controller_sim_timer() {
-    // Update sensor data in ControllerSim
-    // TO DO: use sensors with noise instead of ground truth
-    controller_sim_.set_sensors(
-        vehicle_dynamics_.ax_,
-        vehicle_dynamics_.ay_,
-        vehicle_dynamics_.r_,
-        vehicle_dynamics_.delta_,
-        vehicle_dynamics_.wheel_speed_.fl_,
-        vehicle_dynamics_.wheel_speed_.fr_,
-        vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_,
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_
-    );
-
-    // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(can_acc_, can_target_r_);
-    
-    // Publish control estimation 
-    std_msgs::msg::Float32 control_vx_msg;
-    control_vx_msg.data = controller_sim_.vx_;
-    control_vx_pub_->publish(control_vx_msg);
-
-    std_msgs::msg::Float32 control_vy_msg;
-    control_vy_msg.data = controller_sim_.vy_;
-    control_vy_pub_->publish(control_vy_msg);   
-
-    std_msgs::msg::Float32 control_r_msg;   
-    control_r_msg.data = controller_sim_.r_;
-    control_r_pub_->publish(control_r_msg);
-}
 
 /**
  * @brief Fast timer callback for state updates.

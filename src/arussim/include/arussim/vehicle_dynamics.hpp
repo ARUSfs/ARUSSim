@@ -3,7 +3,7 @@
 #include <iostream>
 #include "arussim/csv_generator.hpp"
 #include <fstream>
-#include "controller_sim/controller_sim.hpp"
+
 class VehicleDynamics
 {
     public:

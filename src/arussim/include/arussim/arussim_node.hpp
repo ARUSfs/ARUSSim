@@ -41,11 +41,6 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
-#include "controller_sim/controller_sim.hpp"
-#include "controller_sim/estimation.hpp"
-#include "controller_sim/power_limitation.hpp"
-#include "controller_sim/traction_control.hpp"
-#include "controller_sim/torque_vectoring.hpp"
 
 #include <linux/can.h>       
 #include <linux/can/raw.h>   
@@ -53,7 +48,7 @@
 #include <sys/ioctl.h>       
 #include <sys/socket.h>    
 #include <fcntl.h>
-
+#include <thread> 
 
 /**
  * @class Simulator
@@ -78,7 +73,6 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    ControllerSim controller_sim_;
 
     std::string kTrackName;
     double kStateUpdateRate;
@@ -106,17 +100,15 @@ class Simulator : public rclcpp::Node
     double kCOGBackDist;
     double kCarWidth;
 
-    //Ros2
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
-    std::vector<double> torque_cmd_;
 
     //Can
     float can_acc_;
     float can_target_r_;
     float can_delta_;
     std::vector<double> can_torque_cmd_;
-  
+
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
     arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
@@ -152,13 +144,6 @@ class Simulator : public rclcpp::Node
      */
     void on_slow_timer();
 
-    /**
-     * @brief Callback function for the controller timer.
-     * 
-     * This method is called at regular intervals to update and publish low level controller
-     * action, simulating vehicle control unit from real car.
-     */
-    void on_controller_sim_timer();
 
     /**
      * @brief Callback function for the fast timer.
@@ -224,12 +209,8 @@ class Simulator : public rclcpp::Node
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
-    rclcpp::TimerBase::SharedPtr controller_sim_timer_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_perception_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr camera_perception_pub_;

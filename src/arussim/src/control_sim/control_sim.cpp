@@ -58,15 +58,15 @@ ControlSim::ControlSim() : Node("control_sim") {
 
         float F = acc_ * kMass;
         torque_i_ = (int)(F * 0.225 / 4.0 * 1000.0 / 9.8);
-        RCLCPP_INFO(this->get_logger(), "F = %.2f, torque_i = %d", F, torque_i_);
+        
     }
 
-    else if (frame.can_id == 0x1A3) {
+    else if (frame.can_id == 0x1A0) {
         vx_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
         vy_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
 
-        vx_ = vx_scaled_ * 0.2f;
-        vy_ = vy_scaled_ * 0.2f;
+        vx_ = vx_scaled_ * 0.2 / 3.6;
+        vy_ = vy_scaled_ * 0.2 / 3.6;
 
     }
     else if (frame.can_id == 0x1A4) {
@@ -122,7 +122,7 @@ void ControlSim::send_state(){
     r_i_ = (int)(r_ * 1000.0f);
     frame.data[4] = r_i_ & 0xFF;
     frame.data[5] = (r_i_ >> 8) & 0xFF;
-
+    RCLCPP_INFO(this->get_logger(), "can vx = %.2f", vx_);
     write(can_socket_, &frame, sizeof(struct can_frame));
 
     

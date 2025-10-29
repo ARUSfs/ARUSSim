@@ -130,19 +130,8 @@ private:
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ax_pub_; // ax publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ay_pub_; // ay publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
-
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fr_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fl_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
-
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
-
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
     rclcpp::TimerBase::SharedPtr inverter_timer_; // Inverter timer
 
