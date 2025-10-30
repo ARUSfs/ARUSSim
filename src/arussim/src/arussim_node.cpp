@@ -89,9 +89,10 @@ Simulator::Simulator() : Node("simulator")
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
-    receive_can_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1)),
-        std::bind(&Simulator::receive_can, this));
+    
+    //Thread for CAN reception
+    std::thread thread_(&Simulator::receive_can, this);
+    thread_.detach();
 
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
         std::bind(&Simulator::load_track, this, std::placeholders::_1));
@@ -397,39 +398,37 @@ void Simulator::on_fast_timer()
     marker_pub_->publish(marker_);
 }
 
- void Simulator::receive_can()
+void Simulator::receive_can()
 {
-    
-    read(can_socket_, &frame_, sizeof(struct can_frame));
+    int flags = fcntl(can_socket_, F_GETFL, 0);
+    fcntl(can_socket_, F_SETFL, flags | O_NONBLOCK);
+    while (rclcpp::ok()) {
+        int nbytes = read(can_socket_, &frame_, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
 
         if (frame_.can_id == 0x222) { 
             int16_t acc_scaled = static_cast<int16_t>((frame_.data[1] << 8) | frame_.data[0]);
             int16_t yaw_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
             int16_t delta_scaled = static_cast<int16_t>((frame_.data[5] << 8) | frame_.data[4]);
 
-            can_acc_ = static_cast<float>(acc_scaled) / 100.0;       
-            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0; 
-            can_delta_ = static_cast<float>(delta_scaled) / 100.0;
-            time_last_cmd_ = clock_->now();
+            can_acc_ = static_cast<float>(acc_scaled) / 100.0f;
+            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f;
+            can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
+            time_last_cmd_ = clock_->now();  
         }
-
-        else if (frame_.can_id == 0x200){
+        
+        else if (frame_.can_id == 0x200 || frame_.can_id == 0x203 ||
+                 frame_.can_id == 0x206 || frame_.can_id == 0x209) {
+            int idx = (frame_.can_id - 0x200) / 3; // 0,1,2,3
             int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            can_torque_cmd_.at(0) = torque_scaled * 9.8 / 1000.0;
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8f / 1000.0f;
         }
-        else if (frame_.can_id == 0x203){
-            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            can_torque_cmd_.at(1) = torque_scaled * 9.8 / 1000.0;
-        }
-        else if (frame_.can_id == 0x206){
-            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            can_torque_cmd_.at(2) = torque_scaled * 9.8 / 1000.0;
-        }
-        else if (frame_.can_id == 0x209){
-            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            can_torque_cmd_.at(3) = torque_scaled * 9.8 / 1000.0;
-        }
+    }
 }
+
 
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)

@@ -229,4 +229,5 @@ class Simulator : public rclcpp::Node
     struct ifreq ifr_{};
     struct sockaddr_can addr_{};
     struct can_frame frame_;
+    std::thread thread_;
 };

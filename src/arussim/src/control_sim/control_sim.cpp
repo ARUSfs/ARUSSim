@@ -122,7 +122,6 @@ void ControlSim::send_state(){
     r_i_ = (int)(r_ * 1000.0f);
     frame.data[4] = r_i_ & 0xFF;
     frame.data[5] = (r_i_ >> 8) & 0xFF;
-    RCLCPP_INFO(this->get_logger(), "can vx = %.2f", vx_);
     write(can_socket_, &frame, sizeof(struct can_frame));
 
     
