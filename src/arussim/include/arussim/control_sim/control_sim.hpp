@@ -15,6 +15,15 @@
 
 #include "std_msgs/msg/float32.hpp"
 
+#include "arussim/control_sim/SensorData.h"
+#include "arussim/control_sim/Parameters.h"
+#include "arussim/control_sim/aux_functions.h"
+#include "arussim/control_sim/estimation.h"
+#include "arussim/control_sim/torque_vectoring.h"
+#include "arussim/control_sim/traction_control.h"
+#include "arussim/control_sim/power_control.h"
+
+
 class ControlSim : public rclcpp::Node
 {
     public:
@@ -22,16 +31,24 @@ class ControlSim : public rclcpp::Node
         
 
  private:
+    SensorData sensors;
+    Parameters parameters;
+    DV dv;
+    TIRE tire;
+    PID pid;
+
+    void Parameters_Init(Parameters *);
     void receive_can();
-    void send_torque();
+    void send_torque(float torque_out[4]);
     void send_state();
+    void default_task();
     int can_socket_;
     struct ifreq ifr_;
     struct sockaddr_can addr_;
     struct can_frame frame;
     rclcpp::TimerBase::SharedPtr timer_receive_;
-    rclcpp::TimerBase::SharedPtr timer_send_;
-    rclcpp::TimerBase::SharedPtr timer_state_;
+    rclcpp::TimerBase::SharedPtr timer_defaultTask_;
+    rclcpp::Clock::SharedPtr clock_;
 
 
 
@@ -43,16 +60,16 @@ class ControlSim : public rclcpp::Node
     int16_t vx_i_;
     int16_t vy_i_;
     int16_t r_i_;
-    float acc_;
-    float target_r_;
-    float vx_;
-    float vy_;
-    float r_;
     int16_t acc_scaled_;
     int16_t yaw_scaled_;
     int16_t vx_scaled_;
     int16_t vy_scaled_;
     int16_t r_scaled_;
+    float state[3];
+    float SR[4];
+    float TC_out[4];
+    float TV_out[4];
+    float fx_request;
 
     rclcpp::Publisher<arussim_msgs::msg::Cmd4WD>::SharedPtr torque_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Cmd>::SharedPtr cmd_pub_;

@@ -108,6 +108,7 @@ class Simulator : public rclcpp::Node
     float can_target_r_;
     float can_delta_;
     std::vector<double> can_torque_cmd_;
+    uint16_t as_status_;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
@@ -230,4 +231,6 @@ class Simulator : public rclcpp::Node
     struct sockaddr_can addr_{};
     struct can_frame frame_;
     std::thread thread_;
+    bool can_blocked_;
+
 };
