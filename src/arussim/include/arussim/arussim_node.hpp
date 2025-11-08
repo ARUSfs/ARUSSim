@@ -231,6 +231,5 @@ class Simulator : public rclcpp::Node
     struct sockaddr_can addr_{};
     struct can_frame frame_;
     std::thread thread_;
-    bool can_blocked_;
 
 };

@@ -4,7 +4,7 @@
  *  Created on: Apr 19, 2025
  *      Author: carme
  */
-
+//TODO: Add gear ratio here and in vehicle dynamics
 #include "arussim/control_sim/torque_vectoring.h"
 
 float tire_load[4];

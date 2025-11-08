@@ -105,8 +105,8 @@ Sensors::Sensors() : Node("sensors")
             {"IMU/ay", {16, 31, true, 0.02, 0.0}},
             
         }},
-        {0x1A4, 2, { // IMU yaw_rate
-            {"IMU/yaw_rate", {0, 15, true, 0.000349065, 0.0}}
+        {0x1A4, 6, { // IMU yaw_rate
+            {"IMU/yaw_rate", {32, 47, true, 0.000349065, 0.0}}
         }},
         {0x134, 2, { // Extensometer
             {"extensometer", {0, 15, true, -0.000031688042484, 0.476959989071}}

@@ -17,17 +17,9 @@
 
 ControlSim::ControlSim() : Node("control_sim") {
 
-    this->declare_parameter<double>("mass", 348.0);
-    this->declare_parameter<double>("rdyn", 0.225);
-    this->declare_parameter<double>("gear_ratio", 12.48);
-    this->get_parameter("mass", kMass);
-    this->get_parameter("rdyn", kRdyn);
-    this->get_parameter("gear_ratio", kGearRatio);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     // Timers
-    timer_receive_ = this->create_wall_timer(std::chrono::milliseconds(1),
-        std::bind(&ControlSim::receive_can, this));
     timer_defaultTask_ = this->create_wall_timer(std::chrono::milliseconds(5),
         std::bind(&ControlSim::default_task, this));
 
@@ -39,6 +31,10 @@ ControlSim::ControlSim() : Node("control_sim") {
     addr_.can_family = AF_CAN;
     addr_.can_ifindex = ifr_.ifr_ifindex;
     bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
+
+
+    std::thread thread_(&ControlSim::receive_can, this);
+    thread_.detach();
 
     //Initialize state
     std::vector<float> state = {0.0f, 0.0f, 0.0f};
@@ -54,69 +50,69 @@ ControlSim::ControlSim() : Node("control_sim") {
 
  void ControlSim::receive_can()
 {
-    
-   read(can_socket_, &frame, sizeof(struct can_frame));
+    while (rclcpp::ok()) {
+    read(can_socket_, &frame, sizeof(struct can_frame));
 
-    if (frame.can_id == 0x222) { 
-        acc_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
-        yaw_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
+        if (frame.can_id == 0x222) { 
+            acc_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
+            yaw_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
 
-        dv.acc = acc_scaled_ / 100.0;
-        dv.target_r = yaw_scaled_ / 1000.0;
+            dv.acc = acc_scaled_ / 100.0;
+            dv.target_r = yaw_scaled_ / 1000.0;
+            
+        }
+
+        else if (frame.can_id == 0x134){
+            int16_t steering_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
+            sensors.steering_angle = steering_scaled_* -0.000031688042484 + 0.476959989071;
+        }
+
+        else if (frame.can_id == 0x1A0) {
+            vx_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
+            vy_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
+
+            sensors.speed_x = vx_scaled_ * 0.2 / 3.6;
+            sensors.speed_y = vy_scaled_ * 0.2 / 3.6;
+
+        }
+        else if (frame.can_id == 0x1A3) {
+            int16_t acc_x_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
+            int16_t acc_y_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
+            int16_t acc_z_scaled_ = static_cast<int16_t>((frame.data[5] << 8) | frame.data[4]);
+            sensors.acceleration_x = acc_x_scaled_ * 0.02;
+            sensors.acceleration_y = acc_y_scaled_ * 0.02;
+            sensors.acceleration_z = acc_z_scaled_ * 0.02;
+
+        }
+
+        else if (frame.can_id == 0x1A4) {
+            int16_t pitch_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
+            int16_t roll_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
+            r_scaled_ = static_cast<int16_t>((frame.data[5] << 8) | frame.data[4]);
+            
+            sensors.angular_x = pitch_scaled_  * 0.02f * 0.0174532;
+            sensors.angular_y = roll_scaled_ * 0.02f * 0.0174532;
+            sensors.angular_z = r_scaled_ * 0.02f * 0.0174532;
+
+        }
+        else if (frame.can_id == 0x102){
+            int32_t ws_scaled_0 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            sensors.motor_speed[0] = ws_scaled_0 * 0.00000018879763543;
+        }
+        else if (frame.can_id == 0x106){
+            int32_t ws_scaled_1 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            sensors.motor_speed[1] = ws_scaled_1 * 0.00000018879763543;
+        }
+        else if (frame.can_id == 0x110){
+            int32_t ws_scaled_2 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            sensors.motor_speed[2] = ws_scaled_2 * 0.00000018879763543;
+        }
+        else if (frame.can_id == 0x114){
+            int32_t ws_scaled_3 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            sensors.motor_speed[3] = ws_scaled_3 * 0.00000018879763543;
+        }
         
     }
-
-    else if (frame.can_id == 0x134){
-        int16_t steering_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
-        sensors.steering_angle = steering_scaled_* -0.000031688042484 + 0.476959989071;
-    }
-
-    else if (frame.can_id == 0x1A0) {
-        vx_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
-        vy_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
-
-        sensors.speed_x = vx_scaled_ * 0.2 / 3.6;
-        sensors.speed_y = vy_scaled_ * 0.2 / 3.6;
-
-    }
-     else if (frame.can_id == 0x1A3) {
-		int16_t acc_x_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
-        int16_t acc_y_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
-        int16_t acc_z_scaled_ = static_cast<int16_t>((frame.data[5] << 8) | frame.data[4]);
-        sensors.acceleration_x = acc_x_scaled_ * 0.02;
-        sensors.acceleration_y = acc_y_scaled_ * 0.02;
-        sensors.acceleration_z = acc_z_scaled_ * 0.02;
-
-    }
-
-    else if (frame.can_id == 0x1A4) {
-        int16_t pitch_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
-        int16_t roll_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
-        r_scaled_ = static_cast<int16_t>((frame.data[5] << 8) | frame.data[4]);
-        
-        sensors.angular_x = pitch_scaled_  * 0.02f * 0.0174532;
-        sensors.angular_y = roll_scaled_ * 0.02f * 0.0174532;
-        sensors.angular_z = r_scaled_ * 0.02f * 0.0174532;
-
-    }
-    else if (frame.can_id == 0x102){
-        int32_t ws_scaled_0 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
-        sensors.motor_speed[0] = ws_scaled_0 * 0.00000018879763543;
-    }
-    else if (frame.can_id == 0x106){
-        int32_t ws_scaled_1 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
-        sensors.motor_speed[1] = ws_scaled_1 * 0.00000018879763543;
-    }
-    else if (frame.can_id == 0x110){
-        int32_t ws_scaled_2 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
-        sensors.motor_speed[2] = ws_scaled_2 * 0.00000018879763543;
-    }
-    else if (frame.can_id == 0x114){
-        int32_t ws_scaled_3 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
-        sensors.motor_speed[3] = ws_scaled_3 * 0.00000018879763543;
-    }
-    
-   
     
 }
 
@@ -245,14 +241,15 @@ void ControlSim::default_task()
     Estimation_Update(&sensors, &parameters, state);
     send_state();
     fx_request = pc_request(&dv, &parameters);
-              std::cout << "f " << fx_request 
+              std::cout << "f " << fx_request << "     acc  " << dv.acc
               << std::endl;
+
     Calculate_Tire_Loads(&sensors, &parameters, state, &tire);
     TorqueVectoring_Update(&sensors, &parameters, &pid, &tire, &dv, fx_request, state, TV_out);
     TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv);
     PowerControl_Update(&sensors, &parameters, TC_out);
     std::cout << "TC_out = [" 
-          << TV_out[0] << ", " 
+          << TV_out[0] / 12.48<< ", " 
           << TV_out[1] << ", " 
           << TV_out[2] << ", " 
           << TV_out[3] << "]" 

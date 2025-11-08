@@ -49,6 +49,7 @@ class ControlSim : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr timer_receive_;
     rclcpp::TimerBase::SharedPtr timer_defaultTask_;
     rclcpp::Clock::SharedPtr clock_;
+    std::thread thread_;
 
 
 
@@ -71,9 +72,5 @@ class ControlSim : public rclcpp::Node
     float TV_out[4];
     float fx_request;
 
-    rclcpp::Publisher<arussim_msgs::msg::Cmd4WD>::SharedPtr torque_pub_;
-    rclcpp::Publisher<arussim_msgs::msg::Cmd>::SharedPtr cmd_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
+
 };

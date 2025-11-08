@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 //VDC MODELS ACTIVATION
-#define TV_ACTIVE			0
+#define TV_ACTIVE			1
 #define TC_ACTIVE			0
 #define EST_ACTIVE			0
 
@@ -62,8 +62,8 @@ extern "C" {
 #define DEFAULT_GEAR_RATIO  12.48
 #define DEFAULT_RDYN		0.225
 #define DEFAULT_WHEEL_INERTIA    0.4
-#define DEFAULT_TL_POS		21.0		//Pruebas borriqueta
-#define DEFAULT_TL_NEG		-21.0			//Pruebas borriqueta
+#define DEFAULT_TL_POS		262.08 // TODO: with gr 		
+#define DEFAULT_TL_NEG		-262.08 // with gr			
 
 //AERO
 #define DEFAULT_RHO			1.225
