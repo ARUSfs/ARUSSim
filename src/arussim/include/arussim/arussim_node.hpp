@@ -94,6 +94,7 @@ class Simulator : public rclcpp::Node
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
+    double kGearRatio;
     
     //Car boundaries
     double kCOGFrontDist;

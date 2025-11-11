@@ -241,19 +241,11 @@ void ControlSim::default_task()
     Estimation_Update(&sensors, &parameters, state);
     send_state();
     fx_request = pc_request(&dv, &parameters);
-              std::cout << "f " << fx_request << "     acc  " << dv.acc
-              << std::endl;
 
     Calculate_Tire_Loads(&sensors, &parameters, state, &tire);
     TorqueVectoring_Update(&sensors, &parameters, &pid, &tire, &dv, fx_request, state, TV_out);
     TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv);
     PowerControl_Update(&sensors, &parameters, TC_out);
-    std::cout << "TC_out = [" 
-          << TV_out[0] / 12.48<< ", " 
-          << TV_out[1] << ", " 
-          << TV_out[2] << ", " 
-          << TV_out[3] << "]" 
-          << std::endl;
 
     if (pid.init == 0){
         pid.init = 1;

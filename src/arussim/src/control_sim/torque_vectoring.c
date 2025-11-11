@@ -11,6 +11,7 @@ float tire_load[4];
 uint8_t TV_active;
 float target_r;
 
+
 void TorqueVectoring_Init(PID *pid) {
 
 	pid->TV_Kd= TV_KD;
@@ -46,10 +47,10 @@ void TorqueVectoring_Update(SensorData *sensors, Parameters *parameters, PID *pi
 //			}
 //		}
 
-		torque_out[0] = parameters->rdyn*(0.25*fx_request - Mz_request/parameters->trackwidthR);
-		torque_out[1] = parameters->rdyn*(0.25*fx_request - Mz_request/parameters->trackwidthR);
-		torque_out[2] = parameters->rdyn*(0.25*fx_request - Mz_request/parameters->trackwidthR);
-		torque_out[3] = parameters->rdyn*(0.25*fx_request + Mz_request/parameters->trackwidthR);
+		torque_out[0] = 0.;
+		torque_out[1] = 0.;
+		torque_out[2] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request - Mz_request/parameters->trackwidthR);
+		torque_out[3] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request + Mz_request/parameters->trackwidthR);
 
 		for(int i=0; i<4; i++){
 			if (torque_out[i] > parameters->torque_limit_positive[i]) {
@@ -60,8 +61,10 @@ void TorqueVectoring_Update(SensorData *sensors, Parameters *parameters, PID *pi
 		}
 
 	} else {
-		for (int i = 0; i < 4; ++i) {
-			torque_out[i] = parameters->rdyn * fx_request / 4;
+		torque_out[0]=0.;
+		torque_out[1]=0.;
+		for (int i = 2; i < 4; ++i) {
+			torque_out[i] = parameters->rdyn * fx_request / parameters->gear_ratio / 2;
 
 			if (torque_out[i] > parameters->torque_limit_positive[i]) {
 				torque_out[i] = parameters->torque_limit_positive[i];

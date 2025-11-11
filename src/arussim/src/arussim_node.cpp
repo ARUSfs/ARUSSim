@@ -37,6 +37,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
     this->declare_parameter<bool>("debug", false);
+    this->declare_parameter<double>("vehicle.gear_ratio", 12.48);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
@@ -60,6 +61,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("csv_state", kCSVState);
     this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
     this->get_parameter("debug", kDebug);
+    this->get_parameter("vehicle.gear_ratio", kGearRatio);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -424,7 +426,7 @@ void Simulator::receive_can()
                  frame_.can_id == 0x206 || frame_.can_id == 0x209) {
             int idx = (frame_.can_id - 0x200) / 3; // 0,1,2,3
             int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            can_torque_cmd_.at(idx) = torque_scaled * 9.8f / 1000.0f;
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio; 
         }
     }
 }
