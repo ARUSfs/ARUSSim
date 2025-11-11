@@ -199,6 +199,7 @@ void MainInterface::update_lap_time_labels(double lap_time_)
  */
 void MainInterface::launch_button_clicked()
 {
+    
     if (simulation_process_ == nullptr) {
         simulation_process_ = new QProcess(this);
         // Merge standard output and error
@@ -211,6 +212,10 @@ void MainInterface::launch_button_clicked()
         args << "launch" << "common_meta" << launch_file;
         simulation_process_->start("ros2", args);
     }
+    QProcess can_process;
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "can0" << "up");
+    can_process.waitForFinished();
+    
 }
 
 /**
@@ -234,6 +239,11 @@ void MainInterface::stop_button_clicked()
  */
 void MainInterface::reset_button_clicked()
 {
+
+    QProcess can_process;
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "can0" << "down");
+    can_process.waitForFinished();
+
     auto msg = std_msgs::msg::Bool();
     msg.data = true;
     reset_pub_->publish(msg);
