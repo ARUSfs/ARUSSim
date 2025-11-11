@@ -20,7 +20,7 @@ def generate_launch_description():
     period=1.0, 
     actions=[
         ExecuteProcess(
-            cmd=['sudo','ip', 'link', 'add', 'dev', 'can0', 'type', 'vcan'],
+          cmd=['bash', '-c', "ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan"],
             shell=False
         )
     ]
@@ -35,13 +35,18 @@ def generate_launch_description():
         ]
     )
     create_can1 = ExecuteProcess(
-    cmd=['sudo','ip', 'link', 'add', 'dev', 'can1', 'type', 'vcan'],
-    shell=False
+        cmd=['bash', '-c', "ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan"],
+        shell=False
     )
     
-    up_can1 = ExecuteProcess(
-    cmd=['sudo','ip', 'link', 'set', 'up', 'can1'],
-    shell=False
+    up_can1 = TimerAction(
+        period=2.0,
+        actions=[
+            ExecuteProcess(
+                cmd=['sudo','ip', 'link', 'set', 'up', 'can1'],
+                shell=False
+            )
+        ]
     )  
 
 
