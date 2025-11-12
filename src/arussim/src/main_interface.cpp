@@ -213,7 +213,7 @@ void MainInterface::launch_button_clicked()
         simulation_process_->start("ros2", args);
     }
     QProcess can_process;
-    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "can0" << "up");
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "up" << "can0");
     can_process.waitForFinished();
     
 }
@@ -241,7 +241,7 @@ void MainInterface::reset_button_clicked()
 {
 
     QProcess can_process;
-    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "can0" << "down");
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "down" << "can0");
     can_process.waitForFinished();
 
     auto msg = std_msgs::msg::Bool();
