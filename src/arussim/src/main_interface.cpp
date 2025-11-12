@@ -215,6 +215,8 @@ void MainInterface::launch_button_clicked()
     QProcess can_process;
     can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "up" << "can0");
     can_process.waitForFinished();
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "up" << "can1");
+    can_process.waitForFinished();
     
 }
 
@@ -242,6 +244,8 @@ void MainInterface::reset_button_clicked()
 
     QProcess can_process;
     can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "down" << "can0");
+    can_process.waitForFinished();
+    can_process.start("sudo", QStringList() << "ip" << "link" << "set" << "down" << "can1");
     can_process.waitForFinished();
 
     auto msg = std_msgs::msg::Bool();

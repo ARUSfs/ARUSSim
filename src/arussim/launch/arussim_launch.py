@@ -21,17 +21,8 @@ def generate_launch_description():
           cmd=['bash', '-c', "ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan"],
             shell=False
     )
-    up_can0 = ExecuteProcess(
-                cmd=['sudo','ip', 'link', 'set', 'up', 'can0'],
-                shell=False
-    )
     create_can1 = ExecuteProcess(
         cmd=['bash', '-c', "ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan"],
-        shell=False
-    )
-
-    up_can1 = ExecuteProcess(
-        cmd=['sudo','ip', 'link', 'set', 'up', 'can1'],
         shell=False
     )
 
@@ -46,19 +37,7 @@ def generate_launch_description():
         RegisterEventHandler(
             OnProcessExit(
                 target_action=create_can0,
-                on_exit=[up_can0]
-            )
-        ),
-        RegisterEventHandler(
-            OnProcessExit(
-                target_action=up_can0,
                 on_exit=[create_can1]
-            )
-        ),
-        RegisterEventHandler(
-            OnProcessExit(
-                target_action=create_can1,
-                on_exit=[up_can1]
             )
         ),
     ]
