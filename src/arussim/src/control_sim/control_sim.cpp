@@ -193,8 +193,8 @@ void ControlSim::send_torque(float torque_out[4])
         frame.data[2] = torque_i_ & 0xFF;
         frame.data[3] = (torque_i_ >> 8) & 0xFF;
 
-        int16_t torque_max = 1000;
-        int16_t torque_min = -1000;
+        int16_t torque_max = parameters.torque_limit_positive[i] * 1000 / 9.8;
+        int16_t torque_min = parameters.torque_limit_negative[i] * 1000 / 9.8;
         frame.data[4] = torque_max & 0xFF;
         frame.data[5] = (torque_max >> 8) & 0xFF;
         frame.data[6] = torque_min & 0xFF;
