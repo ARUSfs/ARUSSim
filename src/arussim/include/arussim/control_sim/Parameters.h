@@ -21,10 +21,10 @@ extern "C" {
 
 
 #define pi 					3.141592
-#define eps					0.0000001
+#define eps					0.00001
 #define GRAVITY 			9.81
-#define DEFAULT_MAX_POWER   20000
-#define DEFAULT_MIN_POWER 	-20000
+#define DEFAULT_MAX_POWER   50000
+#define DEFAULT_MIN_POWER 	-30000
 
 #define DEFAULT_MAX_VOLTAGE 595
 #define DEFAULT_MIN_VOLTAGE 430

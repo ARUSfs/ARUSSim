@@ -60,8 +60,8 @@ private:
     double ax_ = 0;
     double ay_ = 0;
     double delta_ = 0;
-    arussim_msgs::msg::FourWheelDrive wheel_speed;
-    arussim_msgs::msg::FourWheelDrive torque_cmd;
+    arussim_msgs::msg::FourWheelDrive wheel_speed_msg;
+    arussim_msgs::msg::FourWheelDrive torque_cmd_msg;
 
     struct {
         double fl_ = 0;
@@ -80,21 +80,20 @@ private:
     double kExtensometerFrequency;
     double kNoiseExtensometer;
 
-    double kWheelSpeedFrequency;
-    double kNoiseWheelSpeedFrontRight;
-    double kNoiseWheelSpeedFrontLeft;
-    double kNoiseWheelSpeedRearRight;
-    double kNoiseWheelSpeedRearLeft;
-
-    double kTorqueFrequency;
+    double kInverterFrequency;
+    double kNoiseMotorSpeedFrontRight;
+    double kNoiseMotorSpeedFrontLeft;
+    double kNoiseMotorSpeedRearRight;
+    double kNoiseMotorSpeedRearLeft;
     double kNoiseTorqueFrontRight;
     double kNoiseTorqueFrontLeft;
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
+    double kGearRatio;
 
-    double kImuFrequency;
-    double kNoiseImuX;
-    double kNoiseImuY;
+    double kGssFrequency;
+    double kNoiseGssVx;
+    double kNoiseGssVy;
     double kNoiseImuAx;
     double kNoiseImuAy;
     double kNoiseImuR;

@@ -60,13 +60,13 @@ class VehicleDynamics
     
     private:
 
-        double kMass = 260.0;
+        double kMass = 275.0;
         double kNsMassF = 25;
         double kNsMassR = 25;
         double kSMass = kMass - kNsMassF - kNsMassR;
         double kIzz = 180;
 
-        double kMassDistributionRear = 0.54;
+        double kMassDistributionRear = 0.5;
         double kSMassF = kSMass * (1-kMassDistributionRear);
         double kSMassR = kSMass * kMassDistributionRear;
 

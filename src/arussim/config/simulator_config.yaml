@@ -2,8 +2,6 @@ arussim:
   ros__parameters:
     track: "FSG"
     state_update_rate: 1000.0      # Hz
-    controller_rate:   400.0       # Hz
-    use_gss: true
     csv_state: false               # bool   Save data to CSV file
     csv_vehicle_dynamics: false    # bool   Save data to CSV file
 

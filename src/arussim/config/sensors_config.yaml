@@ -1,24 +1,24 @@
 arussim:
   ros__parameters:
-    imu:
-      imu_frequency: 100.0         # Hz  Publish rate
+    gss:
+      gss_frequency: 100.0         # Hz  Publish rate
+      noise_gss_vx: 0.01           # kmh Noise standard deviation
+      noise_gss_vy: 0.01           # kmh Noise standard deviation
       noise_imu_ax: 0.005          # m/s² Noise standard deviation
       noise_imu_ay: 0.005          # m/s² Noise standard deviation
-      noise_imu_r: 0.005          # rad/s Noise standard deviation
+      noise_imu_r: 0.025          # º/s Noise standard deviation
     
-    wheel_speed:
-      wheel_speed_frequency: 100.0    # Hz  Publish rate
-      noise_wheel_speed_front_right: 0.005     # m/s Noise standard deviation (front right wheel)
-      noise_wheel_speed_front_left: 0.005     # m/s Noise standard deviation (front left wheel)
-      noise_wheel_speed_rear_right: 0.005     # m/s Noise standard deviation (rear right wheel)
-      noise_wheel_speed_rear_left: 0.005     # m/s Noise standard deviation (rear left wheel)
-
-    torque:
-      torque_frequency: 100.0    # Hz  Publish rate
-      noise_torque_front_right: 0.01     # m/s Noise standard deviation (front right wheel)
-      noise_torque_front_left: 0.01     # m/s Noise standard deviation (front left wheel)
-      noise_torque_rear_right: 0.01     # m/s Noise standard deviation (rear right wheel)
-      noise_torque_rear_left: 0.01     # m/s Noise standard deviation (rear left wheel)
+    inverter:
+      inverter_frequency: 100.0    # Hz  Publish rate
+      noise_motor_speed_front_right: 0.005     # rpm Noise standard deviation (front right wheel)
+      noise_motor_speed_front_left: 0.005     # rpm Noise standard deviation (front left wheel)
+      noise_motor_speed_rear_right: 0.005     # rpm Noise standard deviation (rear right wheel)
+      noise_motor_speed_rear_left: 0.005     # rpm Noise standard deviation (rear left wheel)
+      noise_torque_front_right: 0.01     # Nm Noise standard deviation (front right wheel)
+      noise_torque_front_left: 0.01     # Nm Noise standard deviation (front left wheel)
+      noise_torque_rear_right: 0.01     # Nm Noise standard deviation (rear right wheel)
+      noise_torque_rear_left: 0.01     # Nm Noise standard deviation (rear left wheel)
+      gear_ratio: 12.48   # Transmission gear ratio
 
 
     extensometer:

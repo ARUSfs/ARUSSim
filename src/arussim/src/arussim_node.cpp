@@ -337,7 +337,6 @@ void Simulator::on_fast_timer()
     }
 
     double dt = 1.0 / kStateUpdateRate;
-
     vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
 
     if(use_tpl_){
@@ -438,7 +437,6 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     can_acc_ = 0.0;
     can_delta_ = 0.0;
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-
     vehicle_dynamics_ = VehicleDynamics();
 
     started_acc_ = false;

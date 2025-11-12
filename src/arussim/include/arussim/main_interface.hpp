@@ -111,7 +111,7 @@ private:
   int lap_counter_ = 0;
 
   double bar_size_;
-  double max_torque_value_ = 90.0;
+  double max_torque_value_ = 21.0;
   double scale_factor_;
   double center_y_;
 
