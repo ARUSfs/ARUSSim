@@ -36,6 +36,10 @@ ControlSim::ControlSim() : Node("control_sim") {
     std::thread thread_(&ControlSim::receive_can, this);
     thread_.detach();
 
+    // Reset subscriber
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+        std::bind(&ControlSim::reset_callback, this, std::placeholders::_1));
+
     //Initialize state
     std::vector<float> state = {0.0f, 0.0f, 0.0f};
     pid.init = 0;
@@ -252,6 +256,16 @@ void ControlSim::default_task()
     }
 
     send_torque(TC_out);
+}
+
+void ControlSim::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    memset(&sensors, 0, sizeof(sensors));
+    memset(&dv, 0, sizeof(dv));
+    memset(&tire, 0, sizeof(tire));
+    memset(&pid, 0, sizeof(pid));
+    memset(&state, 0, sizeof(state));
+
 }
 
 int main(int argc, char * argv[])
