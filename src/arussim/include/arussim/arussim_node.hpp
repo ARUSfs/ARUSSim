@@ -76,8 +76,6 @@ class Simulator : public rclcpp::Node
 
     std::string kTrackName;
     double kStateUpdateRate;
-    double kControllerRate; 
-    bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
     double kCameraFOV;
@@ -207,7 +205,8 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
-    void receive_can();
+    void receive_can_0();
+    void receive_can_1();
 
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
@@ -227,10 +226,16 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr receive_can_timer_;
 
     //CAN Communication
-    int can_socket_;
-    struct ifreq ifr_{};
-    struct sockaddr_can addr_{};
-    struct can_frame frame_;
-    std::thread thread_;
+    int can_socket_0_;
+    struct ifreq ifr_0_{};
+    struct sockaddr_can addr_0_{};
+    struct can_frame frame_0_;
+    std::thread thread_0_;
+
+    int can_socket_1_;
+    struct ifreq ifr_1_{};
+    struct sockaddr_can addr_1_{};
+    struct can_frame frame_1_;
+    std::thread thread_1_;
 
 };

@@ -17,8 +17,6 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
-    this->declare_parameter<double>("controller_rate", 100);
-    this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -41,8 +39,6 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("controller_rate", kControllerRate);
-    this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -93,8 +89,11 @@ Simulator::Simulator() : Node("simulator")
         std::bind(&Simulator::on_fast_timer, this));
     
     //Thread for CAN reception
-    std::thread thread_(&Simulator::receive_can, this);
-    thread_.detach();
+    std::thread thread_0_(&Simulator::receive_can_0, this);
+    thread_0_.detach();
+
+    std::thread thread_1_(&Simulator::receive_can_1, this);
+    thread_1_.detach();
 
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
         std::bind(&Simulator::load_track, this, std::placeholders::_1));
@@ -122,12 +121,19 @@ Simulator::Simulator() : Node("simulator")
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
     
     //CAN Socket setup
-    can_socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    std::strcpy(ifr_.ifr_name, "can0");
-    ioctl(can_socket_, SIOCGIFINDEX, &ifr_);
-    addr_.can_family = AF_CAN;
-    addr_.can_ifindex = ifr_.ifr_ifindex;
-    bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
+    can_socket_0_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_0_.ifr_name, "can0");
+    ioctl(can_socket_0_, SIOCGIFINDEX, &ifr_0_);
+    addr_0_.can_family = AF_CAN;
+    addr_0_.can_ifindex = ifr_0_.ifr_ifindex;
+    bind(can_socket_0_, (struct sockaddr *)&addr_0_, sizeof(addr_0_));
+
+    can_socket_1_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_1_.ifr_name, "can1");
+    ioctl(can_socket_1_, SIOCGIFINDEX, &ifr_1_);
+    addr_1_.can_family = AF_CAN;
+    addr_1_.can_ifindex = ifr_1_.ifr_ifindex;
+    bind(can_socket_1_, (struct sockaddr *)&addr_1_, sizeof(addr_1_));
 
     // Initialize torque variable 
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -331,15 +337,29 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
-    if((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
-    {
+    if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0) {
         can_acc_ = 0;
     }
+    
+    if (as_status_ == 0x04 || as_status_ == 0x05) {
+ 
+        // Trigger EBS
+        vehicle_dynamics_.torque_cmd_.fl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.fr_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rr_ = 0.;
+        vehicle_dynamics_.vx_ = 0.0;
+        vehicle_dynamics_.vy_ = 0.0;
+        vehicle_dynamics_.r_ = 0.0;
+    
+    } else {
+    
+        double dt = 1.0 / kStateUpdateRate;
+        vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
+    
+    }
 
-    double dt = 1.0 / kStateUpdateRate;
-    vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
-
-    if(use_tpl_){
+    if (use_tpl_){
         check_lap();
     }
 
@@ -399,21 +419,21 @@ void Simulator::on_fast_timer()
     marker_pub_->publish(marker_);
 }
 
-void Simulator::receive_can()
+void Simulator::receive_can_0()
 {
-    int flags = fcntl(can_socket_, F_GETFL, 0);
-    fcntl(can_socket_, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(can_socket_0_, F_GETFL, 0);
+    fcntl(can_socket_0_, F_SETFL, flags | O_NONBLOCK);
     while (rclcpp::ok()) {
-        int nbytes = read(can_socket_, &frame_, sizeof(struct can_frame));
+        int nbytes = read(can_socket_0_, &frame_0_, sizeof(struct can_frame));
         if (nbytes < 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
-        if (frame_.can_id == 0x222) { 
-            int16_t acc_scaled = static_cast<int16_t>((frame_.data[1] << 8) | frame_.data[0]);
-            int16_t yaw_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
-            int16_t delta_scaled = static_cast<int16_t>((frame_.data[5] << 8) | frame_.data[4]);
+        if (frame_0_.can_id == 0x222) { 
+            int16_t acc_scaled = static_cast<int16_t>((frame_0_.data[1] << 8) | frame_0_.data[0]);
+            int16_t yaw_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
+            int16_t delta_scaled = static_cast<int16_t>((frame_0_.data[5] << 8) | frame_0_.data[4]);
 
             can_acc_ = static_cast<float>(acc_scaled) / 100.0f;
             can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f;
@@ -421,16 +441,31 @@ void Simulator::receive_can()
             time_last_cmd_ = clock_->now();  
         }
         
-        else if (frame_.can_id == 0x200 || frame_.can_id == 0x203 ||
-                 frame_.can_id == 0x206 || frame_.can_id == 0x209) {
-            int idx = (frame_.can_id - 0x200) / 3; // 0,1,2,3
-            int16_t torque_scaled = static_cast<int16_t>((frame_.data[3] << 8) | frame_.data[2]);
+        else if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
+                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209) {
+            int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
+            int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
             can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio; 
         }
     }
 }
 
+void Simulator::receive_can_1()
+{
+    int flags = fcntl(can_socket_1_, F_GETFL, 0);
+    fcntl(can_socket_1_, F_SETFL, flags | O_NONBLOCK);
+    while (rclcpp::ok()) {
+        int nbytes = read(can_socket_1_, &frame_1_, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
 
+        if (frame_1_.can_id == 0x261) {
+            as_status_ = frame_1_.data[1];
+        }
+    }
+}
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
@@ -438,6 +473,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     can_delta_ = 0.0;
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
     vehicle_dynamics_ = VehicleDynamics();
+    as_status_ = 0x03;
 
     started_acc_ = false;
     if (prev_circuit_ != track_name_){
