@@ -48,6 +48,7 @@ ControlSim::ControlSim() : Node("control_sim") {
 	PowerControl_Init(&parameters);
 	TractionControl_Init(&pid, &parameters);
 	TorqueVectoring_Init(&pid);
+    dv.autonomous = 1;
 
         
 }
