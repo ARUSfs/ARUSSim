@@ -107,7 +107,7 @@ class Simulator : public rclcpp::Node
     float can_target_r_;
     float can_delta_;
     std::vector<double> can_torque_cmd_;
-    uint16_t as_status_;
+    uint16_t as_status_ = 0x02;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
@@ -174,6 +174,15 @@ class Simulator : public rclcpp::Node
     void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
+     * @brief Callback for receiving launch commands.
+     * 
+     * This method sets AS Status in AS Driving
+     * 
+     * @param msg The launch command message.
+     */
+    void launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
      * 
      * This method sends the vehicle's transform to the TF tree so that other nodes 
@@ -222,6 +231,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
     rclcpp::TimerBase::SharedPtr receive_can_timer_;
 

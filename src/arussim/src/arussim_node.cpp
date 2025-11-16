@@ -103,6 +103,9 @@ Simulator::Simulator() : Node("simulator")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
+    launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1, 
+        std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
+
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
@@ -341,7 +344,7 @@ void Simulator::on_fast_timer()
         can_acc_ = 0;
     }
     
-    if (as_status_ == 0x04 || as_status_ == 0x05) {
+    if (as_status_ != 0x03) {
  
         // Trigger EBS
         vehicle_dynamics_.torque_cmd_.fl_ = 0.;
@@ -466,6 +469,10 @@ void Simulator::receive_can_1()
         }
     }
 }
+void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    if (as_status_ == 0x02) as_status_ = 0x03;
+}
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
@@ -473,7 +480,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     can_delta_ = 0.0;
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
     vehicle_dynamics_ = VehicleDynamics();
-    as_status_ = 0x03;
+    as_status_ = 0x02;
 
     started_acc_ = false;
     if (prev_circuit_ != track_name_){
