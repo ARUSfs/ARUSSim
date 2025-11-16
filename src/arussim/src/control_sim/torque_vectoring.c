@@ -8,7 +8,6 @@
 #include "arussim/control_sim/torque_vectoring.h"
 
 float tire_load[4];
-uint8_t TV_active;
 float target_r;
 
 
@@ -22,7 +21,7 @@ void TorqueVectoring_Init(PID *pid) {
 }
 
 void TorqueVectoring_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, DV *dv, float fx_request, float *state, float *torque_out) {
-	if (TV_active == 1){
+	if (TV_ACTIVE == 1){
 		float Mz_request = Target_Generation(sensors, parameters, pid, dv, state);
 
 //		float fz_front_mean = 0.5f * (tire->tire_load[0] + tire->tire_load[1]);
