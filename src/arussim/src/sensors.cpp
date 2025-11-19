@@ -77,9 +77,9 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // IMU
-    imu_timer_ = this->create_wall_timer(
+    gss_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kGssFrequency)),
-        std::bind(&Sensors::imu_timer, this)
+        std::bind(&Sensors::gss_timer, this)
     );
 
 
@@ -98,8 +98,8 @@ Sensors::Sensors() : Node("sensors")
 
     frames = {
         {0x1A0, 4, {
-            {"GSS/vx", {0, 15, true, 0.0555556, 0.0}},
-            {"GSS/vy", {16, 31, true, 0.0555556, 0.0}}
+            {"GSS/vx", {0, 15, true, 0.00555556, 0.0}},
+            {"GSS/vy", {16, 31, true, 0.00555556, 0.0}}
         }},
         {0x1A3, 4, { // GSS
             {"IMU/ax", {0, 15, true, 0.02, 0.0}},
@@ -223,10 +223,10 @@ void Sensors::inverter_timer(){
 }
 
 /**
- * @brief Timer function for the IMU
+ * @brief Timer function for the GSS
  * 
  */
-void Sensors::imu_timer()
+void Sensors::gss_timer()
 {
     // Random noise generation with different noise for each variable
     std::random_device rd;
@@ -237,9 +237,7 @@ void Sensors::imu_timer()
     std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
     std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
-    
-    //TODO: Add noise to vx and vy
-    //Send CAN frames for IMU (GSS ids)
+
     std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
     {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)}, 
     {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)} }; 

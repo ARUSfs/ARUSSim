@@ -1,7 +1,7 @@
 arussim:
   ros__parameters:
     gss:
-      gss_frequency: 100.0         # Hz  Publish rate
+      gss_frequency: 200.0         # Hz  Publish rate
       noise_gss_vx: 0.01           # kmh Noise standard deviation
       noise_gss_vy: 0.01           # kmh Noise standard deviation
       noise_imu_ax: 0.005          # m/s² Noise standard deviation
@@ -9,7 +9,7 @@ arussim:
       noise_imu_r: 0.025          # º/s Noise standard deviation
     
     inverter:
-      inverter_frequency: 100.0    # Hz  Publish rate
+      inverter_frequency: 200.0    # Hz  Publish rate
       noise_motor_speed_front_right: 0.005     # rpm Noise standard deviation (front right wheel)
       noise_motor_speed_front_left: 0.005     # rpm Noise standard deviation (front left wheel)
       noise_motor_speed_rear_right: 0.005     # rpm Noise standard deviation (rear right wheel)

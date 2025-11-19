@@ -76,8 +76,8 @@ ControlSim::ControlSim() : Node("control_sim") {
             vx_scaled_ = static_cast<int16_t>((frame.data[1] << 8) | frame.data[0]);
             vy_scaled_ = static_cast<int16_t>((frame.data[3] << 8) | frame.data[2]);
 
-            sensors.speed_x = vx_scaled_ * 0.2 / 3.6;
-            sensors.speed_y = vy_scaled_ * 0.2 / 3.6;
+            sensors.speed_x = vx_scaled_ * 0.02 / 3.6;
+            sensors.speed_y = vy_scaled_ * 0.02 / 3.6;
 
         }
         else if (frame.can_id == 0x1A3) {

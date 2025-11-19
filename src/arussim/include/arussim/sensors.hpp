@@ -112,10 +112,10 @@ private:
     void extensometer_timer();
 
     /**
-     * @brief Timer function for the IMU
+     * @brief Timer function for the GSS
      * 
      */
-    void imu_timer();
+    void gss_timer();
 
     /**
      * @brief Timer function for the 4WD torque
