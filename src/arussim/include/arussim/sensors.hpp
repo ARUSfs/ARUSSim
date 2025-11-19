@@ -129,7 +129,7 @@ private:
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
 
-    rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
+    rclcpp::TimerBase::SharedPtr gss_timer_; // GSS timer
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
     rclcpp::TimerBase::SharedPtr inverter_timer_; // Inverter timer
