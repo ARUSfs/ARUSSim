@@ -41,11 +41,14 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
-#include "controller_sim/controller_sim.hpp"
-#include "controller_sim/estimation.hpp"
-#include "controller_sim/power_limitation.hpp"
-#include "controller_sim/traction_control.hpp"
-#include "controller_sim/torque_vectoring.hpp"
+
+#include <linux/can.h>       
+#include <linux/can/raw.h>   
+#include <net/if.h>          
+#include <sys/ioctl.h>       
+#include <sys/socket.h>    
+#include <fcntl.h>
+#include <thread> 
 
 /**
  * @class Simulator
@@ -70,12 +73,9 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    ControllerSim controller_sim_;
 
     std::string kTrackName;
     double kStateUpdateRate;
-    double kControllerRate; 
-    bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
     double kCameraFOV;
@@ -92,6 +92,7 @@ class Simulator : public rclcpp::Node
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
+    double kGearRatio;
     
     //Car boundaries
     double kCOGFrontDist;
@@ -100,10 +101,13 @@ class Simulator : public rclcpp::Node
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
-    double input_acc_;
-    double input_delta_;
-    double target_r_;
-    std::vector<double> torque_cmd_;
+
+    //Can
+    float can_acc_;
+    float can_target_r_;
+    float can_delta_;
+    std::vector<double> can_torque_cmd_;
+    uint16_t as_status_ = 0x02;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
@@ -140,13 +144,6 @@ class Simulator : public rclcpp::Node
      */
     void on_slow_timer();
 
-    /**
-     * @brief Callback function for the controller timer.
-     * 
-     * This method is called at regular intervals to update and publish low level controller
-     * action, simulating vehicle control unit from real car.
-     */
-    void on_controller_sim_timer();
 
     /**
      * @brief Callback function for the fast timer.
@@ -156,15 +153,6 @@ class Simulator : public rclcpp::Node
      */
     void on_fast_timer();
 
-    /**
-     * @brief Callback for receiving control commands.
-     * 
-     * This method processes incoming control commands (acceleration and steering angle) 
-     * to update the vehicle's dynamics.
-     * 
-     * @param msg The control command message.
-     */
-    void cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg);
     
     /**
      * @brief Callback for receiving teleportation commands from RViz.
@@ -175,14 +163,6 @@ class Simulator : public rclcpp::Node
      */
     void rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
-    /**
-     * @brief Callback for receiving EBS (Emergency Brake System) commands.
-     * 
-     * This method processes EBS commands to apply emergency braking if necessary.
-     * 
-     * @param msg The EBS command message.
-     */
-    void ebs_callback(const std_msgs::msg::Bool::SharedPtr msg);
     
     /**
      * @brief Callback for receiving reset commands.
@@ -192,6 +172,15 @@ class Simulator : public rclcpp::Node
      * @param msg The reset command message.
      */
     void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
+     * @brief Callback for receiving launch commands.
+     * 
+     * This method sets AS Status in AS Driving
+     * 
+     * @param msg The launch command message.
+     */
+    void launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
@@ -225,16 +214,13 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    void receive_can_0();
+    void receive_can_1();
+
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
-    rclcpp::TimerBase::SharedPtr controller_sim_timer_;
-    rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr track_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_perception_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr camera_perception_pub_;
@@ -245,6 +231,21 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
-    
+    rclcpp::TimerBase::SharedPtr receive_can_timer_;
+
+    //CAN Communication
+    int can_socket_0_;
+    struct ifreq ifr_0_{};
+    struct sockaddr_can addr_0_{};
+    struct can_frame frame_0_;
+    std::thread thread_0_;
+
+    int can_socket_1_;
+    struct ifreq ifr_1_{};
+    struct sockaddr_can addr_1_{};
+    struct can_frame frame_1_;
+    std::thread thread_1_;
+
 };

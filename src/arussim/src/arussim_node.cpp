@@ -17,8 +17,6 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<double>("state_update_rate", 1000);
-    this->declare_parameter<double>("controller_rate", 100);
-    this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
@@ -37,11 +35,10 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
     this->declare_parameter<bool>("debug", false);
+    this->declare_parameter<double>("vehicle.gear_ratio", 12.48);
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("state_update_rate", kStateUpdateRate);
-    this->get_parameter("controller_rate", kControllerRate);
-    this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
@@ -60,18 +57,13 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("csv_state", kCSVState);
     this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
     this->get_parameter("debug", kDebug);
+    this->get_parameter("vehicle.gear_ratio", kGearRatio);
 
     clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
-    control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_vx", 10);
-    control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_vy", 10);
-    control_r_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/control_r", 10);
     track_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/track", 10);
     lidar_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
@@ -95,21 +87,24 @@ Simulator::Simulator() : Node("simulator")
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
         std::bind(&Simulator::on_fast_timer, this));
-    controller_sim_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kControllerRate)),
-        std::bind(&Simulator::on_controller_sim_timer, this));
+    
+    //Thread for CAN reception
+    std::thread thread_0_(&Simulator::receive_can_0, this);
+    thread_0_.detach();
 
-    cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
-        std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
+    std::thread thread_1_(&Simulator::receive_can_1, this);
+    thread_1_.detach();
+
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
         std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
-    ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "/arussim_interface/EBS", 1, std::bind(&Simulator::ebs_callback, this, std::placeholders::_1));
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
+
+    launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1, 
+        std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
@@ -127,13 +122,25 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.b = 70.0/255.0;
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
+    
+    //CAN Socket setup
+    can_socket_0_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_0_.ifr_name, "can0");
+    ioctl(can_socket_0_, SIOCGIFINDEX, &ifr_0_);
+    addr_0_.can_family = AF_CAN;
+    addr_0_.can_ifindex = ifr_0_.ifr_ifindex;
+    bind(can_socket_0_, (struct sockaddr *)&addr_0_, sizeof(addr_0_));
 
-    // Set controller_sim period and GSS usage
-    controller_sim_.init(1/kControllerRate, kUseGSS);
+    can_socket_1_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_1_.ifr_name, "can1");
+    ioctl(can_socket_1_, SIOCGIFINDEX, &ifr_1_);
+    addr_1_.can_family = AF_CAN;
+    addr_1_.can_ifindex = ifr_1_.ifr_ifindex;
+    bind(can_socket_1_, (struct sockaddr *)&addr_1_, sizeof(addr_1_));
 
     // Initialize torque variable 
-    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-
+    can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    
     // Set CSV file
     if (kCSVState) {
         csv_generator_state_ = std::make_shared<CSVGenerator>("state");
@@ -322,38 +329,6 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 
-void Simulator::on_controller_sim_timer() {
-    // Update sensor data in ControllerSim
-    // TO DO: use sensors with noise instead of ground truth
-    controller_sim_.set_sensors(
-        vehicle_dynamics_.ax_,
-        vehicle_dynamics_.ay_,
-        vehicle_dynamics_.r_,
-        vehicle_dynamics_.delta_,
-        vehicle_dynamics_.wheel_speed_.fl_,
-        vehicle_dynamics_.wheel_speed_.fr_,
-        vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_,
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_
-    );
-
-    // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
-    
-    // Publish control estimation 
-    std_msgs::msg::Float32 control_vx_msg;
-    control_vx_msg.data = controller_sim_.vx_;
-    control_vx_pub_->publish(control_vx_msg);
-
-    std_msgs::msg::Float32 control_vy_msg;
-    control_vy_msg.data = controller_sim_.vy_;
-    control_vy_pub_->publish(control_vy_msg);   
-
-    std_msgs::msg::Float32 control_r_msg;   
-    control_r_msg.data = controller_sim_.r_;
-    control_r_pub_->publish(control_r_msg);
-}
 
 /**
  * @brief Fast timer callback for state updates.
@@ -365,16 +340,29 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
-    if((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
-    {
-        input_acc_ = 0;
+    if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0) {
+        can_acc_ = 0;
+    }
+    
+    if (as_status_ != 0x03) {
+ 
+        // Trigger EBS
+        vehicle_dynamics_.torque_cmd_.fl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.fr_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rr_ = 0.;
+        vehicle_dynamics_.vx_ = 0.0;
+        vehicle_dynamics_.vy_ = 0.0;
+        vehicle_dynamics_.r_ = 0.0;
+    
+    } else {
+    
+        double dt = 1.0 / kStateUpdateRate;
+        vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
+    
     }
 
-    double dt = 1.0 / kStateUpdateRate;
-
-    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt);
-
-    if(use_tpl_){
+    if (use_tpl_){
         check_lap();
     }
 
@@ -434,41 +422,65 @@ void Simulator::on_fast_timer()
     marker_pub_->publish(marker_);
 }
 
-/**
- * @brief Callback for receiving control commands.
- * 
- * This method updates the vehicle's acceleration and steering angle based on 
- * incoming commands.
- * 
- * @param msg Incoming control command message.
- */
-void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
+void Simulator::receive_can_0()
 {
-    input_acc_ = msg->acc;
-    input_delta_ = msg->delta;
-    target_r_ = msg->target_r;
-    time_last_cmd_ = clock_->now();
+    int flags = fcntl(can_socket_0_, F_GETFL, 0);
+    fcntl(can_socket_0_, F_SETFL, flags | O_NONBLOCK);
+    while (rclcpp::ok()) {
+        int nbytes = read(can_socket_0_, &frame_0_, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
+
+        if (frame_0_.can_id == 0x222) { 
+            int16_t acc_scaled = static_cast<int16_t>((frame_0_.data[1] << 8) | frame_0_.data[0]);
+            int16_t yaw_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
+            int16_t delta_scaled = static_cast<int16_t>((frame_0_.data[5] << 8) | frame_0_.data[4]);
+
+            can_acc_ = static_cast<float>(acc_scaled) / 100.0f;
+            can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f;
+            can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
+            time_last_cmd_ = clock_->now();  
+        }
+        
+        else if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
+                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209) {
+            int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
+            int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio; 
+        }
+    }
 }
 
-void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
+void Simulator::receive_can_1()
 {
-    if (msg->data) {
-        input_acc_ = 0.0;
-        input_delta_ = 0.0;
-        torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-        vehicle_dynamics_.vx_ = 0.0;
-        vehicle_dynamics_.vy_ = 0.0;
-        vehicle_dynamics_.r_ = 0.0;
+    int flags = fcntl(can_socket_1_, F_GETFL, 0);
+    fcntl(can_socket_1_, F_SETFL, flags | O_NONBLOCK);
+    while (rclcpp::ok()) {
+        int nbytes = read(can_socket_1_, &frame_1_, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
+
+        if (frame_1_.can_id == 0x261) {
+            as_status_ = frame_1_.data[1];
+        }
     }
+}
+void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    if (as_status_ == 0x02) as_status_ = 0x03;
 }
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    input_acc_ = 0.0;
-    input_delta_ = 0.0;
-    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
-
+    can_acc_ = 0.0;
+    can_delta_ = 0.0;
+    can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
     vehicle_dynamics_ = VehicleDynamics();
+    as_status_ = 0x02;
 
     started_acc_ = false;
     if (prev_circuit_ != track_name_){

@@ -97,6 +97,7 @@ protected:
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr launch_pub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr circuit_pub_;
 
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
@@ -111,7 +112,7 @@ private:
   int lap_counter_ = 0;
 
   double bar_size_;
-  double max_torque_value_ = 90.0;
+  double max_torque_value_ = 21.0;
   double scale_factor_;
   double center_y_;
 
