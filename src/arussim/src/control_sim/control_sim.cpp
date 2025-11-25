@@ -50,6 +50,8 @@ ControlSim::ControlSim() : Node("control_sim") {
 	TorqueVectoring_Init(&pid);
     dv.autonomous = 1;
 
+    torque_tv_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque_tv", 1);
+
         
 }
 
@@ -247,8 +249,20 @@ void ControlSim::default_task()
     send_state();
     fx_request = pc_request(&dv, &parameters);
 
+    
+
     Calculate_Tire_Loads(&sensors, &parameters, state, &tire);
     TorqueVectoring_Update(&sensors, &parameters, &pid, &tire, &dv, fx_request, state, TV_out);
+    auto torque_tv_msg = arussim_msgs::msg::FourWheelDrive();
+    torque_tv_msg.front_left = TV_out[0];
+    torque_tv_msg.front_right = TV_out[1];
+    torque_tv_msg.rear_left = TV_out[2];
+    torque_tv_msg.rear_right = TV_out[3];
+    
+    // Create a local publisher and publish the message (or alternatively add
+    // a publisher member in the header to reuse across calls).
+    
+    torque_tv_pub_->publish(torque_tv_msg);
     TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv);
     PowerControl_Update(&sensors, &parameters, TC_out);
 

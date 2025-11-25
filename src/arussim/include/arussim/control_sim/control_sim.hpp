@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <cstring> 
 #include "std_msgs/msg/bool.hpp"
+#include "arussim_msgs/msg/four_wheel_drive.hpp"
 
 #include "arussim/control_sim/SensorData.h"
 #include "arussim/control_sim/Parameters.h"
@@ -45,6 +46,8 @@ class ControlSim : public rclcpp::Node
         rclcpp::Clock::SharedPtr clock_;
         std::thread thread_;
     
+
+        rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_tv_pub_;
         rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
         void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 

@@ -80,6 +80,8 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/fixed_trajectory", 10);
     camera_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/camera_perception", 10);
+    slip_ratio_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_ratio", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -395,6 +397,12 @@ void Simulator::on_fast_timer()
     torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
     message.torque = torque;
 
+    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_msg.front_left=vehicle_dynamics_.tire_slip_.lambda_fl_;
+    slip_ratio_msg.front_right=vehicle_dynamics_.tire_slip_.lambda_fr_;
+    slip_ratio_msg.rear_left=vehicle_dynamics_.tire_slip_.lambda_rl_;
+    slip_ratio_msg.rear_right=vehicle_dynamics_.tire_slip_.lambda_rr_;
+
     if (kCSVState){
         std::vector<std::string> row_values;
         row_values.push_back(std::to_string(vehicle_dynamics_.x_));
@@ -413,7 +421,7 @@ void Simulator::on_fast_timer()
     }
     
     state_pub_->publish(message);
-
+    slip_ratio_pub_->publish(slip_ratio_msg);
 
     broadcast_transform();
     
