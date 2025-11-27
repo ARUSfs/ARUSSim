@@ -34,27 +34,6 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
 
 void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv) {
 
-
-//    //DEMAND VALIDATION
-//    int has_demand = 0;
-//    for (int i = 0; i < 4; i++) {
-//        if (fabsf(Tin[i]) > 0.1f) {  // Demand threshold: 0.1 Nm
-//            has_demand = 1;
-//            break;
-//        }
-//    }
-//
-//    if (!has_demand) {
-//        // No demand: reset all outputs and state
-//        for (int i = 0; i < 4; i++) {
-//            TC[i] = 0.0f;
-//            SR[i] = 0.0f;
-//            tc_state.int_SRe[i] = 0.0f;
-//        }
-//        return;
-//    }
-
-
     //SYSTEM ACTIVATION CHECK
     if (TC_ACTIVE != 1 || pid->init != 1 || dv->inspection) {
         for (int i = 0; i < 4; i++) {
@@ -91,10 +70,10 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     float cos_steer = cosf(sensors->steering_angle);
     float sin_steer = sinf(sensors->steering_angle);
 
-    vx_wheel_tire[0] = vx_wheel[0] * cos_steer + vy_wheel[0] * sin_steer;  // FL (steered)
-    vx_wheel_tire[1] = vx_wheel[1] * cos_steer + vy_wheel[1] * sin_steer;  // FR (steered)
-    vx_wheel_tire[2] = vx_wheel[2];                                         // RL (no steering)
-    vx_wheel_tire[3] = vx_wheel[3];                                         // RR (no steering)
+    vx_wheel_tire[0] = vx_wheel[0] * cos_steer + vy_wheel[0] * sin_steer;  // FL
+    vx_wheel_tire[1] = vx_wheel[1] * cos_steer + vy_wheel[1] * sin_steer;  // FR
+    vx_wheel_tire[2] = vx_wheel[2];                                         // RL
+    vx_wheel_tire[3] = vx_wheel[3];                                         // RR
 
 
     //SLIP RATIO CALCULATION
@@ -105,10 +84,10 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     }
 
     float wr[4];
-    wr[0] = sensors->motor_speed[0];
-    wr[1] = sensors->motor_speed[1];
-    wr[2] = sensors->motor_speed[2];
-    wr[3] = sensors->motor_speed[3];
+    wr[0] = sensors->motor_speed[0]/parameters->gear_ratio;
+    wr[1] = sensors->motor_speed[1]/parameters->gear_ratio;
+    wr[2] = sensors->motor_speed[2]/parameters->gear_ratio;
+    wr[3] = sensors->motor_speed[3]/parameters->gear_ratio;
     if (min_vx_wheel_tire < 1.0f) {
         for (int i = 0; i < 4; i++) {
             SR[i] = parameters->rdyn * wr[i] - vx_wheel_tire[i];

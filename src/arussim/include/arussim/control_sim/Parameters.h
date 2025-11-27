@@ -16,7 +16,7 @@ extern "C" {
 
 //VDC MODELS ACTIVATION
 #define TV_ACTIVE			0
-#define TC_ACTIVE			0
+#define TC_ACTIVE			1
 #define EST_ACTIVE			0
 
 
@@ -81,7 +81,7 @@ extern "C" {
 
 
 //TC PID
-#define TC_K_				30
+#define TC_K_				30 //10
 #define TC_TI				0.1
 #define TC_TD				0
 

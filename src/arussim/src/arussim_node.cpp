@@ -391,10 +391,10 @@ void Simulator::on_fast_timer()
     message.wheel_speeds = wheel_speeds;
 
     auto torque = arussim_msgs::msg::FourWheelDrive();
-    torque.front_left = vehicle_dynamics_.torque_cmd_.fl_;
-    torque.front_right = vehicle_dynamics_.torque_cmd_.fr_;
-    torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_;
-    torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
+    torque.front_left = vehicle_dynamics_.torque_cmd_.fl_/12.48;
+    torque.front_right = vehicle_dynamics_.torque_cmd_.fr_/12.48;
+    torque.rear_left = vehicle_dynamics_.torque_cmd_.rl_/12.48;
+    torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_/12.48;
     message.torque = torque;
 
     auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
