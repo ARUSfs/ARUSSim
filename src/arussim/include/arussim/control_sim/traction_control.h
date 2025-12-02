@@ -20,7 +20,7 @@ extern "C" {
 
 
 void TractionControl_Init(PID *pid, Parameters *parameters);
-void TractionControl_Update(SensorData *sensors,  Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC,  float *SR, DV *dv);
+void TractionControl_Update(SensorData *sensors,  Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC,  float *SR, DV *dv, float *TC_calc);
 
 #ifdef __cplusplus
 }

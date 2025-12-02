@@ -32,7 +32,7 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     }
 }
 
-void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv) {
+void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv, float *TC_calc) {
 
     //SYSTEM ACTIVATION CHECK
     if (TC_ACTIVE != 1 || pid->init != 1 || dv->inspection) {
@@ -115,7 +115,6 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     //PID FEEDBACK CONTROL
     float SR_e[4];
     float int_SRep[4];
-    float TC_calc[4];
 
     for (int i = 0; i < 4; i++) {
         if (fabsf(Tin[i]) < 0.1f) {

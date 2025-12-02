@@ -51,6 +51,8 @@ ControlSim::ControlSim() : Node("control_sim") {
     dv.autonomous = 1;
 
     torque_tv_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque_tv", 1);
+    slip_ratio_TC_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/slip_ratio_TC", 1);
+    TC_calc_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/TC_calc", 1);
 
         
 }
@@ -249,8 +251,7 @@ void ControlSim::default_task()
     send_state();
     fx_request = pc_request(&dv, &parameters);
 
-    
-
+    float TC_calc[4];
     Calculate_Tire_Loads(&sensors, &parameters, state, &tire);
     TorqueVectoring_Update(&sensors, &parameters, &pid, &tire, &dv, fx_request, state, TV_out);
     auto torque_tv_msg = arussim_msgs::msg::FourWheelDrive();
@@ -259,11 +260,23 @@ void ControlSim::default_task()
     torque_tv_msg.rear_left = TV_out[2];
     torque_tv_msg.rear_right = TV_out[3];
     
-    // Create a local publisher and publish the message (or alternatively add
-    // a publisher member in the header to reuse across calls).
-    
     torque_tv_pub_->publish(torque_tv_msg);
-    TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv);
+    TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv, TC_calc);
+    auto slip_ratio_TC_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_TC_msg.front_left = SR[0];
+    slip_ratio_TC_msg.front_right = SR[1];
+    slip_ratio_TC_msg.rear_left = SR[2];
+    slip_ratio_TC_msg.rear_right = SR[3];
+
+    slip_ratio_TC_pub_->publish(slip_ratio_TC_msg);
+
+    auto TC_calc_msg = arussim_msgs::msg::FourWheelDrive();
+    TC_calc_msg.front_left = TC_calc[0];
+    TC_calc_msg.front_right = TC_calc[1];
+    TC_calc_msg.rear_left = TC_calc[2];
+    TC_calc_msg.rear_right = TC_calc[3];
+
+    TC_calc_pub_->publish(TC_calc_msg);
     PowerControl_Update(&sensors, &parameters, TC_out);
 
     if (pid.init == 0){

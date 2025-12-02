@@ -48,6 +48,8 @@ class ControlSim : public rclcpp::Node
     
 
         rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_tv_pub_;
+        rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_TC_pub_;
+        rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr TC_calc_pub_;
         rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
         void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
