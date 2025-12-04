@@ -281,12 +281,16 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
         const auto &sig = sig_pair.second; 
         int bit_len = sig.bit_fin - sig.bit_in + 1; 
         uint64_t raw = encode_signal(values.at(topic), sig.scale, sig.offset, bit_len, sig.is_signed); 
-        int byte_idx = sig.bit_in / 8; 
-        int bit_offset = sig.bit_in % 8; 
-        canMsg_.data[byte_idx] |= (raw << bit_offset) & 0xFF; 
-        if (bit_len + bit_offset > 8 && byte_idx + 1 < frame.size) { 
-            canMsg_.data[byte_idx + 1] |= (raw >> (8 - bit_offset)) & 0xFF; 
-        } 
+        int bits_written = 0;
+
+        while (bits_written < bit_len) {
+            int byte_idx = (sig.bit_in + bits_written) / 8;
+            int bit_offset = (sig.bit_in + bits_written) % 8;
+            int bits_in_this_byte = std::min(8 - bit_offset, bit_len - bits_written);
+            canMsg_.data[byte_idx] |= ((raw >> bits_written) & ((1 << bits_in_this_byte) - 1)) << bit_offset;
+            bits_written += bits_in_this_byte;
+}
+
     } 
     write(can_socket_, &canMsg_, sizeof(canMsg_)); 
 }
