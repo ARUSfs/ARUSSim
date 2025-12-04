@@ -95,6 +95,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     wr[1] = sensors->motor_speed[1]/parameters->gear_ratio;
     wr[2] = sensors->motor_speed[2]/parameters->gear_ratio;
     wr[3] = sensors->motor_speed[3]/parameters->gear_ratio;
+    
     if (min_vx_wheel_tire < 1.0f) {
         for (int i = 0; i < 4; i++) {
             SR[i] = parameters->rdyn * wr[i] - vx_wheel_tire[i];
