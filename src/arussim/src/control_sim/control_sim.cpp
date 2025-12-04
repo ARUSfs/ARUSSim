@@ -284,6 +284,14 @@ void ControlSim::default_task()
     }
 
     send_torque(TC_out);
+
+    //Verificar wheel speeds
+    //float wr[4];
+    //wr[0] = sensors.motor_speed[0]/parameters.gear_ratio;
+    //wr[1] = sensors.motor_speed[1]/parameters.gear_ratio;
+    //wr[2] = sensors.motor_speed[2]/parameters.gear_ratio;
+    //wr[3] = sensors.motor_speed[3]/parameters.gear_ratio;
+    //std::cout << "Wheel speeds Control (rad/s): " << wr[0] << ", " << wr[1] << ", " << wr[2] << ", " << wr[3] << std::endl;
 }
 
 void ControlSim::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)

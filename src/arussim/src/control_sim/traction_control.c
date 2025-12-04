@@ -67,6 +67,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
 
 
     float vx_wheel_tire[4];
+    float vy_wheel_tire[4];
     float cos_steer = cosf(sensors->steering_angle);
     float sin_steer = sinf(sensors->steering_angle);
 
@@ -74,6 +75,12 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     vx_wheel_tire[1] = vx_wheel[1] * cos_steer + vy_wheel[1] * sin_steer;  // FR
     vx_wheel_tire[2] = vx_wheel[2];                                         // RL
     vx_wheel_tire[3] = vx_wheel[3];                                         // RR
+
+    vy_wheel_tire[0] = -vx_wheel[0] * sin_steer + vy_wheel[0] * cos_steer; // FL
+    vy_wheel_tire[1] = -vx_wheel[1] * sin_steer + vy_wheel[1] * cos_steer; // FR
+    vy_wheel_tire[2] = vy_wheel[2];                                        // RL
+    vy_wheel_tire[3] = vy_wheel[3];                                        // RR
+
 
 
     //SLIP RATIO CALCULATION
@@ -100,7 +107,11 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
 
     //FEEDFORWARD TORQUE CALCULATION
     float SR_t[4] = {0.1f, 0.1f, 0.1f, 0.1f};
-    float slip_angle[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float slip_angle[4];
+    slip_angle[0] = atanf(vy_wheel_tire[0] / vx_wheel_tire[0]); // FL
+    slip_angle[1] = atanf(vy_wheel_tire[1] / vx_wheel_tire[1]); // FR
+    slip_angle[2] = 0.0f;                                      // RL
+    slip_angle[3] = 0.0f;                                      // RR
     Calculate_Tire_Forces(tire, slip_angle, SR_t);
 
     // Feedforward torque = tire_force * tire_radius + wheel_inertia * acceleration

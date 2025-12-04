@@ -34,6 +34,8 @@ void VehicleDynamics::update_simulation(double input_delta,
     calculate_dynamics();
     integrate_dynamics();
 
+    //Verificar wheel speeds
+    //std::cout << "Wheel speeds VD: " << wheel_speed_.fl_ << ", " << wheel_speed_.fr_ << ", " << wheel_speed_.rl_ << ", " << wheel_speed_.rr_ << std::endl;
     }
 
 void VehicleDynamics::calculate_dynamics(){
