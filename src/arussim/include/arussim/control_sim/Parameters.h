@@ -21,7 +21,7 @@ extern "C" {
 
 
 #define pi 					3.141592
-#define eps					0.00001
+#define eps					0.01
 #define GRAVITY 			9.81
 #define DEFAULT_MAX_POWER   50000
 #define DEFAULT_MIN_POWER 	-30000
@@ -81,9 +81,9 @@ extern "C" {
 
 
 //TC PID
-#define TC_K_				30 //10
-#define TC_TI				0.1
-#define TC_TD				0
+#define TC_K_				30. //10
+#define TC_TI				0.5
+#define TC_TD				0.
 
 
 //TC Paramtets

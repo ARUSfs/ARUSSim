@@ -12,6 +12,7 @@
 typedef struct {
     float int_SRe[4];
     float SR_e1[4];
+    float SR_prev[4];
 } TC_State;
 
 static TC_State tc_state;
@@ -21,7 +22,7 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     pid->TC_K = TC_K_;
     pid->TC_Ti = TC_TI;
     pid->TC_Td = TC_TD;
-    pid->init = 1;  
+    pid->init = 0;  
 
     parameters->v0 = DEFAULT_TC_V0;
     parameters->v_gain = DEFAULT_TC_V_GAIN;
@@ -81,38 +82,35 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     vy_wheel_tire[2] = vy_wheel[2];                                        // RL
     vy_wheel_tire[3] = vy_wheel[3];                                        // RR
 
-
-
-    //SLIP RATIO CALCULATION
-    float min_vx_wheel_tire = vx_wheel_tire[0];
-    for (int i = 1; i < 4; i++) {
-        if (vx_wheel_tire[i] < min_vx_wheel_tire) 
-            min_vx_wheel_tire = vx_wheel_tire[i];
-    }
-
     float wr[4];
     wr[0] = sensors->motor_speed[0]/parameters->gear_ratio;
     wr[1] = sensors->motor_speed[1]/parameters->gear_ratio;
     wr[2] = sensors->motor_speed[2]/parameters->gear_ratio;
     wr[3] = sensors->motor_speed[3]/parameters->gear_ratio;
     
-    if (min_vx_wheel_tire < 1.0f) {
+    if (vx < 0.1f) {
         for (int i = 0; i < 4; i++) {
             SR[i] = parameters->rdyn * wr[i] - vx_wheel_tire[i];
+            SR[i] = 0.1*tc_state.SR_prev[i] + 0.9*SR[i];
+            tc_state.SR_prev[i] = SR[i];
         }
     } else {
         for (int i = 0; i < 4; i++) {
             SR[i] = parameters->rdyn * wr[i] / (vx_wheel_tire[i] + eps) - 1.0f;
+            SR[i] = 0.1*tc_state.SR_prev[i] + 0.9*SR[i];
+            tc_state.SR_prev[i] = SR[i];
         }
     }
+
+
 
     //FEEDFORWARD TORQUE CALCULATION
     float SR_t[4] = {0.1f, 0.1f, 0.1f, 0.1f};
     float slip_angle[4];
-    slip_angle[0] = atanf(vy_wheel_tire[0] / vx_wheel_tire[0]); // FL
-    slip_angle[1] = atanf(vy_wheel_tire[1] / vx_wheel_tire[1]); // FR
-    slip_angle[2] = 0.0f;                                      // RL
-    slip_angle[3] = 0.0f;                                      // RR
+    slip_angle[0] = atan2f(vy_wheel_tire[0], vx_wheel_tire[0]); // FL
+    slip_angle[1] = atan2f(vy_wheel_tire[1], vx_wheel_tire[1]); // FR
+    slip_angle[2] = atan2f(vy_wheel_tire[2], vx_wheel_tire[2]); // RL
+    slip_angle[3] = atan2f(vy_wheel_tire[3], vx_wheel_tire[3]); // RR
     Calculate_Tire_Forces(tire, slip_angle, SR_t);
 
     // Feedforward torque = tire_force * tire_radius + wheel_inertia * acceleration
@@ -139,15 +137,18 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
 
 
         int_SRep[i] = tc_state.int_SRe[i] + SR_e[i];
-        if (int_SRep[i] > 50.0f) int_SRep[i] = 50.0f;
-        if (int_SRep[i] < -50.0f) int_SRep[i] = -50.0f;
+        // if (int_SRep[i] > 50.0f) int_SRep[i] = 50.0f;
+        // if (int_SRep[i] < -50.0f) int_SRep[i] = -50.0f;
 
         TC_calc[i] = T_obj[i] 
                    + pid->TC_K * SR_e[i]
-                   + (pid->TS / pid->TC_Ti) * int_SRep[i]
+                   + pid->TC_Ti * pid->TS * int_SRep[i]
                    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
 
-
+        printf("Fz_RL: %f\n", tire->tire_load[2]);
+        printf("T_obj_RL: %f\n", T_obj[2]);
+        printf("Fz_RR: %f\n", tire->tire_load[3]);
+        printf("T_obj_RR: %f\n", T_obj[3]);
 
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){
@@ -165,13 +166,13 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         tc_state.int_SRe[i] = int_SRep[i];
     }
 
-//    if (vx < 4.0f) {
-//        float T_limit = parameters->v0 + parameters->v_gain * vx;
-//
-//        if (TC[0] > T_limit) TC[0] = T_limit;
-//        if (TC[1] > T_limit) TC[1] = T_limit;
-//    }
-//
+   if (vx < 4.0f) {
+       float T_limit = parameters->v0 + parameters->v_gain * vx;
+
+       if (TC[0] > T_limit) TC[0] = T_limit;
+       if (TC[1] > T_limit) TC[1] = T_limit;
+   }
+
 
     //Saturation
     for (int i = 0; i < 4; i++) {
