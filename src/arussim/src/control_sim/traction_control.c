@@ -88,7 +88,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     wr[2] = sensors->motor_speed[2]/parameters->gear_ratio;
     wr[3] = sensors->motor_speed[3]/parameters->gear_ratio;
     
-    if (vx < 0.1f) {
+    if (vx < 1.0f) {
         for (int i = 0; i < 4; i++) {
             SR[i] = parameters->rdyn * wr[i] - vx_wheel_tire[i];
             SR[i] = 0.1*tc_state.SR_prev[i] + 0.9*SR[i];
@@ -115,7 +115,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
 
     // Feedforward torque = tire_force * tire_radius + wheel_inertia * acceleration
     float T_obj[4];
-    float inertia_term = sensors->acceleration_x / parameters->rdyn * 
+    float inertia_term = (1 + SR_t[0]) * sensors->acceleration_x / parameters->rdyn *
                          parameters->wheel_inertia / parameters->gear_ratio;
 
     for (int i = 0; i < 4; i++) {
@@ -145,10 +145,9 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
                    + pid->TC_Ti * pid->TS * int_SRep[i]
                    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
 
-        printf("Fz_RL: %f\n", tire->tire_load[2]);
-        printf("T_obj_RL: %f\n", T_obj[2]);
-        printf("Fz_RR: %f\n", tire->tire_load[3]);
-        printf("T_obj_RR: %f\n", T_obj[3]);
+        // float alpha;
+        // float pid_calc = pid->TC_K*SR_e[i] + pid->TC_Ti*int_SRep[i];
+        // TC_calc[i] = alpha * TC_calc[i] + (1 - alpha) * (T_obj[i] + pid_calc);
 
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){

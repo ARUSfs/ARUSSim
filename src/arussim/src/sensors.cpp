@@ -206,8 +206,8 @@ void Sensors::inverter_timer(){
     // Apply noise to the state variables
     wheel_speed_.fr_ = wheel_speed_msg.front_right;         // 2WD
     wheel_speed_.fl_ = wheel_speed_msg.front_left;          // 2WD
-    wheel_speed_.rr_ = wheel_speed_msg.rear_right + dist_rear_right(gen);
-    wheel_speed_.rl_ = wheel_speed_msg.rear_left + dist_rear_left(gen);    
+    wheel_speed_.rr_ = wheel_speed_msg.rear_right + std::abs(dist_rear_right(gen));
+    wheel_speed_.rl_ = wheel_speed_msg.rear_left + std::abs(dist_rear_left(gen));
 
     //Send Inverter CAN frames
      std::map<std::string,double> values = { {"fl_inv_speed", wheel_speed_.fl_*kGearRatio}, {"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 

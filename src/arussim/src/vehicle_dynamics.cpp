@@ -75,10 +75,11 @@ void VehicleDynamics::calculate_dynamics(){
     r_dot_ = total_mz / kIzz;
 
     // Tire angular acceleration
-    w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia;
-    w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia;
-    w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
-    w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
+    double alpha_w = std::min(std::max(0.01,0.01*vx_),1.0);
+    w_fl_dot_ = alpha_w*(torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fl_dot_;
+    w_fr_dot_ = alpha_w*(torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fr_dot_;
+    w_rl_dot_ = alpha_w*(torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rl_dot_;
+    w_rr_dot_ = alpha_w*(torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rr_dot_;
 
     delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
     delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
@@ -203,11 +204,11 @@ void VehicleDynamics::calculate_tire_slip(){
     tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps) - 1;
     tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps) - 1;
 
-    if(vx_ < 0.1){
-        tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps);
-        tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps);
-        tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps);
-        tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps);
+    if(vx_ < 1.0){
+        tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ - vx_fl;
+        tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ - vx_fr;
+        tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ - vx_rl;
+        tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ - vx_rr;
     }
 
 }
