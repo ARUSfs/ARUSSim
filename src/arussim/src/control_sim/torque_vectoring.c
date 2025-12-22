@@ -24,32 +24,32 @@ void TorqueVectoring_Update(SensorData *sensors, Parameters *parameters, PID *pi
 	if (TV_ACTIVE == 1){
 		float Mz_request = Target_Generation(sensors, parameters, pid, dv, state);
 
-//		float fz_front_mean = 0.5f * (tire->tire_load[0] + tire->tire_load[1]);
-//		float fz_rear_mean = 0.5f * (tire->tire_load[2] + tire->tire_load[3]);
-//
-//		float fx_dist[4] = { fx_request * fz_front_mean, fx_request * fz_front_mean, fx_request * fz_rear_mean, fx_request * fz_rear_mean };
-//
-//		float mz_dist[4] = { 2.0f * Mz_request * tire->tire_load[0] / (-parameters->trackwidthF),
-//				2.0f * Mz_request * tire->tire_load[1] / (parameters->trackwidthF),
-//				2.0f * Mz_request * tire->tire_load[2] / (-parameters->trackwidthR),
-//				2.0f * Mz_request * tire->tire_load[3] / (parameters->trackwidthR) };
-//
-//		float sum_fz = tire->tire_load[0] + tire->tire_load[1] + tire->tire_load[2] + tire->tire_load[3];
-//
-//		for (int i = 0; i < 4; ++i) {
-//			torque_out[i] = parameters->rdyn * (fx_dist[i] + mz_dist[i]) / sum_fz / parameters->gear_ratio;
-//
-//			if (torque_out[i] > parameters->torque_limit_positive[i]) {
-//				torque_out[i] = parameters->torque_limit_positive[i];
-//			} else if (torque_out[i] < parameters->torque_limit_negative[i]) {
-//				torque_out[i] = parameters->torque_limit_negative[i];
-//			}
-//		}
+		float fz_front_mean = 0.5f * (tire->tire_load[0] + tire->tire_load[1]);
+		float fz_rear_mean = 0.5f * (tire->tire_load[2] + tire->tire_load[3]);
 
-		torque_out[0] = 0.;
-		torque_out[1] = 0.;
-		torque_out[2] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request - Mz_request/parameters->trackwidthR);
-		torque_out[3] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request + Mz_request/parameters->trackwidthR);
+		float fx_dist[4] = { fx_request * fz_front_mean, fx_request * fz_front_mean, fx_request * fz_rear_mean, fx_request * fz_rear_mean };
+
+		float mz_dist[4] = { 2.0f * Mz_request * tire->tire_load[0] / (-parameters->trackwidthF),
+				2.0f * Mz_request * tire->tire_load[1] / (parameters->trackwidthF),
+				2.0f * Mz_request * tire->tire_load[2] / (-parameters->trackwidthR),
+				2.0f * Mz_request * tire->tire_load[3] / (parameters->trackwidthR) };
+
+		float sum_fz = tire->tire_load[0] + tire->tire_load[1] + tire->tire_load[2] + tire->tire_load[3];
+
+		for (int i = 0; i < 4; ++i) {
+			torque_out[i] = parameters->rdyn * (fx_dist[i] + mz_dist[i]) / sum_fz / parameters->gear_ratio;
+
+			if (torque_out[i] > parameters->torque_limit_positive[i]) {
+				torque_out[i] = parameters->torque_limit_positive[i];
+			} else if (torque_out[i] < parameters->torque_limit_negative[i]) {
+				torque_out[i] = parameters->torque_limit_negative[i];
+			}
+		}
+
+		// torque_out[0] = 0.;
+		// torque_out[1] = 0.;
+		// torque_out[2] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request - Mz_request/parameters->trackwidthR);
+		// torque_out[3] = parameters->rdyn/parameters->gear_ratio*(0.5*fx_request + Mz_request/parameters->trackwidthR);
 
 		for(int i=0; i<4; i++){
 			if (torque_out[i] > parameters->torque_limit_positive[i]) {

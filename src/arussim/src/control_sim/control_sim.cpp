@@ -179,10 +179,10 @@ void ControlSim::Parameters_Init(Parameters *p) {
 	p->fz_params[6] = p->sm * (DEFAULT_H_CDG_SM - p->h_RA) * p->RS_r / p->RS / DEFAULT_TW;
 	p->fz_params[7] = (DEFAULT_NSM * DEFAULT_H_CDG_NSM * 2)/ DEFAULT_WB;
 	p->fz_params[8] = p->sm * DEFAULT_H_CDG_SM / DEFAULT_WB;
-	p->fz_params[9] = 0.5 * DEFAULT_MASS * GRAVITY * p->lf / DEFAULT_WB;
+	p->fz_params[9] = 0.5 * DEFAULT_MASS * GRAVITY * p->lr / DEFAULT_WB;
 	p->fz_params[10] = 0.5 * DEFAULT_R_CDP;
-	p->fz_params[11] = 0.5 * DEFAULT_H_CDP / DEFAULT_WB;
-	p->fz_params[12] = 0.5 * DEFAULT_MASS* GRAVITY * p->lr / DEFAULT_WB;
+	p->fz_params[11] = 0.5 * (DEFAULT_H_CDP - DEFAULT_H_CDG_SM);
+	p->fz_params[12] = 0.5 * DEFAULT_MASS* GRAVITY * p->lf / DEFAULT_WB;
 
 }
 

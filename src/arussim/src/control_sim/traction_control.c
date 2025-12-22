@@ -126,6 +126,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     //PID FEEDBACK CONTROL
     float SR_e[4];
     float int_SRep[4];
+    float alpha = 0.2;
 
     for (int i = 0; i < 4; i++) {
         if (fabsf(Tin[i]) < 0.1f) {
@@ -134,22 +135,21 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
             continue;
         }
 
-        SR_e[i] = fabs(SR[i]) - SR_t[i];
+        SR_e[i] = fminf(1,fmaxf(-1, SR_t[i] - fabs(SR[i])));
 
+        float k_int = 1;
+        if (SR_e[i]<0.0)  k_int = 10;
 
-        int_SRep[i] = tc_state.int_SRe[i] + SR_e[i];
-        // if (int_SRep[i] > 50.0f) int_SRep[i] = 50.0f;
-        // if (int_SRep[i] < -50.0f) int_SRep[i] = -50.0f;
-
-        TC_calc[i] = T_obj[i] 
-                   + pid->TC_K * SR_e[i]
-                   + pid->TC_Ti * pid->TS * int_SRep[i]
-                   - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
-
-        // float alpha;
-        // float pid_calc = pid->TC_K*SR_e[i] + pid->TC_Ti*int_SRep[i];
-        // TC_calc[i] = alpha * TC_calc[i] + (1 - alpha) * (T_obj[i] + pid_calc);
-
+        int_SRep[i] = tc_state.int_SRe[i] + k_int*SR_e[i];
+        if (int_SRep[i] > 50.0f) int_SRep[i] = 50.0f;
+        if (int_SRep[i] < -50.0f) int_SRep[i] = -50.0f;
+        
+        float pid_calc = 30.0*SR_e[i] + 0.5*int_SRep[i];
+        TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc);
+                //    - 0*30.0 * SR_e[i]);
+                //    + (pid->TS / pid->TC_Ti) * int_SRep[i]
+                //    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
+        
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){
             TC[i] = Tin[i];
@@ -166,8 +166,8 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         tc_state.int_SRe[i] = int_SRep[i];
     }
 
-   if (vx < 4.0f) {
-       float T_limit = parameters->v0 + parameters->v_gain * vx;
+   if (vx < 3.0f) {
+       float T_limit = 10.0 + 2.0 * vx;
 
        if (TC[0] > T_limit) TC[0] = T_limit;
        if (TC[1] > T_limit) TC[1] = T_limit;

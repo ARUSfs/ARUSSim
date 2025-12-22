@@ -94,12 +94,12 @@ class VehicleDynamics
         double kTireInertia = 0.4;
 
         struct {
-            double Dlat = -1.6323;
+            double Dlat = -1.5323;
             double Clat = 1.7230;
             double Blat = 12.7;
             double Elat = 0.4035;
 
-            double Dlon = 1.3976;
+            double Dlon = 1.0976;
             double Clon = 1.9503;
             double Blon = 17.49;
             double Elon = 0.999;

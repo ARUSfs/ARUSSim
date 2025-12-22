@@ -213,24 +213,23 @@ void Calculate_Tire_Forces(TIRE *tire, const float slip_angle[4], const float sl
     float slip_angle_local[4];
     float min_s_star = 0.01f;
 
-    slip_angle_local[0] = tanf(slip_angle[0]);
-    slip_angle_local[1] = tanf(slip_angle[1]);
-    slip_angle_local[2] = tanf(slip_angle[2]);
-    slip_angle_local[3] = tanf(slip_angle[3]);
-
+    // slip_angle_local[0] = tanf(slip_angle[0]);
+    // slip_angle_local[1] = tanf(slip_angle[1]);
+    // slip_angle_local[2] = tanf(slip_angle[2]);
+    // slip_angle_local[3] = tanf(slip_angle[3]);
 
     //Combined slip
     for (int i = 0; i < 4; i++) {
-        alpha_star[i] = (1 - bx) * exp(-Gx1 * exp(-pow(abs(a * slip_ratio[i]), c)) * slip_angle_local[i] * slip_angle_local[i]) + pac.kAlphaP;
+        alpha_star[i] = (1 - bx) * exp(-Gx1 * exp(-pow(abs(a * slip_ratio[i]), c)) * slip_angle[i] * slip_angle[i]) + bx;
         lambda_star[i] = by + (1 - by) * exp(-Gy1 * slip_ratio[i] * slip_ratio[i]); 
 
-        double aux_fy = Elat * (pac.Blat * slip_angle_local[i] - atanf(pac.Blat * slip_angle_local[i]));
+        double aux_fy = Elat * (pac.Blat * slip_angle[i] - atanf(pac.Blat * slip_angle[i]));
         double aux_fx = Elon * (pac.Blon * slip_ratio[i] - atanf(pac.Blon * slip_ratio[i]));
 
-        float fy_pure = tire->tire_load[i] * pac.Dlat * sinf(pac.Clat * atanf(pac.Blat * slip_angle_local[i] - aux_fy));
+        float fy_pure = tire->tire_load[i] * pac.Dlat * sinf(pac.Clat * atanf(pac.Blat * slip_angle[i] - aux_fy));
         float fx_pure = tire->tire_load[i] * pac.Dlon * sinf(pac.Clon * atanf(pac.Blon * slip_ratio[i] - aux_fx));
-        tire->force_fy[i] = fy_pure * alpha_star[i];
-        tire->force_fx[i] = fx_pure * lambda_star[i];
+        tire->force_fy[i] = fy_pure * lambda_star[i];
+        tire->force_fx[i] = fx_pure * alpha_star[i];
     }
 
 }

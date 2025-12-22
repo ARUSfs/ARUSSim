@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 //VDC MODELS ACTIVATION
-#define TV_ACTIVE			0
+#define TV_ACTIVE			1
 #define TC_ACTIVE			1
 #define EST_ACTIVE			0
 
@@ -37,9 +37,9 @@ extern "C" {
 
 
 //Mass and inertia
-#define DEFAULT_MASS		340.
+#define DEFAULT_MASS		275.
 #define DEFAULT_NSM			25
-#define DEFAULT_H_CDG		0.273
+#define DEFAULT_H_CDG		0.26
 #define DEFAULT_H_CDG_NSM 	0.225
 #define DEFAULT_H_CDG_SM	0.3
 #define DEFAULT_H_RC_F		0.033
@@ -68,7 +68,7 @@ extern "C" {
 //AERO
 #define DEFAULT_RHO			1.225
 #define DEFAULT_CDA			1.971
-#define DEFAULT_CLA			4.747
+#define DEFAULT_CLA		    4.75
 #define DEFAULT_R_CDP		0.4604
 #define DEFAULT_H_CDP		0.517
 
@@ -95,11 +95,11 @@ extern "C" {
 #define PAC_KALPHAP      0.1809f
 #define PAC_KLAMBDA_P    0.1397f
 #define PAC_BLAT         12.f
-#define PAC_BLON         17.f
-#define PAC_DLAT        -1.33f
-#define PAC_CLAT         2.f
-#define PAC_DLON         1.198f
-#define PAC_CLON         1.3f
+#define PAC_BLON         17.49f
+#define PAC_DLAT        -1.5323f
+#define PAC_CLAT         1.7230f
+#define PAC_DLON         1.2976f
+#define PAC_CLON         1.9503f
 
 //TODO: eliminar de la estructura y del init lo que no se use
 typedef struct {

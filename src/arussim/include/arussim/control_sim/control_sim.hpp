@@ -63,7 +63,7 @@ class ControlSim : public rclcpp::Node
         int16_t vy_scaled_;
         int16_t r_scaled_;
         float state[3];
-        float SR[4];
+        float SR[4] = {0.0, 0.0, 0.0, 0.0};
         float TC_out[4];
         float TV_out[4];
         float fx_request;
