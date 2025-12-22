@@ -30,6 +30,7 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     for (int i = 0; i < 4; i++) {
         tc_state.int_SRe[i] = 0.0f;
         tc_state.SR_e1[i] = 0.0f;
+        tc_state.SR_prev[i] = 0.0f;
     }
 }
 

@@ -75,11 +75,10 @@ void VehicleDynamics::calculate_dynamics(){
     r_dot_ = total_mz / kIzz;
 
     // Tire angular acceleration
-    double alpha_w = std::min(std::max(0.01,0.01*vx_),1.0);
-    w_fl_dot_ = alpha_w*(torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fl_dot_;
-    w_fr_dot_ = alpha_w*(torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fr_dot_;
-    w_rl_dot_ = alpha_w*(torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rl_dot_;
-    w_rr_dot_ = alpha_w*(torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rr_dot_;
+    w_fl_dot_ = (torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia;
+    w_fr_dot_ = (torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia;
+    w_rl_dot_ = (torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia;
+    w_rr_dot_ = (torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia;
 
     delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
     delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
