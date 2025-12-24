@@ -297,10 +297,16 @@ void ControlSim::default_task()
 void ControlSim::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     memset(&sensors, 0, sizeof(sensors));
-    memset(&dv, 0, sizeof(dv));
-    memset(&tire, 0, sizeof(tire));
-    memset(&pid, 0, sizeof(pid));
-    memset(&state, 0, sizeof(state));
+    memset(&dv,      0, sizeof(dv));
+    memset(&tire,    0, sizeof(tire));
+    memset(&state,   0, sizeof(state));
+
+    // Solo resetea estado del PID
+    pid.integral   = 0.0f;
+    pid.err_prev   = 0.0f;
+    pid.deriv_filt = 0.0f;
+    pid.TS         = 0.0f;
+    pid.init       = 0;
 
 }
 

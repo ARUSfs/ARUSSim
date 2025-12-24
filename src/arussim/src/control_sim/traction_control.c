@@ -144,12 +144,16 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         if (int_SRep[i] > 50.0f) int_SRep[i] = 50.0f;
         if (int_SRep[i] < -50.0f) int_SRep[i] = -50.0f;
         
-        float pid_calc = 30.0*SR_e[i] + 0.5*int_SRep[i];
-        TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc);
-                //    - 0*30.0 * SR_e[i]);
-                //    + (pid->TS / pid->TC_Ti) * int_SRep[i]
-                //    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
         
+        float pid_calc = pid->TC_K*SR_e[i] + pid->TC_Ti*int_SRep[i];
+        TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc);
+        //    - 0*30.0 * SR_e[i]);
+        //    + (pid->TS / pid->TC_Ti) * int_SRep[i]
+        //    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
+        
+        printf("SR_e=%f, int=%f, K=%f, Ti=%f, TS=%f, pid_calc=%f\n",
+        SR_e[i], int_SRep[i], pid->TC_K, pid->TC_Ti, pid->TS, pid_calc);
+
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){
             TC[i] = Tin[i];
