@@ -34,7 +34,7 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     }
 }
 
-void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv, float *TC_calc) {
+void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv, float *TC_calc, float *state) {
 
     //SYSTEM ACTIVATION CHECK
     if (TC_ACTIVE != 1 || pid->init != 1 || dv->inspection) {
@@ -51,9 +51,9 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     }
 
     //Calculate all necessary variables
-    float vx = sensors->speed_x;
-    float vy = sensors->speed_y;
-    float yaw_rate = sensors->angular_z;
+    float vx = state[0];
+    float vy = state[1];
+    float yaw_rate = state[2];
 
     float vx_wheel[4];
     vx_wheel[0] = vx + yaw_rate * 0.5f * (-parameters->trackwidthF);  // FL
@@ -108,13 +108,15 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     //FEEDFORWARD TORQUE CALCULATION
     float SR_t[4] = {0.1f, 0.1f, 0.1f, 0.1f};
     float slip_angle[4];
+
     slip_angle[0] = atan2f(vy_wheel_tire[0], vx_wheel_tire[0]); // FL
     slip_angle[1] = atan2f(vy_wheel_tire[1], vx_wheel_tire[1]); // FR
     slip_angle[2] = atan2f(vy_wheel_tire[2], vx_wheel_tire[2]); // RL
     slip_angle[3] = atan2f(vy_wheel_tire[3], vx_wheel_tire[3]); // RR
+
     Calculate_Tire_Forces(tire, slip_angle, SR_t);
 
-    // Feedforward torque = tire_force * tire_radius + wheel_inertia * acceleration
+
     float T_obj[4];
     float inertia_term = (1 + SR_t[0]) * sensors->acceleration_x / parameters->rdyn *
                          parameters->wheel_inertia / parameters->gear_ratio;
@@ -146,20 +148,15 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         
         
         float pid_calc = pid->TC_K*SR_e[i] + pid->TC_Ti*int_SRep[i];
+
         TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc);
-        //    - 0*30.0 * SR_e[i]);
-        //    + (pid->TS / pid->TC_Ti) * int_SRep[i]
-        //    - (pid->TC_Td / pid->TS) * (SR_e[i] - tc_state.SR_e1[i]);
-        
-        printf("SR_e=%f, int=%f, K=%f, Ti=%f, TS=%f, pid_calc=%f\n",
-        SR_e[i], int_SRep[i], pid->TC_K, pid->TC_Ti, pid->TS, pid_calc);
+
 
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){
             TC[i] = Tin[i];
         }
 
-        
     }
 
     //Memoria
@@ -177,7 +174,6 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
        if (TC[1] > T_limit) TC[1] = T_limit;
    }
 
-
     //Saturation
     for (int i = 0; i < 4; i++) {
         if (TC[i] > parameters->torque_limit_positive[i]) 
@@ -190,5 +186,4 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         tc_state.SR_e1[i] = SR_e[i];
     }
 }
-
 /* End of traction_control.c */

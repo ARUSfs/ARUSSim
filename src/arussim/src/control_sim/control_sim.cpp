@@ -261,7 +261,7 @@ void ControlSim::default_task()
     torque_tv_msg.rear_right = TV_out[3];
     
     torque_tv_pub_->publish(torque_tv_msg);
-    TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv, TC_calc);
+    TractionControl_Update(&sensors, &parameters, &pid, &tire, TV_out, TC_out, SR, &dv, TC_calc, state);
     auto slip_ratio_TC_msg = arussim_msgs::msg::FourWheelDrive();
     slip_ratio_TC_msg.front_left = SR[0];
     slip_ratio_TC_msg.front_right = SR[1];
