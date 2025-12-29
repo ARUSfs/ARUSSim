@@ -137,7 +137,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
             continue;
         }
 
-        SR_e[i] = fminf(1,fmaxf(-1, SR_t[i] - fabs(SR[i])));
+        SR_e[i] = SR_t[i] - fabsf(SR[i]);
 
         float k_int = 1;
         if (SR_e[i]<0.0)  k_int = 10;
