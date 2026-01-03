@@ -82,6 +82,10 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/camera_perception", 10);
     slip_ratio_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/slip_ratio", 10);
+    slip_angle_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_angle", 10);
+    tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tire_load", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -402,6 +406,20 @@ void Simulator::on_fast_timer()
     slip_ratio_msg.front_right=vehicle_dynamics_.tire_slip_.lambda_fr_;
     slip_ratio_msg.rear_left=vehicle_dynamics_.tire_slip_.lambda_rl_;
     slip_ratio_msg.rear_right=vehicle_dynamics_.tire_slip_.lambda_rr_;
+
+    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_angle_msg.front_left=vehicle_dynamics_.tire_slip_.alpha_fl_;
+    slip_angle_msg.front_right=vehicle_dynamics_.tire_slip_.alpha_fr_;
+    slip_angle_msg.rear_left=vehicle_dynamics_.tire_slip_.alpha_rl_;
+    slip_angle_msg.rear_right=vehicle_dynamics_.tire_slip_.alpha_rr_;
+    slip_angle_pub_->publish(slip_angle_msg);
+
+    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
+    tire_load_msg.front_left=vehicle_dynamics_.tire_loads_.fl_;
+    tire_load_msg.front_right=vehicle_dynamics_.tire_loads_.fr_;
+    tire_load_msg.rear_left=vehicle_dynamics_.tire_loads_.rl_;
+    tire_load_msg.rear_right=vehicle_dynamics_.tire_loads_.rr_;
+    tire_load_pub_->publish(tire_load_msg);
 
     if (kCSVState){
         std::vector<std::string> row_values;

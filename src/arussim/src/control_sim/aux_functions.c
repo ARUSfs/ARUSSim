@@ -125,10 +125,10 @@ void Calculate_Tire_Loads(SensorData *sensors, Parameters *parameters, float *st
         float WT_x = 0.5f * (x_WT_ns + x_WT_s);
         float WT_y = (y_WT_ns_f + y_WT_s_g_f + y_WT_s_e_f);
 
-        tire_loadtx[0] = WT_x / (WT_x + fabs(WT_y) + eps) * tire_loadneg[0];
-        tire_loadtx[1] = WT_x / (WT_x + fabs(WT_y) + eps) * tire_loadneg[1];
-        tire_loadty[0] = WT_y / (WT_x + fabs(WT_y) + eps) * tire_loadneg[0] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
-        tire_loadty[1] = WT_y / (WT_x + fabs(WT_y) + eps) * tire_loadneg[1] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
+        tire_loadtx[0] = WT_x / (WT_x + fabsf(WT_y) + eps) * tire_loadneg[0];
+        tire_loadtx[1] = WT_x / (WT_x + fabsf(WT_y) + eps) * tire_loadneg[1];
+        tire_loadty[0] = WT_y / (WT_x + fabsf(WT_y) + eps) * tire_loadneg[0] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
+        tire_loadty[1] = WT_y / (WT_x + fabsf(WT_y) + eps) * tire_loadneg[1] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
 
         tire->tire_load[0] += tire_loadtx[1];
         tire->tire_load[1] += tire_loadtx[0];
@@ -158,10 +158,10 @@ void Calculate_Tire_Loads(SensorData *sensors, Parameters *parameters, float *st
         float WT_y = (y_WT_ns_f + y_WT_s_g_f + y_WT_s_e_f);
 
 
-        tire_loadtx[2] = -WT_x / (-WT_x + fabs(WT_y)) * tire_loadneg[2];
-        tire_loadtx[3] = -WT_x / (-WT_x + fabs(WT_y)) * tire_loadneg[3];
-        tire_loadty[2] = WT_y / (-WT_x + fabs(WT_y)) * tire_loadneg[2] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
-        tire_loadty[3] = WT_y / (-WT_x + fabs(WT_y)) * tire_loadneg[3] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
+        tire_loadtx[2] = -WT_x / (-WT_x + fabsf(WT_y)) * tire_loadneg[2];
+        tire_loadtx[3] = -WT_x / (-WT_x + fabsf(WT_y)) * tire_loadneg[3];
+        tire_loadty[2] = WT_y / (-WT_x + fabsf(WT_y)) * tire_loadneg[2] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
+        tire_loadty[3] = WT_y / (-WT_x + fabsf(WT_y)) * tire_loadneg[3] * ((sensors->acceleration_y > 0) - (sensors->acceleration_y < 0));
 
         tire->tire_load[0] += tire_loadty[2];
         tire->tire_load[1] += tire_loadty[3];
@@ -188,24 +188,6 @@ void Calculate_Tire_Loads(SensorData *sensors, Parameters *parameters, float *st
 }
 
 void Calculate_Tire_Forces(TIRE *tire, const float slip_angle[4], const float slip_ratio[4]) {
-    PAC pac = {
-        .kAlphaP = PAC_KALPHAP,
-        .kLambdaP = PAC_KLAMBDA_P,
-        .Blat = PAC_BLAT,
-        .Blon = PAC_BLON,
-        .Dlat = PAC_DLAT,
-        .Clat = PAC_CLAT,
-        .Dlon = PAC_DLON,
-        .Clon = PAC_CLON
-    };
-    double Elat = 0.4035;
-    double Elon = 0.999;
-    double Gx1 = 25000;
-    double bx = 0.2367;
-    double a = 93733;
-    double c = 0.1689;
-    double Gy1 = 38.21;
-    double by = 0.5365;
 
     float alpha_star[4];
     float lambda_star[4];
@@ -220,14 +202,14 @@ void Calculate_Tire_Forces(TIRE *tire, const float slip_angle[4], const float sl
 
     //Combined slip
     for (int i = 0; i < 4; i++) {
-        alpha_star[i] = (1 - bx) * exp(-Gx1 * exp(-pow(abs(a * slip_ratio[i]), c)) * slip_angle[i] * slip_angle[i]) + bx;
-        lambda_star[i] = by + (1 - by) * exp(-Gy1 * slip_ratio[i] * slip_ratio[i]); 
+        alpha_star[i] = (1 - B_X) * expf(-G_X1 * expf(-powf(fabsf(A * slip_ratio[i]), C)) * slip_angle[i] * slip_angle[i]) + B_X;
+        lambda_star[i] = B_Y + (1 - B_Y) * expf(-G_Y1 * slip_ratio[i] * slip_ratio[i]); 
 
-        double aux_fy = Elat * (pac.Blat * slip_angle[i] - atanf(pac.Blat * slip_angle[i]));
-        double aux_fx = Elon * (pac.Blon * slip_ratio[i] - atanf(pac.Blon * slip_ratio[i]));
+        double aux_fy = E_LAT * (B_LAT * slip_angle[i] - atanf(B_LAT * slip_angle[i]));
+        double aux_fx = E_LON * (B_LON * slip_ratio[i] - atanf(B_LON * slip_ratio[i]));
 
-        float fy_pure = tire->tire_load[i] * pac.Dlat * sinf(pac.Clat * atanf(pac.Blat * slip_angle[i] - aux_fy));
-        float fx_pure = tire->tire_load[i] * pac.Dlon * sinf(pac.Clon * atanf(pac.Blon * slip_ratio[i] - aux_fx));
+        float fy_pure = tire->tire_load[i] * D_LAT * sinf(C_LAT * atanf(B_LAT * slip_angle[i] - aux_fy));
+        float fx_pure = tire->tire_load[i] * D_LON * sinf(C_LON * atanf(B_LON * slip_ratio[i] - aux_fx));
         tire->force_fy[i] = fy_pure * lambda_star[i];
         tire->force_fx[i] = fx_pure * alpha_star[i];
     }

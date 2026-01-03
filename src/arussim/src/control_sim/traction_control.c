@@ -34,7 +34,7 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     }
 }
 
-void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv, float *TC_calc, float *state) {
+void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pid, TIRE *tire, float *Tin, float *TC, float *SR, DV *dv, float *T_obj, float *state) {
 
     //SYSTEM ACTIVATION CHECK
     if (TC_ACTIVE != 1 || pid->init != 1 || dv->inspection) {
@@ -117,7 +117,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     Calculate_Tire_Forces(tire, slip_angle, SR_t);
 
 
-    float T_obj[4];
+    float TC_calc[4];
     float inertia_term = (1 + SR_t[0]) * sensors->acceleration_x / parameters->rdyn *
                          parameters->wheel_inertia / parameters->gear_ratio;
 
@@ -144,7 +144,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         int_SRep[i] = tc_state.int_SRe[i] + SR_e[i];
         
         float pid_calc = pid->TC_K*SR_e[i]
-                       + (pid->TS/pid->TC_Ti)*int_SRep[i];
+                       + pid->TC_Ti*int_SRep[i];
 
                 
         // TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc); //Suavizado

@@ -52,7 +52,7 @@ ControlSim::ControlSim() : Node("control_sim") {
 
     torque_tv_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque_tv", 1);
     slip_ratio_TC_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/slip_ratio_TC", 1);
-    TC_calc_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/TC_calc", 1);
+    TC_calc_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/T_obj", 1);
 
         
 }

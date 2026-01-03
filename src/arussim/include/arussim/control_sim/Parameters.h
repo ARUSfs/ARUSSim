@@ -81,7 +81,7 @@ extern "C" {
 
 
 //TC PID
-#define TC_K_				30. //10
+#define TC_K_				30.
 #define TC_TI				0.5
 #define TC_TD				0.
 
@@ -92,14 +92,22 @@ extern "C" {
 
 //PACEJKA TIRE MODEL
 // PAC parameters
-#define PAC_KALPHAP      0.1809f
-#define PAC_KLAMBDA_P    0.1397f
-#define PAC_BLAT         12.f
-#define PAC_BLON         17.49f
-#define PAC_DLAT        -1.5323f
-#define PAC_CLAT         1.7230f
-#define PAC_DLON         1.2976f
-#define PAC_CLON         1.9503f
+#define D_LAT               -1.5323
+#define C_LAT               1.7230
+#define B_LAT               12.7
+#define E_LAT               0.4035
+
+#define D_LON               1.0976
+#define C_LON               1.9503
+#define B_LON               17.49
+#define E_LON               0.999
+
+#define G_X1               25000
+#define B_X                0.2367
+#define A                  93733
+#define C                  0.1689
+#define G_Y1               38.21
+#define B_Y                0.5365
 
 //TODO: eliminar de la estructura y del init lo que no se use
 typedef struct {
