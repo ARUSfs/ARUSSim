@@ -82,7 +82,7 @@ extern "C" {
 
 //TC PID
 #define TC_K_				30.
-#define TC_TI				0.5
+#define TC_TI				0.
 #define TC_TD				0.
 
 

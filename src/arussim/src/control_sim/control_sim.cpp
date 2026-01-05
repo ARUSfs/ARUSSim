@@ -105,19 +105,19 @@ ControlSim::ControlSim() : Node("control_sim") {
 
         }
         else if (frame.can_id == 0x102){
-            int32_t ws_scaled_0 = static_cast<int32_t>((frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            int32_t ws_scaled_0 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16) | (frame.data[1] << 8) | frame.data[0]);
             sensors.motor_speed[0] = ws_scaled_0 * 0.0001047197551196;
         }
         else if (frame.can_id == 0x106){
-            int32_t ws_scaled_1 = static_cast<int32_t>((frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            int32_t ws_scaled_1 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16) | (frame.data[1] << 8) | frame.data[0]);
             sensors.motor_speed[1] = ws_scaled_1 * 0.0001047197551196;
         }
         else if (frame.can_id == 0x110){
-            int32_t ws_scaled_2 = static_cast<int32_t>((frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            int32_t ws_scaled_2 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16) | (frame.data[1] << 8) | frame.data[0]);
             sensors.motor_speed[2] = ws_scaled_2 * 0.0001047197551196;
         }
         else if (frame.can_id == 0x114){
-            int32_t ws_scaled_3 = static_cast<int32_t>((frame.data[2] << 16)| (frame.data[1] << 8) | frame.data[0]);
+            int32_t ws_scaled_3 = static_cast<int32_t>((frame.data[3] << 24) | (frame.data[2] << 16) | (frame.data[1] << 8) | frame.data[0]);
             sensors.motor_speed[3] = ws_scaled_3 * 0.0001047197551196;
         }
         

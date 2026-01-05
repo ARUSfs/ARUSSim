@@ -112,21 +112,21 @@ Sensors::Sensors() : Node("sensors")
         {0x134, 2, { // Extensometer
             {"extensometer", {0, 15, true, -0.000031688042484, 0.476959989071}}
         }},
-        {0x102, 5, { // Front Left inverter
-            {"fl_inv_speed", {0, 23, true, 0.0001047197551196, 0.0}},
-            {"fl_inv_torque", {24, 39, true, 0.0098, 0.0}}
+        {0x102, 6, { // Front Left inverter
+            {"fl_inv_speed", {0, 31, true, 0.0001047197551196, 0.0}},
+            {"fl_inv_torque", {32, 47, true, 0.0098, 0.0}}
         }},
-        {0x106, 5, { // Front Right inverter
-            {"fr_inv_speed", {0, 23, true, 0.0001047197551196, 0.0}},
-            {"fr_inv_torque", {24, 39,  true, 0.0098, 0.0}}
+        {0x106, 6, { // Front Right inverter
+            {"fr_inv_speed", {0, 31, true, 0.0001047197551196, 0.0}},
+            {"fr_inv_torque", {32, 47, true, 0.0098, 0.0}}
         }},
-        {0x110, 5, { // Rear Left inverter
-            {"rl_inv_speed", {0, 23, true, 0.0001047197551196, 0.0}},
-            {"rl_inv_torque", {24, 39,  true, 0.0098, 0.0}}
+        {0x110, 6, { // Rear Left inverter
+            {"rl_inv_speed", {0, 31, true, 0.0001047197551196, 0.0}},
+            {"rl_inv_torque", {32, 47, true, 0.0098, 0.0}}
         }},
-        {0x114, 5, { // Rear Right inverter
-            {"rr_inv_speed", {0, 23, true, 0.0001047197551196, 0.0}},
-            {"rr_inv_torque", {24, 39, true, 0.0098, 0.0}}
+        {0x114, 6, { // Rear Right inverter
+            {"rr_inv_speed", {0, 31, true, 0.0001047197551196, 0.0}},
+            {"rr_inv_torque", {32, 47, true, 0.0098, 0.0}}
         }},
         {0x161, 2, {
             {"as_status", {8, 15, false, 1.0, 0.0}}
