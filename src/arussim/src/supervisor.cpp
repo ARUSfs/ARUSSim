@@ -1,8 +1,8 @@
 /**
  * @file supervisor.cpp
- * @author Rafael Guil (rafaguilvalero@gmail.com)
- * @version 0.1
- * @date 2024-10-19
+ * @author Rafael Guil (rafaguilvalero@gmail.com) and Santiago Miranda (santimirandacaballero@gmail.com)
+ * @version 0.2
+ * @date 2026-02-06
  * 
  * 
  */
@@ -26,6 +26,11 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );
 
+    between_tpl_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/arussim/tpl_signal", 10, 
+        std::bind(&Supervisor::JSONGenerator_callback, this, std::placeholders::_1)
+    );
+
     hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
         "/arussim/hit_cones", 10,
         std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
@@ -33,6 +38,9 @@ Supervisor::Supervisor() : Node("Supervisor")
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
+
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
+        std::bind(&Supervisor:://, this, std::placeholders::_1));
 
     lap_time_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/lap_time", 1);
 
@@ -125,7 +133,8 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
 {
     auto cone_position = std::make_pair(static_cast<double>(msg->x), static_cast<double>(msg->y));
 
-    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end()) {
+    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end())
+    {
         hit_cones_lap_.push_back(cone_position);
         RCLCPP_INFO(this->get_logger(), "%sHit cones: %zu%s", 
         yellow.c_str(), hit_cones_lap_.size(), reset.c_str());
@@ -133,6 +142,69 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
         std_msgs::msg::Bool hit_cones_msg;
         hit_cones_msg.data = true;
         hit_cones_pub_->publish(hit_cones_msg);
+    }
+}
+
+/**
+ * @brief Function to select the best lap time of the run.
+ * 
+ */
+double Supervisor::best_lap()
+{
+    double lap_time_ = time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
+    double real_lap_time_ = lap_time_ + 2 * hit_cones_lap_.size();
+    if(prev_time_ + 2*prev_hit_cones_ < real_lap_time_) best_time_ = real_lap_time_;
+    size_t prev_hit_cones_ = hit_cones_lap_.size();
+    return best_time_;
+}
+/**
+ * @brief Function to create a JSON file of the best times of each track.
+ * 
+ */
+void Supervisor::json_generator_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    lap_time_with_cones = Supervisor::best_lap()
+    namespace fs = std::filesystem;
+    std::string home_dir = std::string(std::getenv("HOME"));
+    std::filesystem::path json_dir = std::filesystem::path(home_dir) / "ws" / "src" / "ARUSSim" / "src" / "arussim" / "laptimes";
+    fs::path json_file = json_dir / (circuit_ + ".json");
+    if (fs::exists(json_file) && fs::is_regular_file(json_file)) {
+        // File already exists
+        // -> read it, update it, append to it, etc.
+    } 
+    else 
+    {
+        std::ofstream json_out(json_file);
+        if (!json_out.is_open()) 
+        {
+            throw std::runtime_error("Failed to create JSON file");
+        }
+        json_out << "{\n";
+        json_out << "  \"lap_time\": " << time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_) << ",\n";
+        json_out << "  \"cones_hitted\": " << hit_cones_lap_.size() << ",\n";
+        json_out << "  \"lap_time_with_cones_hitted\": " << lap_time_with_cones << ",\n";
+        json_out << "  \"control_config\": \"" /*<< control_config_ << */"\"\n";
+        json_out << "}\n";
+
+        json_out.close();
+    }
+}
+/**
+* @brief Callback to store the track name that is selected.
+* 
+* @param msg 
+*/
+void track_name(const std_msgs::msg::String::SharedPtr msg)
+{
+    circuit_ = msg->data;
+    const std::string ext = ".pcd";
+    if (circuit_.size() >= ext.size() &&
+        circuit_.compare(
+            circuit_.size() - ext.size(),
+            ext.size(),
+            ext) == 0)
+    {
+        circuit_.erase(circuit_.size() - ext.size());
     }
 }
 

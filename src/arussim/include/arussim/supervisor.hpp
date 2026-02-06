@@ -14,6 +14,10 @@
 #include <utility>
 #include "arussim/csv_generator.hpp"
 #include <memory>
+#include <filesystem>
+#include <string>
+#include <cstdlib>
+#include <fstream>
 
 /**
  * @class Supervisor
@@ -59,6 +63,24 @@ private:
      * 
      */
     void timer_callback();
+    /**
+     * @brief Function to select best lap time of the run.
+     * 
+     * @param msg 
+     */
+    double best_lap();
+     /**
+     * @brief Callback to create a JSON file of the best times of each track.
+     * 
+     * @param msg 
+     */
+    void JSONGenerator([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+     /**
+     * @brief Callback to store the track name that is selected.
+     * 
+     * @param msg 
+     */
+    void track_name(const std_msgs::msg::String::SharedPtr msg);
 
 
 
@@ -66,6 +88,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lap_time_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr hit_cones_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -80,9 +103,13 @@ private:
     bool started_;
     
     double prev_time_;
+    double best_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
+
+    std::string abrv_circuit_;
+    std::string circuit_;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";

@@ -41,6 +41,8 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
+#include "arussim/best_lap_recorder.hpp"
+
 #include "controller_sim/controller_sim.hpp"
 #include "controller_sim/estimation.hpp"
 #include "controller_sim/power_limitation.hpp"
