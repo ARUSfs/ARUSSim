@@ -26,9 +26,9 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );
 
-    between_tpl_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+    json_callback = this->create_subscription<std_msgs::msg::Bool>(
         "/arussim/tpl_signal", 10, 
-        std::bind(&Supervisor::JSONGenerator_callback, this, std::placeholders::_1)
+        std::bind(&Supervisor::json_generator_callback, this, std::placeholders::_1)
     );
 
     hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
@@ -40,7 +40,7 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
 
     circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
-        std::bind(&Supervisor:://, this, std::placeholders::_1));
+        std::bind(&Supervisor::track_name, this, std::placeholders::_1));
 
     lap_time_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/lap_time", 1);
 
@@ -151,10 +151,9 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
  */
 double Supervisor::best_lap()
 {
-    double lap_time_ = time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
-    double real_lap_time_ = lap_time_ + 2 * hit_cones_lap_.size();
-    if(prev_time_ + 2*prev_hit_cones_ < real_lap_time_) best_time_ = real_lap_time_;
-    size_t prev_hit_cones_ = hit_cones_lap_.size();
+    double real_lap_time_ = time_list_.back() + 2 * hit_cones_lap_.size();
+    if(prev_time_ + 2 * prev_hit_cones_ > real_lap_time_) best_time_ = real_lap_time_;
+    prev_hit_cones_ = hit_cones_lap_.size();
     return best_time_;
 }
 /**
@@ -163,30 +162,33 @@ double Supervisor::best_lap()
  */
 void Supervisor::json_generator_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    lap_time_with_cones = Supervisor::best_lap()
-    namespace fs = std::filesystem;
-    std::string home_dir = std::string(std::getenv("HOME"));
-    std::filesystem::path json_dir = std::filesystem::path(home_dir) / "ws" / "src" / "ARUSSim" / "src" / "arussim" / "laptimes";
-    fs::path json_file = json_dir / (circuit_ + ".json");
-    if (fs::exists(json_file) && fs::is_regular_file(json_file)) {
-        // File already exists
-        // -> read it, update it, append to it, etc.
-    } 
-    else 
+    if(started_)
     {
-        std::ofstream json_out(json_file);
-        if (!json_out.is_open()) 
+        lap_time_with_cones = Supervisor::best_lap();
+        namespace fs = std::filesystem;
+        std::string home_dir = std::string(std::getenv("HOME"));
+        std::filesystem::path json_dir = std::filesystem::path(home_dir) / "ws" / "src" / "ARUSSim" / "src" / "arussim" / "laptimes";
+        fs::path json_file = json_dir / (circuit_ + ".json");
+        if (fs::exists(json_file) && fs::is_regular_file(json_file)) {
+            // File already exists
+            // -> read it, update it, append to it, etc.
+        } 
+        else
         {
-            throw std::runtime_error("Failed to create JSON file");
-        }
-        json_out << "{\n";
-        json_out << "  \"lap_time\": " << time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_) << ",\n";
-        json_out << "  \"cones_hitted\": " << hit_cones_lap_.size() << ",\n";
-        json_out << "  \"lap_time_with_cones_hitted\": " << lap_time_with_cones << ",\n";
-        json_out << "  \"control_config\": \"" /*<< control_config_ << */"\"\n";
-        json_out << "}\n";
+            std::ofstream json_out(json_file);
+            if (!json_out.is_open()) 
+            {
+                throw std::runtime_error("Failed to create JSON file");
+            }
+            json_out << "{\n";
+            json_out << "  \"lap_time\": " << time_list_.back() << ",\n";
+            json_out << "  \"cones_hitted\": " << hit_cones_lap_.size() << ",\n";
+            json_out << "  \"lap_time_with_cones_hitted\": " << lap_time_with_cones << ",\n";
+            json_out << "  \"control_config\": \"" /*<< control_config_ << */"\"\n";
+            json_out << "}\n";
 
-        json_out.close();
+            json_out.close();
+        }
     }
 }
 /**
@@ -194,7 +196,7 @@ void Supervisor::json_generator_callback([[maybe_unused]] const std_msgs::msg::B
 * 
 * @param msg 
 */
-void track_name(const std_msgs::msg::String::SharedPtr msg)
+void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
 {
     circuit_ = msg->data;
     const std::string ext = ".pcd";

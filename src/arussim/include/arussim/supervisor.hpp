@@ -18,6 +18,7 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
+#include "std_msgs/msg/string.hpp"
 
 /**
  * @class Supervisor
@@ -74,7 +75,7 @@ private:
      * 
      * @param msg 
      */
-    void JSONGenerator([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+    void json_generator_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
      /**
      * @brief Callback to store the track name that is selected.
      * 
@@ -86,6 +87,7 @@ private:
 
     //Publishers and subscribers
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr json_callback;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
@@ -103,7 +105,9 @@ private:
     bool started_;
     
     double prev_time_;
+    size_t prev_hit_cones_ = 0;
     double best_time_;
+    double lap_time_with_cones;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
