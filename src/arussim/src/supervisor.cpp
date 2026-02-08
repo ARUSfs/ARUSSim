@@ -26,11 +26,6 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );
 
-    // json_callback = this->create_subscription<std_msgs::msg::Bool>(
-    //     "/arussim/tpl_signal", 10, 
-    //     std::bind(&Supervisor::json_generator_callback, this, std::placeholders::_1)
-    // );
-
     hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
         "/arussim/hit_cones", 10,
         std::bind(&Supervisor::hit_cones_callback, this, std::placeholders::_1)
@@ -72,17 +67,15 @@ void Supervisor::timer_callback(){
  */
 void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if(started_){
-        std::filesystem::path ws_path = std::filesystem::canonical("/proc/self/exe");
-        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
-        std::filesystem::path dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
-        std::filesystem::path file_path = dir_path / (circuit_ + ".csv");
+    std::filesystem::path ws_path = std::filesystem::canonical("/proc/self/exe");
+    for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
+    std::filesystem::path dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
+    std::filesystem::path file_path = dir_path / (circuit_ + ".csv");
 
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"CSV directory path: %s",dir_path.string().c_str());
-
-        // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
-        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
-        {
+    // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
+    if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+    {
+        if(!started_){
             std::ifstream file(file_path);
 
             if (!file.is_open()) {
@@ -109,18 +102,22 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
                 std::getline(ss, cones, ',');
                 std::getline(ss, time, ',');
 
-                double prev_best_time = std::stod(time);
-                if(prev_best_time > best_time_){
-                    std::ofstream file(file_path);
-                    file << "lap,cones,best_time\n";
-                    file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
-                    file.close();
+                prev_best_time_ = std::stod(time);
                 }
             }
-
+        else{
+            if(prev_best_time_ > best_time_){
+                std::ofstream file(file_path);
+                file << "lap,cones,best_time\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                file.close();
+            }
         }
-        else // Creates a .csv file and adds the time done in simulation.
-        {
+    }
+
+    else // Creates a .csv file and adds the time done in simulation.
+    {
+        if(started_){
             std::ofstream file(file_path, std::ios::out);
             if (!file.is_open()) {
                 throw std::runtime_error("Could not create CSV file");

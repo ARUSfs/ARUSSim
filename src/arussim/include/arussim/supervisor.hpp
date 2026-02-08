@@ -101,6 +101,7 @@ private:
     double best_time_;
     size_t cones_hitted_;
     double lap_time_;
+    double prev_best_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
