@@ -26,10 +26,10 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::bind(&Supervisor::tpl_signal_callback, this, std::placeholders::_1)
     );
 
-    json_callback = this->create_subscription<std_msgs::msg::Bool>(
-        "/arussim/tpl_signal", 10, 
-        std::bind(&Supervisor::json_generator_callback, this, std::placeholders::_1)
-    );
+    // json_callback = this->create_subscription<std_msgs::msg::Bool>(
+    //     "/arussim/tpl_signal", 10, 
+    //     std::bind(&Supervisor::json_generator_callback, this, std::placeholders::_1)
+    // );
 
     hit_cones_sub_ = this->create_subscription<arussim_msgs::msg::PointXY>(
         "/arussim/hit_cones", 10,
@@ -72,6 +72,65 @@ void Supervisor::timer_callback(){
  */
 void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::SharedPtr msg)
 {
+    if(started_){
+        std::filesystem::path ws_path = std::filesystem::canonical("/proc/self/exe");
+        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
+        std::filesystem::path dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
+        std::filesystem::path file_path = dir_path / (circuit_ + ".csv");
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"CSV directory path: %s",dir_path.string().c_str());
+
+        // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
+        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+        {
+            std::ifstream file(file_path);
+
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not open CSV file");
+            }
+            std::string line;
+            std::string last_line;
+
+            std::getline(file, line);
+
+            while (std::getline(file, line)) {
+                if (!line.empty()){
+                    last_line = line;
+                    break;
+                }
+            }
+
+                file.close();
+
+                if (!last_line.empty()) {
+                std::stringstream ss(last_line);
+                std::string lap, cones, time;
+                std::getline(ss, lap, ',');
+                std::getline(ss, cones, ',');
+                std::getline(ss, time, ',');
+
+                double prev_best_time = std::stod(time);
+                if(prev_best_time > best_time_){
+                    std::ofstream file(file_path);
+                    file << "lap,cones,best_time\n";
+                    file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                    file.close();
+                }
+            }
+
+        }
+        else // Creates a .csv file and adds the time done in simulation.
+        {
+            std::ofstream file(file_path, std::ios::out);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not create CSV file");
+            }
+
+            file << "lap,cones,best_time\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+        }
+    }
+
     time_list_.clear();
     list_total_hit_cones_.clear();
     hit_cones_lap_.clear();
@@ -97,6 +156,14 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         lap_time_msg.data = time_list_.back();
         lap_time_pub_->publish(lap_time_msg);
 
+        double real_lap_time_ = time_list_.back() + 2 * hit_cones_lap_.size();
+        if(prev_time_ + 2 * prev_hit_cones_ > real_lap_time_)
+        {
+        best_time_ = real_lap_time_;
+        cones_hitted_ = hit_cones_lap_.size();
+        lap_time_ = time_list_.back();
+        }
+
         // Detect hit cones in this lap and add to total
         list_total_hit_cones_.push_back(hit_cones_lap_);
         hit_cones_lap_.clear();
@@ -120,6 +187,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             csv_generator_->write_row("lap_time,total_hit_cones", row_values);
         }
     }
+    prev_hit_cones_ = list_total_hit_cones_.size() - prev_hit_cones_;
     prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
 }
@@ -145,52 +213,6 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
     }
 }
 
-/**
- * @brief Function to select the best lap time of the run.
- * 
- */
-double Supervisor::best_lap()
-{
-    double real_lap_time_ = time_list_.back() + 2 * hit_cones_lap_.size();
-    if(prev_time_ + 2 * prev_hit_cones_ > real_lap_time_) best_time_ = real_lap_time_;
-    prev_hit_cones_ = hit_cones_lap_.size();
-    return best_time_;
-}
-/**
- * @brief Function to create a JSON file of the best times of each track.
- * 
- */
-void Supervisor::json_generator_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
-{
-    if(started_)
-    {
-        lap_time_with_cones = Supervisor::best_lap();
-        namespace fs = std::filesystem;
-        std::string home_dir = std::string(std::getenv("HOME"));
-        std::filesystem::path json_dir = std::filesystem::path(home_dir) / "ws" / "src" / "ARUSSim" / "src" / "arussim" / "laptimes";
-        fs::path json_file = json_dir / (circuit_ + ".json");
-        if (fs::exists(json_file) && fs::is_regular_file(json_file)) {
-            // File already exists
-            // -> read it, update it, append to it, etc.
-        } 
-        else
-        {
-            std::ofstream json_out(json_file);
-            if (!json_out.is_open()) 
-            {
-                throw std::runtime_error("Failed to create JSON file");
-            }
-            json_out << "{\n";
-            json_out << "  \"lap_time\": " << time_list_.back() << ",\n";
-            json_out << "  \"cones_hitted\": " << hit_cones_lap_.size() << ",\n";
-            json_out << "  \"lap_time_with_cones_hitted\": " << lap_time_with_cones << ",\n";
-            json_out << "  \"control_config\": \"" /*<< control_config_ << */"\"\n";
-            json_out << "}\n";
-
-            json_out.close();
-        }
-    }
-}
 /**
 * @brief Callback to store the track name that is selected.
 * 

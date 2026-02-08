@@ -18,6 +18,10 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <limits>
+#include <stdexcept>
 #include "std_msgs/msg/string.hpp"
 
 /**
@@ -64,18 +68,7 @@ private:
      * 
      */
     void timer_callback();
-    /**
-     * @brief Function to select best lap time of the run.
-     * 
-     * @param msg 
-     */
-    double best_lap();
-     /**
-     * @brief Callback to create a JSON file of the best times of each track.
-     * 
-     * @param msg 
-     */
-    void json_generator_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+
      /**
      * @brief Callback to store the track name that is selected.
      * 
@@ -87,7 +80,6 @@ private:
 
     //Publishers and subscribers
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr json_callback;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
@@ -102,12 +94,13 @@ private:
     double mean_;
 
     bool between_tpl_;
-    bool started_;
+    bool started_ = false;
     
     double prev_time_;
-    size_t prev_hit_cones_ = 0;
+    size_t prev_hit_cones_;
     double best_time_;
-    double lap_time_with_cones;
+    size_t cones_hitted_;
+    double lap_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
