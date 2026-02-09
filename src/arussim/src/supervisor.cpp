@@ -45,6 +45,8 @@ Supervisor::Supervisor() : Node("Supervisor")
         std::chrono::milliseconds(100),
         std::bind(&Supervisor::timer_callback, this)
     );
+
+    controller_client_ = std::make_shared<rclcpp::SyncParametersClient>(shared_from_this(), "/controller");
 }
 
 /**
@@ -108,8 +110,8 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
         else{
             if(prev_best_time_ > best_time_){
                 std::ofstream file(file_path);
-                file << "lap,cones,best_time\n";
-                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                file << "lap,cones,best_time,controller_params\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\"" << controller_dump_ << "\"" << "\n";
                 file.close();
             }
         }
@@ -123,8 +125,8 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
                 throw std::runtime_error("Could not create CSV file");
             }
 
-            file << "lap,cones,best_time\n";
-            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+            file << "lap,cones,best_time,controller_params\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\"" << controller_dump_ << "\"" << "\n";
         }
     }
 
@@ -159,6 +161,8 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         best_time_ = real_lap_time_;
         cones_hitted_ = hit_cones_lap_.size();
         lap_time_ = time_list_.back();
+        controller_dump_ = get_controller_params_as_string();
+        controller_dump_ok_ = true;
         }
 
         // Detect hit cones in this lap and add to total
@@ -228,6 +232,27 @@ void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
         circuit_.erase(circuit_.size() - ext.size());
     }
 }
+
+
+std::string Supervisor::get_controller_params_as_string()
+{
+    if (!controller_client_) return "NO_CLIENT";
+
+    if (!controller_client_->wait_for_service(std::chrono::milliseconds(500))) {
+        return "CONTROLLER_NOT_READY";
+    }
+
+    auto names = controller_client_->list_parameters({}, 10).names;
+    auto params = controller_client_->get_parameters(names);
+
+    // Turn params into a readable string: name=value;name=value;...
+    std::ostringstream ss;
+    for (const auto& p : params) {
+        ss << p.get_name() << "=" << p.value_to_string() << ";";
+    }
+    return ss.str();
+}
+
 
 /**
  * @brief Main function for the supervisor node

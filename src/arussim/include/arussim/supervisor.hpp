@@ -6,13 +6,18 @@
  * 
  */
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/parameter_client.hpp>
+#include <nlohmann/json.hpp>
+
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "arussim/csv_generator.hpp"
+
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include "arussim/csv_generator.hpp"
 #include <memory>
 #include <filesystem>
 #include <string>
@@ -22,7 +27,6 @@
 #include <sstream>
 #include <limits>
 #include <stdexcept>
-#include "std_msgs/msg/string.hpp"
 
 /**
  * @class Supervisor
@@ -76,6 +80,8 @@ private:
      */
     void track_name(const std_msgs::msg::String::SharedPtr msg);
 
+    std::string get_controller_params_as_string();
+
 
 
     //Publishers and subscribers
@@ -95,6 +101,7 @@ private:
 
     bool between_tpl_;
     bool started_ = false;
+    bool controller_dump_ok_ = false;
     
     double prev_time_;
     size_t prev_hit_cones_;
@@ -108,6 +115,9 @@ private:
 
     std::string abrv_circuit_;
     std::string circuit_;
+    std::string controller_dump_;
+
+    std::shared_ptr<rclcpp::SyncParametersClient> controller_client_;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
