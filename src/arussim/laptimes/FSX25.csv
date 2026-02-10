@@ -1,5 +1,5 @@
 lap,cones,best_time
-8.78844,0,8.78844,
+15.0024,0,15.0024,
 "/controller:
   ros__parameters:
     CdA: 1.9

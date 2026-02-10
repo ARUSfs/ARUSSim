@@ -144,6 +144,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
 {
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
+        controller_dump_ = exec_command();
         started_ = true;
     }
     else{
@@ -187,7 +188,6 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     prev_hit_cones_ = list_total_hit_cones_.size() - prev_hit_cones_;
     prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
-    controller_dump_ = exec_command();
 }
 
 /**
