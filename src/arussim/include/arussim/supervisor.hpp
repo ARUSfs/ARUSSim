@@ -6,8 +6,6 @@
  * 
  */
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/parameter_client.hpp>
-#include <nlohmann/json.hpp>
 
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
@@ -27,6 +25,7 @@
 #include <sstream>
 #include <limits>
 #include <stdexcept>
+#include <cstdio>
 
 /**
  * @class Supervisor
@@ -80,7 +79,12 @@ private:
      */
     void track_name(const std_msgs::msg::String::SharedPtr msg);
 
-    std::string get_controller_params_as_string();
+    /**
+     * @brief Function to return a string with config params.
+     * 
+     * @return std::string
+     */
+    std::string exec_command();
 
 
 
@@ -101,7 +105,6 @@ private:
 
     bool between_tpl_;
     bool started_ = false;
-    bool controller_dump_ok_ = false;
     
     double prev_time_;
     size_t prev_hit_cones_;
@@ -116,8 +119,8 @@ private:
     std::string abrv_circuit_;
     std::string circuit_;
     std::string controller_dump_;
+    std::string cmd = "ros2 param dump /controller";
 
-    std::shared_ptr<rclcpp::SyncParametersClient> controller_client_;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
