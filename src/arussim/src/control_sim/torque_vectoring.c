@@ -60,10 +60,10 @@ void TorqueVectoring_Update(SensorData *sensors, Parameters *parameters, PID *pi
 		}
 
 	} else {
-		torque_out[0]=0.;
-		torque_out[1]=0.;
-		for (int i = 2; i < 4; ++i) {
-			torque_out[i] = parameters->rdyn * fx_request / parameters->gear_ratio / 2;
+		// torque_out[0]=0.;
+		// torque_out[1]=0.;
+		for (int i = 0; i < 4; ++i) {
+			torque_out[i] = parameters->rdyn * fx_request / parameters->gear_ratio / 4;
 
 			if (torque_out[i] > parameters->torque_limit_positive[i]) {
 				torque_out[i] = parameters->torque_limit_positive[i];

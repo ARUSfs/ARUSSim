@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 //VDC MODELS ACTIVATION
-#define TV_ACTIVE			1
+#define TV_ACTIVE			0
 #define TC_ACTIVE			1
 #define EST_ACTIVE			0
 
@@ -38,10 +38,10 @@ extern "C" {
 
 //Mass and inertia
 #define DEFAULT_MASS		275.
-#define DEFAULT_NSM			25
-#define DEFAULT_H_CDG		0.26
+#define DEFAULT_NSM			24.3
+#define DEFAULT_H_CDG		0.31
 #define DEFAULT_H_CDG_NSM 	0.225
-#define DEFAULT_H_CDG_SM	0.3
+#define DEFAULT_H_CDG_SM	0.3218
 #define DEFAULT_H_RC_F		0.033
 #define DEFAULT_H_RC_R		0.097
 
@@ -60,17 +60,17 @@ extern "C" {
 #define r_ARB_r				0.07
 #define psi_ARB_r			0.1282817 //7.35 * pi /180
 #define DEFAULT_GEAR_RATIO  12.48
-#define DEFAULT_RDYN		0.225
+#define DEFAULT_RDYN		0.23
 #define DEFAULT_WHEEL_INERTIA    0.4
 #define DEFAULT_TL_POS		21.	
 #define DEFAULT_TL_NEG		-21.
 
 //AERO
 #define DEFAULT_RHO			1.225
-#define DEFAULT_CDA			1.971
-#define DEFAULT_CLA		    4.75
-#define DEFAULT_R_CDP		0.4604
-#define DEFAULT_H_CDP		0.517
+#define DEFAULT_CDA			1.5
+#define DEFAULT_CLA		    3.6
+#define DEFAULT_R_CDP		0.5795
+#define DEFAULT_H_CDP		0.31
 
 //YAW RATE PID
 #define TV_KP				400			//Pruebas mesa
@@ -82,13 +82,13 @@ extern "C" {
 
 //TC PID
 #define TC_K_				30.
-#define TC_TI				0.
+#define TC_TI				1.
 #define TC_TD				0.
 
 
 //TC Paramtets
 #define DEFAULT_TC_V0		5
-#define DEFAULT_TC_V_GAIN	3
+#define DEFAULT_TC_V_GAIN	5
 
 //PACEJKA TIRE MODEL
 // PAC parameters
@@ -170,6 +170,7 @@ typedef struct{
 
 	//TC
 	float TC_K, TC_Ti, TC_Td;
+    float v0, v_gain;
 
 	//general
 	float TS;

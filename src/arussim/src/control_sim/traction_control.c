@@ -22,10 +22,9 @@ void TractionControl_Init(PID *pid, Parameters *parameters) {
     pid->TC_K = TC_K_;
     pid->TC_Ti = TC_TI;
     pid->TC_Td = TC_TD;
-    pid->init = 0;  
-
-    parameters->v0 = DEFAULT_TC_V0;
-    parameters->v_gain = DEFAULT_TC_V_GAIN;
+    pid->v0= DEFAULT_TC_V0;
+    pid->v_gain = DEFAULT_TC_V_GAIN;
+    pid->init = 0;
 
     for (int i = 0; i < 4; i++) {
         tc_state.int_SRe[i] = 0.0f;
@@ -128,14 +127,13 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     //PID FEEDBACK CONTROL
     float SR_e[4];
     float int_SRep[4];
-    float alpha = 0.2;
 
     for (int i = 0; i < 4; i++) {
         if (fabsf(Tin[i]) < 0.1f) {
             TC[i] = 0.0f;
             tc_state.int_SRe[i] = 0.0f;
             tc_state.SR_e1[i]   = 0.0f;
-            TC_calc[i]          = 0.0f; //Comentar cuando se use suavizado
+            TC_calc[i]          = 0.0f; 
             continue;
         }
 
@@ -144,14 +142,15 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
         int_SRep[i] = tc_state.int_SRe[i] + SR_e[i];
         
         float pid_calc = pid->TC_K*SR_e[i]
-                       + pid->TC_Ti*int_SRep[i];
+                       + pid->TC_Ti*int_SRep[i]
+                       - pid->TC_Td*(SR_e[i] - tc_state.SR_e1[i]);
 
                 
-        // TC_calc[i] = alpha * TC_calc[i] + (1-alpha) * (T_obj[i] + pid_calc); //Suavizado
         TC_calc[i] = T_obj[i] + pid_calc;
 
 
         TC[i] = fminf(TC_calc[i], fmaxf(Tin[i], -TC_calc[i]));
+
         if(Tin[i] >= 0.0f && TC_calc[i] < 0.0f){
             TC[i] = Tin[i];
         }
@@ -167,7 +166,7 @@ void TractionControl_Update(SensorData *sensors, Parameters *parameters, PID *pi
     }
 
    if (vx < 3.0f) {
-       float T_limit = 10.0 + 2.0 * vx;
+       float T_limit = pid->v0 + pid->v_gain * vx;
 
        if (TC[0] > T_limit) TC[0] = T_limit;
        if (TC[1] > T_limit) TC[1] = T_limit;
