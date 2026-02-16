@@ -1,5 +1,5 @@
 lap,cones,best_time
-15.6766,0,15.6766,
+5.58982,0,5.58982,
 "/controller:
   ros__parameters:
     CdA: 1.9
@@ -24,11 +24,11 @@ lap,cones,best_time
     lateral_deviation_topic: /controller/lateral_deviation
     look_ahead_distance: 6.0
     mass: 272.0
-    max_cmd: 7.0
+    max_cmd: 12.0
     max_steer: 20.0
-    min_cmd: -5.0
-    optimized_look_ahead_distance: 8.0
-    optimized_steer_control: PP
+    min_cmd: -10.0
+    optimized_look_ahead_distance: 7.0
+    optimized_steer_control: MPC
     optimized_trajectory_topic: /trajectory_optimization/trajectory
     prediction_horizon: 65
     pursuit_point_topic: /controller/pursuit_point
@@ -50,7 +50,7 @@ lap,cones,best_time
     steer_timer_frequency: 100.0
     target: 5.0
     target_speed_topic: /controller/target_speed
-    trajectory_topic: /path_planning/trajectory
+    trajectory_topic: /skidpad_planning/trajectory
     ts_mpc: 0.02
     use_optimized_trajectory: false
     use_sim_time: false

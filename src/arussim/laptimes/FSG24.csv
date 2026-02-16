@@ -1,5 +1,5 @@
 lap,cones,best_time
-37.4396,1,39.4396,
+0,0,0,
 "/controller:
   ros__parameters:
     CdA: 1.9
@@ -55,7 +55,7 @@ lap,cones,best_time
     use_optimized_trajectory: true
     use_sim_time: false
     use_speed_smoothing: true
-    use_variable_look_ahead: false
+    use_variable_look_ahead: true
     weight_dist_rear: 0.5
     wheel_base: 1.535
     yaw_deviation_topic: /controller/yaw_deviation

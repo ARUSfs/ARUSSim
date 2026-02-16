@@ -67,15 +67,31 @@ void Supervisor::timer_callback(){
  */
 void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::SharedPtr msg)
 {
-    std::filesystem::path ws_path = std::filesystem::canonical("/proc/self/exe");
-    for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
-    std::filesystem::path dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
-    std::filesystem::path file_path = dir_path / (circuit_ + ".csv");
+    time_list_.clear();
+    list_total_hit_cones_.clear();
+    hit_cones_lap_.clear();
+    speed_multiplier_list_.clear();
+    started_ = false;
+}
 
-    // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
-    if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
-    {
-        if(!started_){
+/**
+ * @brief Callback to check if the car is between two TPLs.
+ * 
+ * @param msg 
+ */
+void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    if (!started_){
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
+        controller_dump_ = exec_command();
+        ws_path = std::filesystem::canonical("/proc/self/exe");
+        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
+        dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
+        file_path = dir_path / (circuit_ + ".csv");
+
+        // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
+        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+        {
             std::ifstream file(file_path);
 
             if (!file.is_open()) {
@@ -95,57 +111,18 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
 
                 file.close();
 
-                if (!last_line.empty()) {
+            if (!last_line.empty()) {
                 std::stringstream ss(last_line);
                 std::string lap, cones, time;
                 std::getline(ss, lap, ',');
                 std::getline(ss, cones, ',');
                 std::getline(ss, time, ',');
 
-                prev_best_time_ = std::stod(time);
-                }
-            }
-        else{
-            if(prev_best_time_ > best_time_){
-                std::ofstream file(file_path);
-                file << "lap,cones,best_time\n";
-                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
-                file.close();
+                current_best_time_ = std::stod(time);
             }
         }
-    }
-
-    else // Creates a .csv file and adds the time done in simulation.
-    {
-        if(started_){
-            std::ofstream file(file_path, std::ios::out);
-            if (!file.is_open()) {
-                throw std::runtime_error("Could not create CSV file");
-            }
-
-            file << "lap,cones,best_time\n";
-            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
-        }
-    }
-
-    time_list_.clear();
-    list_total_hit_cones_.clear();
-    hit_cones_lap_.clear();
-    speed_multiplier_list_.clear();
-    started_ = false;
-}
-
-/**
- * @brief Callback to check if the car is between two TPLs.
- * 
- * @param msg 
- */
-void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
-{
-    if (!started_){
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
-        controller_dump_ = exec_command();
         started_ = true;
+        first_lap_ = true;
     }
     else{
         time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
@@ -155,11 +132,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         lap_time_pub_->publish(lap_time_msg);
 
         double real_lap_time_ = time_list_.back() + 2 * hit_cones_lap_.size();
-        if(prev_time_ + 2 * prev_hit_cones_ > real_lap_time_)
+        if(real_lap_time_ < best_time_ || first_lap_)
         {
         best_time_ = real_lap_time_;
         cones_hitted_ = hit_cones_lap_.size();
         lap_time_ = time_list_.back();
+        first_lap_ = false;
         }
 
         // Detect hit cones in this lap and add to total
@@ -183,6 +161,24 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             row_values.push_back(std::to_string(lap_time_msg.data));
             row_values.push_back(std::to_string(n_total_cones_hit_));
             csv_generator_->write_row("lap_time,total_hit_cones", row_values);
+        }
+        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+        {
+            if(current_best_time_ > best_time_){
+                std::ofstream file(file_path);
+                file << "lap,cones,best_time\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
+                file.close();
+            }
+        }
+        else // Creates a .csv file and adds the time done in simulation.
+        {
+            std::ofstream file(file_path, std::ios::out);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not create CSV file");
+            }
+            file << "lap,cones,best_time\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
         }
     }
     prev_hit_cones_ = list_total_hit_cones_.size() - prev_hit_cones_;

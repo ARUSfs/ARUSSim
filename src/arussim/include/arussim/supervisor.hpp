@@ -104,14 +104,15 @@ private:
     double mean_;
 
     bool between_tpl_;
-    bool started_ = false;
+    bool started_;
+    double first_lap_;
     
     double prev_time_;
     size_t prev_hit_cones_;
     double best_time_;
     size_t cones_hitted_;
     double lap_time_;
-    double prev_best_time_;
+    double current_best_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
@@ -121,6 +122,9 @@ private:
     std::string controller_dump_;
     std::string cmd = "ros2 param dump /controller";
 
+    std::filesystem::path ws_path;
+    std::filesystem::path dir_path;
+    std::filesystem::path file_path;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
