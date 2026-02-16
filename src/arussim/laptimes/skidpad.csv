@@ -1,5 +1,5 @@
 lap,cones,best_time
-5.58982,0,5.58982,
+6.94074,0,6.94074,
 "/controller:
   ros__parameters:
     CdA: 1.9
@@ -55,9 +55,33 @@ lap,cones,best_time
     use_optimized_trajectory: false
     use_sim_time: false
     use_speed_smoothing: true
-    use_variable_look_ahead: true
+    use_variable_look_ahead: false
     weight_dist_rear: 0.5
     wheel_base: 1.535
     yaw_deviation_topic: /controller/yaw_deviation
+
+/skidpad_planning:
+  ros__parameters:
+    debug: false
+    perception_topic: /slam/map
+    planning_time: 5.0
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    route_spacing: 0.1
+    step_width_1: 10.0
+    step_width_2: 0.0
+    target_first_lap: 7.0
+    target_second_lap: 10.0
+    top_accx_backwards: 5.0
+    top_accx_forwards: 1.0
+    top_accx_straight: 5.0
+    top_accy: 13.0
+    trajectory_topic: /skidpad_planning/trajectory
+    use_sim_time: false
 
 "

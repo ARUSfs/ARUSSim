@@ -83,7 +83,8 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
 {
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
-        controller_dump_ = exec_command();
+        prev_time_ = this->get_clock()->now().seconds();
+        parameters_dump_ = exec_command();
         ws_path = std::filesystem::canonical("/proc/self/exe");
         for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
         dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
@@ -121,17 +122,20 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 current_best_time_ = std::stod(time);
             }
         }
+        if(circuit_ == "skidpad") time_cone_penalty_ = 0.2;
+        else time_cone_penalty_ = 2.0;
         started_ = true;
         first_lap_ = true;
     }
     else{
         time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
+        prev_time_ = this->get_clock()->now().seconds();
 
         std_msgs::msg::Float32 lap_time_msg;
         lap_time_msg.data = time_list_.back();
         lap_time_pub_->publish(lap_time_msg);
 
-        double real_lap_time_ = time_list_.back() + 2 * hit_cones_lap_.size();
+        real_lap_time_ = time_list_.back() + time_cone_penalty_ * hit_cones_lap_.size();
         if(real_lap_time_ < best_time_ || first_lap_)
         {
         best_time_ = real_lap_time_;
@@ -167,7 +171,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             if(current_best_time_ > best_time_){
                 std::ofstream file(file_path);
                 file << "lap,cones,best_time\n";
-                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << parameters_dump_ << "\"" << "\n";
                 file.close();
             }
         }
@@ -178,11 +182,9 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 throw std::runtime_error("Could not create CSV file");
             }
             file << "lap,cones,best_time\n";
-            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << controller_dump_ << "\"" << "\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << parameters_dump_ << "\"" << "\n";
         }
     }
-    prev_hit_cones_ = list_total_hit_cones_.size() - prev_hit_cones_;
-    prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
 }
 
@@ -235,15 +237,35 @@ std::string Supervisor::exec_command()
 {
     std::array<char, 256> buffer;
     std::string result;
+    std::string node1 = "controller";
+    std::string node2, node3;
+
+    if (circuit_ == "skidpad"){
+        node2 = "skidpad_planning";
+    }
+    else if (circuit_ == "acceleration"){
+        node2 = "acc_planning";
+    }
+    else {
+        node2 = "path_planning";
+        node3 = "trajectory_optimization";
+    }
+
+    std::vector<std::string> nodes_to_print = {node1, node2};
+    if (!node3.empty()) nodes_to_print.push_back(node3);
+
     // Execute the command on bash to get the controller parameters and stores it in a string.
-    FILE* pipe = popen(cmd.c_str(), "r");
-    if (!pipe)
-        return "Error executing the command.";
+    for (const auto& node : nodes_to_print){
+        std::string cmd = "ros2 param dump " + node;
+        FILE* pipe = popen(cmd.c_str(), "r");
+        if (!pipe)
+            return "Error executing the command.";
 
-    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
-        result += buffer.data();
+        while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
+            result += buffer.data();
 
-    pclose(pipe);
+        pclose(pipe);
+    }
     return result;
 }
 
