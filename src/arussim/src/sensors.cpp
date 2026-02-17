@@ -7,6 +7,9 @@
  * 
  */
 #include "arussim/sensors.hpp"
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
 std::vector<Sensors::CanFrame> Sensors::frames;
 /**
  * @class Sensors
@@ -63,12 +66,8 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
     //CAN Socket setup
-    can_socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    std::strcpy(ifr_.ifr_name, "can0");
-    ioctl(can_socket_, SIOCGIFINDEX, &ifr_);
-    addr_.can_family = AF_CAN;
-    addr_.can_ifindex = ifr_.ifr_ifindex;
-    bind(can_socket_, (struct sockaddr *)&addr_, sizeof(addr_));
+    can0_socket_ = setup_can_socket("can0");
+    can1_socket_ = setup_can_socket("can1");
 
     // State subscriber
     state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
@@ -128,10 +127,57 @@ Sensors::Sensors() : Node("sensors")
             {"rr_inv_speed", {0, 23, true, 0.0001047197551196, 0.0}},
             {"rr_inv_torque", {24, 39, true, 0.0098, 0.0}}
         }},
+        {0x100, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+        }, Sensors::CanBus::kCan1},
+        {0x104, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+        }, Sensors::CanBus::kCan1},
+        {0x108, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+        }, Sensors::CanBus::kCan1},
+        {0x112, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+        }, Sensors::CanBus::kCan1},
         {0x161, 2, {
-            {"as_status", {8, 15, false, 1.0, 0.0}}
+            {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
+            {"dv_driving", {8, 15, false, 1.0, 0.0}}
+        }},
+        {0x221, 1, {
+            {"enable_flag", {0, 7, false, 1.0, 0.0}}
         }}
     };
+}
+
+int Sensors::setup_can_socket(const char * interface_name)
+{
+    const int can_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (can_socket < 0) {
+        RCLCPP_ERROR(this->get_logger(), "socket(PF_CAN) failed for %s: %s", interface_name, std::strerror(errno));
+        return -1;
+    }
+
+    struct ifreq ifr = {};
+    std::strncpy(ifr.ifr_name, interface_name, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+
+    if (ioctl(can_socket, SIOCGIFINDEX, &ifr) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "ioctl(SIOCGIFINDEX) failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    struct sockaddr_can addr = {};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+
+    if (bind(can_socket, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "bind() failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    return can_socket;
 }
 
 /**
@@ -197,7 +243,7 @@ void Sensors::inverter_timer(){
     // Publish the torque message
     torque_pub_->publish(message);
 
-     // Random noise generation with different noise for each wheel speed
+    // Random noise generation with different noise for each wheel speed
     std::normal_distribution<> dist_front_right(0.0, kNoiseMotorSpeedFrontLeft);
     std::normal_distribution<> dist_front_left(0.0, kNoiseMotorSpeedFrontRight);
     std::normal_distribution<> dist_rear_right(0.0, kNoiseMotorSpeedRearLeft);
@@ -210,13 +256,15 @@ void Sensors::inverter_timer(){
     wheel_speed_.rl_ = wheel_speed_msg.rear_left + dist_rear_left(gen);    
 
     //Send Inverter CAN frames
-     std::map<std::string,double> values = { {"fl_inv_speed", wheel_speed_.fl_*kGearRatio}, {"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 
+    std::map<std::string,double> values = {
+    {"fl_inv_speed", wheel_speed_.fl_*kGearRatio},{"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 
     {"fr_inv_speed", wheel_speed_.fr_*kGearRatio}, {"fr_inv_torque", torque_cmd_.fr_/kGearRatio}, 
     {"rl_inv_speed", wheel_speed_.rl_*kGearRatio}, {"rl_inv_torque", torque_cmd_.rl_/kGearRatio}, 
-    {"rr_inv_speed", wheel_speed_.rr_*kGearRatio}, {"rr_inv_torque", torque_cmd_.rr_/kGearRatio} 
+    {"rr_inv_speed", wheel_speed_.rr_*kGearRatio}, {"rr_inv_torque", torque_cmd_.rr_/kGearRatio},
+    {"enable_amk_status_byte1", 96.0}
     }; 
 
-    for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114) { 
+    for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
         send_can_frame(frame, values); 
     } 
 } 
@@ -240,13 +288,14 @@ void Sensors::gss_timer()
 
     std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
     {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)}, 
-    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)} }; 
+    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)},
+    {"dv_autonomous", 1.0}, {"dv_driving", 3.0}, {"enable_flag", 1.0} }; 
 
     for (auto &frame : frames) { 
-        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0)  { 
-        send_can_frame(frame, values); 
-    } 
-}
+        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0 || frame.id == 0x161 || frame.id == 0x221)  { 
+            send_can_frame(frame, values); 
+        } 
+    }
 
 }
 
@@ -288,7 +337,21 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
             canMsg_.data[byte_idx + 1] |= (raw >> (8 - bit_offset)) & 0xFF; 
         } 
     } 
-    write(can_socket_, &canMsg_, sizeof(canMsg_)); 
+
+    if (frame.can_bus == CanBus::kCan1) {
+        if (can1_socket_ < 0) {
+            RCLCPP_ERROR(this->get_logger(), "can1_socket_ not initialized for frame 0x%X", frame.id);
+            return;
+        }
+        write(can1_socket_, &canMsg_, sizeof(canMsg_));
+        return;
+    }
+
+    if (can0_socket_ < 0) {
+        RCLCPP_ERROR(this->get_logger(), "can0_socket_ not initialized for frame 0x%X", frame.id);
+        return;
+    }
+    write(can0_socket_, &canMsg_, sizeof(canMsg_)); 
 }
 
 /**

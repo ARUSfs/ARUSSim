@@ -13,7 +13,10 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include <map>
 #include <random>
+#include <string>
+#include <vector>
 #include <linux/can.h>       
 #include <linux/can/raw.h>   
 #include <net/if.h>          
@@ -35,6 +38,11 @@ public:
     Sensors(); // Constructor
 
     //Define CAN frame and signal structures
+    enum class CanBus {
+        kCan0,
+        kCan1,
+    };
+
     struct CanSignal {
         int bit_in;
         int bit_fin;
@@ -46,6 +54,7 @@ public:
         uint32_t id;
         int size;
         std::map<std::string, CanSignal> signals;
+        CanBus can_bus = CanBus::kCan0;
     };
     static std::vector<CanFrame> frames; 
 
@@ -125,6 +134,7 @@ private:
     
     static uint64_t encode_signal(double value, double scale, double offset, int bit_len, bool is_signed);
     void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values);
+    int setup_can_socket(const char * interface_name);
 
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
@@ -135,9 +145,8 @@ private:
     rclcpp::TimerBase::SharedPtr inverter_timer_; // Inverter timer
 
     //CAN Communication
-    int can_socket_;
-    struct ifreq ifr_{};
-    struct sockaddr_can addr_{};
+    int can0_socket_ = -1;
+    int can1_socket_ = -1;
     struct can_frame canMsg_{}; 
     
     
