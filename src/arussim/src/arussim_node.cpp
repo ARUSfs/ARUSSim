@@ -22,7 +22,9 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
-    this->declare_parameter<double>("sensor.lidar_fov", 20);
+    this->declare_parameter<double>("sensor.lidar_fov", 120.0);
+    this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
+    this->declare_parameter<double>("sensor.lidar_max_dist", 3.0);
     this->declare_parameter<double>("sensor.camera_fov", 10);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_position_lidar_perception", 0.01);
@@ -46,6 +48,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
+    this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
+    this->get_parameter("sensor.lidar_max_dist", kMaxLidarDistance);
     this->get_parameter("sensor.camera_fov", kCameraFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_position_lidar_perception", kNoiseLidarPosPerception);
@@ -231,15 +235,21 @@ void Simulator::on_slow_timer()
     auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
     for (auto &point : track_.points)
     {
-        double d = std::sqrt(std::pow(point.x - (x + kPosLidarX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosLidarX*std::sin(yaw)), 2));
-        if (d < kLidarFOV)
+        double dx = point.x - (x + kPosLidarX * std::cos(yaw));
+        double dy = point.y - (y + kPosLidarX * std::sin(yaw));
+        double d = std::sqrt(dx * dx + dy * dy);
+        double angle_to_cone = std::atan2(dy, dx) - yaw;
+        while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
+        while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
+
+        if (d < kMaxLidarDistance && d > kMinLidarDistance && std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0)
         {
             PointXYZProbColorScore p;
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
             p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
             p.z = 0.0;
             double p_r = std::exp(-0.005 * d);  // Exponential decay for color
-            double a = std::log(2.0) / kLidarFOV; // Calculate 'a' paramater for exponential decay based on max distance
+            double a = std::log(2.0) / kMaxLidarDistance; // Calculate 'a' paramater for exponential decay based on max distance
             double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
             if (point.color == 0) {
                 p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
