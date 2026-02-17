@@ -117,6 +117,10 @@ ament_target_dependencies(supervisor_exec rclcpp
                             tf2_ros
                             tf2)
 
+# generate executable for control_raspi.cpp
+add_executable(control_raspi_exec src/control_raspi.cpp)
+ament_target_dependencies(control_raspi_exec rclcpp std_msgs)
+
 # generate executable for control_sim.cpp
 add_executable(control_sim_exec src/control_sim/control_sim.cpp
                             src/control_sim/estimation.c        
@@ -138,6 +142,7 @@ install(TARGETS
   sensors_exec
   supervisor_exec
   control_sim_exec
+  control_raspi_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location
