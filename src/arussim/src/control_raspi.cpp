@@ -22,8 +22,14 @@ namespace
 constexpr const char * kLaunchTopic = "/arussim/launch";
 constexpr const char * kResetTopic = "/arussim/reset";
 
+// Relative path from the ControlRaspi executable to the Control-RaspPi executable
+// Change this path if doesn't match your workspace structure
 constexpr const char * kControlRaspRelativePath = "../../../../../ws_raspi/src/Control-RaspPi/build/ControlRaspi";
 
+/**
+ * @brief Get the directory of the current executable
+ * 
+ */
 std::string get_executable_dir()
 {
   std::error_code error;
@@ -34,6 +40,10 @@ std::string get_executable_dir()
   return exe_path.parent_path().string();
 }
 
+/**
+ * @brief Guard class to reset the stopping flag when going out of scope
+ * 
+ */
 class StoppingGuard
 {
 public:
@@ -46,6 +56,11 @@ private:
 
 }  // namespace
 
+/**
+ * @brief ControlRaspi class that manages the Control-RaspPi process
+ * 
+ * It listens to launch and reset topics to start and stop the Control-RaspPi process accordingly.
+ */
 ControlRaspi::ControlRaspi(const rclcpp::NodeOptions & options)
 : rclcpp::Node("control_raspi", options)
 {
@@ -60,6 +75,10 @@ ControlRaspi::ControlRaspi(const rclcpp::NodeOptions & options)
     std::bind(&ControlRaspi::reset_callback, this, std::placeholders::_1));
 }
 
+/**
+ * @brief Callback function for the launch topic
+ * 
+ */
 void ControlRaspi::launch_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg || !msg->data) {
@@ -68,6 +87,10 @@ void ControlRaspi::launch_callback(const std_msgs::msg::Bool::SharedPtr msg)
   start_control_rasp();
 }
 
+/**
+ * @brief Callback function for the reset topic
+ * 
+ */
 void ControlRaspi::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg || !msg->data) {
@@ -76,6 +99,15 @@ void ControlRaspi::reset_callback(const std_msgs::msg::Bool::SharedPtr msg)
   stop_control_rasp();
 }
 
+
+/**
+ * @brief Start the Control-RaspPi process
+ * 
+ * This function checks if the process is already running, resolves the path to the Control-RaspPi
+ * executable and its working directory, and then starts the process using fork and exec.
+ * 
+ * It also handles errors and logs appropriate messages.
+ */
 void ControlRaspi::start_control_rasp()
 {
   if (control_rasp_pid_.has_value()) {
@@ -122,6 +154,12 @@ void ControlRaspi::start_control_rasp()
   control_rasp_pid_ = pid;
 }
 
+/**
+ * @brief Stop the Control-RaspPi process
+ * 
+ * Firstly tries to stop it by sending SIGINT, then SIGTERM and finally SIGKILL
+ * to force stop it if it doesn't stop.
+ */
 void ControlRaspi::stop_control_rasp()
 {
   if (stopping_.exchange(true)) {
@@ -168,6 +206,10 @@ void ControlRaspi::stop_control_rasp()
   control_rasp_pid_.reset();
 }
 
+/**
+ * @brief Get the directory of the current executable
+ * 
+ */
 std::string ControlRaspi::resolve_control_rasp_path() const
 {
   const std::string exe_dir = get_executable_dir();
@@ -195,6 +237,12 @@ std::string ControlRaspi::resolve_control_rasp_path() const
   return normalized.string();
 }
 
+/**
+ * @brief Resolve the working directory for Control-RaspPi
+ * 
+ * This function assumes that the working directory is the parent directory of the Control-RaspPi executable.
+ * It checks if the directory exists and contains a parameters.yaml file to validate it.
+ */
 std::string ControlRaspi::resolve_control_rasp_working_dir(const std::string & control_rasp_path) const
 {
   std::error_code error;
