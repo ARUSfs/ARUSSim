@@ -13,7 +13,7 @@ arussim:
       car_width:          0.8     # m
 
     sensor:
-      lidar_fov:         120.0                  # m   LiDAR circular range
+      lidar_fov:         120.0                  # º   LiDAR circular range
       lidar_min_dist:    3.0                    # m   LiDAR min range
       lidar_max_dist:    30.0                   # m   LiDAR max range
       camera_fov:        30.0                   # m   Camera circular range
@@ -24,7 +24,7 @@ arussim:
       noise_camera_perception: 0.1             # m   Noise standard deviation for camera perception
       noise_camera_color:       0.15            # m   Noise standard deviation for camera
       cut_cones_below_x:  -1.0                  # m   Cut cones that are further than this distance in x car axis
-      position_lidar_x:   1.5                   # m   Position of the lidar in x car axis
+      position_lidar_x:   0.0                   # m   Position of the lidar in x car axis
       position_camera_x:  0.0                   # m   Position of the camera in x car axis
       camera_color_probability: 0.98            # Probability of a cone being colored by the camera
 
