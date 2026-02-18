@@ -41,4 +41,4 @@ By default, the relative path is set to "../../../../../ws_raspi/src/Control-Ras
 
 Because of "Stop Simulation" button not having a topic, control_raspi.cpp only kills Control-RaspPi execution by pressing the "Reset Simulation" button so please, press both of them.
 
-Also, if you notice the car behaving anormally, close the simulation and restart it. Maybe you didn't restarted the simulation properlly and there are 2 Control-RaspPi process running (not ideal).
+Also, if you notice the car behaving anormally, close the simulation and restart it (or press the "reset" button on the left down corner). Maybe you didn't restarted the simulation properlly and there are 2 Control-RaspPi process running (not ideal).
