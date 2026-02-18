@@ -5,7 +5,7 @@ If any of these commands require `sudo`, the launch will fail because it cannot 
 
 To avoid this, you must configure sudo so that your user can execute the required `vcan` commands **without a password**.
 
-## 1. Create the sudoers rule
+## Create the sudoers rule
 
 Run:
 
@@ -21,7 +21,24 @@ Cmnd_Alias VCAN_CMDS = \
     /usr/sbin/ip link set down can0, \
     /usr/sbin/ip link add dev can1 type vcan, \
     /usr/sbin/ip link set up can1, \
-    /usr/sbin/ip link set down can1
+    /usr/sbin/ip link set down can1, \
+    /usr/sbin/ip link add dev can2 type vcan, \
+    /usr/sbin/ip link set up can2, \
+    /usr/sbin/ip link set down can2
 
 <your-username> ALL=(ALL) NOPASSWD: VCAN_CMDS
 ```
+
+# Configuration of Control-RaspPi 
+
+In order to communicate via vcan and use the Control-RaspPi repository, you must specify the relative path from the "[control_raspi.cpp](src/arussim/src/control_raspi.cpp)" file to the Control-RaspPi executable. 
+
+Control-RaspPi acts as a interface to handle events suchs as executing/killing the process, resolving the path to the executable, log errors caused by Control-RaspPi, ...
+
+By default, the relative path is set to "../../../../../ws_raspi/src/Control-RaspPi/build/ControlRaspi". This assuming that workspaces for both ARUSSim and Control-RaspPi are parents and your ws for Control-RaspPi is named "ws_raspi", feel free to chenge it as long as you change the relative path.
+
+## Control-RaspPi behaviour on ARUSSim
+
+Because of "Stop Simulation" button not having a topic, control_raspi.cpp only kills Control-RaspPi execution by pressing the "Reset Simulation" button so please, press both of them.
+
+Also, if you notice the car behaving anormally, close the simulation and restart it. Maybe you didn't restarted the simulation properlly and there are 2 Control-RaspPi process running (not ideal).
