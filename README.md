@@ -35,6 +35,9 @@ In order to communicate via vcan and use the Control-RaspPi repository, you must
 
 Control-RaspPi acts as a interface to handle events suchs as executing/killing the process, resolving the path to the executable, log errors caused by Control-RaspPi, ...
 
+**IMPORTANT: READ BELOW**
+You need 2 workspaces (preferably parents) since Control-RaspPi doesn't use colcon, therefore it can't be compiled as the same way as ARUSSim.
+
 By default, the relative path is set to "../../../../../ws_raspi/src/Control-RaspPi/build/ControlRaspi". This assuming that workspaces for both ARUSSim and Control-RaspPi are parents and your ws for Control-RaspPi is named "ws_raspi", feel free to chenge it as long as you change the relative path.
 
 ## Control-RaspPi behaviour on ARUSSim
