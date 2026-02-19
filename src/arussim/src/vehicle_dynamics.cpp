@@ -146,8 +146,8 @@ void VehicleDynamics::calculate_tire_loads(){
 
     tire_loads_.fl_ = kStaticLoadFront - lateral_load_transfer_front - longitudinal_load_transfer/2;
     tire_loads_.fr_ = kStaticLoadFront + lateral_load_transfer_front - longitudinal_load_transfer/2;
-    tire_loads_.rl_ = kStaticLoadFront - lateral_load_transfer_rear + longitudinal_load_transfer/2;
-    tire_loads_.rr_ = kStaticLoadFront + lateral_load_transfer_rear + longitudinal_load_transfer/2;
+    tire_loads_.rl_ = kStaticLoadRear - lateral_load_transfer_rear + longitudinal_load_transfer/2;
+    tire_loads_.rr_ = kStaticLoadRear + lateral_load_transfer_rear + longitudinal_load_transfer/2;
 
     double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
     double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
