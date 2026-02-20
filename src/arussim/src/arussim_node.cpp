@@ -242,7 +242,7 @@ void Simulator::on_slow_timer()
         while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
         while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
 
-        if (d < kMaxLidarDistance && d > kMinLidarDistance && std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0)
+        if (d < kMaxLidarDistance)
         {
             PointXYZProbColorScore p;
             p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
@@ -264,11 +264,9 @@ void Simulator::on_slow_timer()
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
             p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
-            if (p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5) {
+            if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
                 perception_cloud.push_back(p);
-            }
-            if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
-            {
+            } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
                 arussim_msgs::msg::PointXY msg;
                 msg.x = point.x;
                 msg.y = point.y;
