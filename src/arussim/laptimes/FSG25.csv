@@ -1,6 +1,7 @@
 lap,cones,best_time
-44.401,1,46.401,
-"/controller:
+35.2495,0,35.2495
+---PARAM_DUMP_BEGIN---
+/controller:
   ros__parameters:
     CdA: 1.9
     Crr: 0.01
@@ -21,7 +22,6 @@ lap,cones,best_time
     debug: false
     first_lap_steer_control: PP
     g: 9.81
-    lateral_deviation_topic: /controller/lateral_deviation
     look_ahead_distance: 6.0
     mass: 272.0
     max_cmd: 7.0
@@ -55,10 +55,8 @@ lap,cones,best_time
     use_optimized_trajectory: true
     use_sim_time: false
     use_speed_smoothing: true
-    use_variable_look_ahead: false
     weight_dist_rear: 0.5
     wheel_base: 1.535
-    yaw_deviation_topic: /controller/yaw_deviation
 
 /path_planning:
   ros__parameters:
@@ -122,4 +120,5 @@ lap,cones,best_time
     use_sim_time: false
     v_max: 10.0
 
-"
+
+---PARAM_DUMP_END---

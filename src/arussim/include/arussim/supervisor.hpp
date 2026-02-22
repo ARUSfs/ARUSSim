@@ -104,8 +104,8 @@ private:
     double mean_;
 
     bool between_tpl_;
-    bool started_;
-    double first_lap_;
+    bool started_ = false;
+    double first_lap_ = true;
     
     double prev_time_;
     double best_time_;

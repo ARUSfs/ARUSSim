@@ -72,6 +72,7 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
     hit_cones_lap_.clear();
     speed_multiplier_list_.clear();
     started_ = false;
+    first_lap_ = true;
 }
 
 /**
@@ -125,7 +126,6 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         if(circuit_ == "skidpad") time_cone_penalty_ = 0.2;
         else time_cone_penalty_ = 2.0;
         started_ = true;
-        first_lap_ = true;
     }
     else{
         time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
@@ -171,7 +171,10 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             if(current_best_time_ > best_time_){
                 std::ofstream file(file_path);
                 file << "lap,cones,best_time\n";
-                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << parameters_dump_ << "\"" << "\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                file << "---PARAM_DUMP_BEGIN---\n";
+                file << parameters_dump_ << "\n";
+                file << "---PARAM_DUMP_END---\n";
                 file.close();
             }
         }
@@ -182,7 +185,11 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 throw std::runtime_error("Could not create CSV file");
             }
             file << "lap,cones,best_time\n";
-            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "," << "\n" << "\"" << parameters_dump_ << "\"" << "\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+            file << "---PARAM_DUMP_BEGIN---\n";
+            file << parameters_dump_ << "\n";
+            file << "---PARAM_DUMP_END---\n";
+            current_best_time_ = best_time_;
         }
     }
     speed_multiplier_list_.clear();
