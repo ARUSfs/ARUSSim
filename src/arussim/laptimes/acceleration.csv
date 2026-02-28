@@ -1,0 +1,88 @@
+lap,cones,best_time
+6.98882,0,6.98882
+---PARAM_DUMP_BEGIN---
+/controller:
+  ros__parameters:
+    CdA: 1.9
+    Crr: 0.01
+    Izz: 190.0
+    KD: 0.01
+    KI: 0.05
+    KP: 5.0
+    auto_start: false
+    braking_decc: 3.0
+    braking_procedure_topic: /car_state/braking_procedure
+    cmd_topic: /controller/cmd
+    compensation_steps: 2
+    cornering_stiffness_front: -15060.0
+    cornering_stiffness_rear: -18053.0
+    cost_angular_error: 5.0
+    cost_lateral_error: 10.0
+    cost_steering_delta: 2000.0
+    debug: false
+    first_lap_steer_control: PP
+    g: 9.81
+    look_ahead_distance: 8.0
+    mass: 272.0
+    max_cmd: 5.0
+    max_steer: 20.0
+    min_cmd: -5.0
+    optimized_look_ahead_distance: 7.0
+    optimized_steer_control: MPC
+    optimized_trajectory_topic: /trajectory_optimization/trajectory
+    prediction_horizon: 65
+    pursuit_point_topic: /controller/pursuit_point
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    rho: 1.225
+    run_check_topic: /car_state/run_check
+    smooth_speed_coeff: 0.8
+    speed_timer_frequency: 100.0
+    state_topic: /car_state/state
+    steer_model_delta: -91.61
+    steer_model_delta_v: -12.25
+    steer_model_u: 90.13
+    steer_timer_frequency: 100.0
+    target: 5.0
+    target_speed_topic: /controller/target_speed
+    trajectory_topic: /acc_planning/trajectory
+    ts_mpc: 0.02
+    use_optimized_trajectory: false
+    use_sim_time: false
+    use_speed_smoothing: true
+    weight_dist_rear: 0.5
+    wheel_base: 1.535
+
+/acc_planning:
+  ros__parameters:
+    car_state_topic: /car_state/state
+    debug: false
+    finish_offset: 2.0
+    max_acc: 5.0
+    max_allowed_deviation: 10.0
+    max_dec: 5.0
+    max_iterations: 500
+    max_traj_slope: 0.5
+    min_inliers_required: 3
+    perception_topic: /slam/map
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    ransac_threshold: 1.0
+    step: 0.1
+    target_speed: 15.0
+    track_length: 75.0
+    trajectory_topic: /acc_planning/trajectory
+    use_sim_time: false
+
+
+---PARAM_DUMP_END---
