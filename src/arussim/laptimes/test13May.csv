@@ -1,0 +1,131 @@
+lap,cones,best_time
+19.9626,0,19.9626
+---PARAM_DUMP_BEGIN---
+/controller:
+  ros__parameters:
+    CdA: 1.9
+    Crr: 0.01
+    Izz: 190.0
+    KD: 0.01
+    KI: 0.05
+    KP: 5.0
+    auto_start: false
+    braking_decc: 3.0
+    braking_procedure_topic: /car_state/braking_procedure
+    cmd_topic: /controller/cmd
+    compensation_steps: 2
+    cornering_stiffness_front: -15060.0
+    cornering_stiffness_rear: -18053.0
+    cost_angular_error: 5.0
+    cost_lateral_error: 10.0
+    cost_steering_delta: 2000.0
+    debug: false
+    first_lap_steer_control: PP
+    g: 9.81
+    lambda_k: 0.5
+    lambda_vx: 0.7
+    lateral_deviation_topic: /controller/lateral_deviation
+    look_ahead_distance: 6.0
+    mass: 272.0
+    max_cmd: 7.0
+    max_look_ahead_distance: 8.0
+    max_steer: 20.0
+    min_cmd: -5.0
+    min_look_ahead_distance: 4.0
+    optimized_look_ahead_distance: 8.0
+    optimized_steer_control: MPC
+    optimized_trajectory_topic: /trajectory_optimization/trajectory
+    prediction_horizon: 65
+    pursuit_point_topic: /controller/pursuit_point
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    rho: 1.225
+    run_check_topic: /car_state/run_check
+    smooth_speed_coeff: 0.8
+    speed_timer_frequency: 100.0
+    state_topic: /car_state/state
+    steer_model_delta: -91.61
+    steer_model_delta_v: -12.25
+    steer_model_u: 90.13
+    steer_timer_frequency: 100.0
+    target: 5.0
+    target_speed_topic: /controller/target_speed
+    trajectory_topic: /path_planning/trajectory
+    ts_mpc: 0.02
+    use_optimized_trajectory: true
+    use_sim_time: false
+    use_speed_smoothing: true
+    use_variable_look_ahead_distance: false
+    weight_dist_rear: 0.5
+    wheel_base: 1.535
+    yaw_deviation_topic: /controller/yaw_deviation
+
+/path_planning:
+  ros__parameters:
+    ax_max: 5.0
+    ay_max: 5.0
+    car_info_topic: /car_state/car_info
+    debug: false
+    lap_count_topic: /slam/lap_count
+    len_coeff: 0.3
+    map_topic: /slam/map
+    max_angle_diff: 1.0
+    max_closure_angle: 3.14
+    max_tri_len: 7.5
+    min_tri_angle: 0.1
+    min_tw: 2.5
+    optimized_traj_topic: /trajectory_optimization/trajectory
+    prev_route_bias: 0.5
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    route_back: 10
+    smooth_coeff: 1.3
+    smooth_iterations: 2
+    spline_degree: 3
+    stop_after_closing: false
+    time_to_close: 2.0
+    track_limits_topic: /path_planning/track_limits
+    trajectory_topic: /path_planning/trajectory
+    triangulation_topic: /path_planning/triangulation
+    tw_coeff: 0.8
+    use_buffer: true
+    use_sim_time: false
+    v_max: 7.0
+
+/trajectory_optimization:
+  ros__parameters:
+    c_D: 1.14
+    c_L: 2.94
+    d_min: 1.3
+    debug: false
+    g: 9.81
+    m: 270.0
+    mu_brake: 0.6
+    mu_throttle: 0.6
+    mu_y: 1.0
+    n_iter: 3
+    n_seg: 1000
+    optimized_trajectory_topic: /trajectory_optimization/trajectory
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    track_limits_topic: /path_planning/track_limits
+    use_sim_time: false
+    v_max: 10.0
+
+
+---PARAM_DUMP_END---

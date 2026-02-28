@@ -6,14 +6,13 @@
  * 
  */
 #include <rclcpp/rclcpp.hpp>
+
 #include "std_msgs/msg/bool.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
 #include "std_msgs/msg/float32.hpp"
-#include <algorithm>
-#include <vector>
-#include <utility>
+#include "std_msgs/msg/string.hpp"
 #include "arussim/csv_generator.hpp"
-#include <memory>
+
 
 /**
  * @class Supervisor
@@ -60,12 +59,27 @@ private:
      */
     void timer_callback();
 
+     /**
+     * @brief Callback to store the track name that is selected.
+     * 
+     * @param msg 
+     */
+    void track_name(const std_msgs::msg::String::SharedPtr msg);
+
+    /**
+     * @brief Function to return a string with config params.
+     * 
+     * @return std::string
+     */
+    std::string get_config_params();
+
 
 
     //Publishers and subscribers
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr between_tpl_sub_;
     rclcpp::Subscription<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr lap_time_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr hit_cones_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
@@ -77,12 +91,24 @@ private:
     double mean_;
 
     bool between_tpl_;
-    bool started_;
+    bool started_ = false;
+    double first_lap_ = true;
     
     double prev_time_;
+    double best_time_;
+    size_t cones_hitted_;
+    double lap_time_;
+    double current_best_time_;
+    double time_cone_penalty_;
+    double real_lap_time_;
 
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
+
+    std::string circuit_;
+    std::string parameters_dump_;
+
+    std::filesystem::path file_path_;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
