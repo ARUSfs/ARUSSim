@@ -60,13 +60,13 @@ class VehicleDynamics
     
     private:
 
-        double kMass = 260.0;
-        double kNsMassF = 25;
-        double kNsMassR = 25;
+        double kMass = 264.07;  // Mass of the car + LiDAR
+        double kNsMassF = 17.0;
+        double kNsMassR = 24.302;
         double kSMass = kMass - kNsMassF - kNsMassR;
-        double kIzz = 180;
+        double kIzz = 190;
 
-        double kMassDistributionRear = 0.54;
+        double kMassDistributionRear = 0.5689;
         double kSMassF = kSMass * (1-kMassDistributionRear);
         double kSMassR = kSMass * kMassDistributionRear;
 
@@ -75,48 +75,49 @@ class VehicleDynamics
         double kLf = kWheelBase*kMassDistributionRear;
         double kLr = kWheelBase*(1-kMassDistributionRear);
 
-        double kHCog = 0.26;
-        double kHCogNsF = 0.225;
-        double kHCogNsR = 0.225;
+        double kHCog = 0.27;
+        double kHCogNsF = 0.23;
+        double kHCogNsR = 0.23;
         double kHRollCenterF = 0.033;
         double kHRollCenterR = 0.097;
         double kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
 
-        double kWheelRateF = 500*175.13 / std::pow(1.1,2); // spring_stiffness (N/m) / motion_ratio ^ 2
-        double kWheelRateR = 500*175.13 / std::pow(1.1,2);
+        double kWheelRateF = 105000 / std::pow(1.02,2); // spring_stiffness (N/mm) / motion_ratio ^ 2
+        double kWheelRateR = 105000 / std::pow(1.02,2);
         double kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
         double kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
         double kRollStiffness = kRollStiffnessF + kRollStiffnessR;
 
-        double kAckermann = 0.6;
+        double kAckermann1 = 0.1175;
+        double kAckermann2 = 0.9724;
 
-        double kTireDynRadius = 0.225;
+        double kTireDynRadius = 0.23;
         double kTireInertia = 0.4;
 
         struct {
-            double Dlat = -1.6323;
+            double Dlat = -1.3323;
             double Clat = 1.7230;
             double Blat = 12.7;
             double Elat = 0.4035;
 
-            double Dlon = 1.3976;
+            double Dlon = 1.1976;
             double Clon = 1.9503;
             double Blon = 17.49;
             double Elon = 0.999;
 
             double Gx1 = 25000;
             double bx = 0.2367;
-            double a = 93733;
+            double a = 937330;
             double c = 0.1689;
             double Gy1 = 38.21;
             double by = 0.5365;
         } pac_param_;
 
         double kRollingResistance = 100;
-        double kCDA = 1.97;
-        double kCLA = 4.75;
-        double kCOPx = 0.4604; //longitudinal distribution (rear)
-        double kCOPy = 0.517;
+        double kCDA = 1.5;
+        double kCLA = 3.6;
+        double kCOPx = 0.5795; //longitudinal distribution (rear)
+        double kCOPy = 0.31;
         double kAirDensity = 1.225;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
