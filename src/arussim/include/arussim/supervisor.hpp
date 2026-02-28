@@ -13,19 +13,6 @@
 #include "std_msgs/msg/string.hpp"
 #include "arussim/csv_generator.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <utility>
-#include <memory>
-#include <filesystem>
-#include <string>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <limits>
-#include <stdexcept>
-#include <cstdio>
 
 /**
  * @class Supervisor
