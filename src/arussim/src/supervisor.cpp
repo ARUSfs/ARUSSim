@@ -86,15 +86,14 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         prev_time_ = this->get_clock()->now().seconds();
         parameters_dump_ = get_config_params();
-        ws_path = std::filesystem::canonical("/proc/self/exe");
+        auto ws_path = std::filesystem::canonical("/proc/self/exe");
         for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
-        dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
-        file_path = dir_path / (circuit_ + ".csv");
+        file_path_ = ws_path / "src/ARUSSim/src/arussim/laptimes" / (circuit_ + ".csv");
 
         // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
-        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
         {
-            std::ifstream file(file_path);
+            std::ifstream file(file_path_);
 
             if (!file.is_open()) {
                 throw std::runtime_error("Could not open CSV file");
@@ -166,10 +165,10 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             row_values.push_back(std::to_string(n_total_cones_hit_));
             csv_generator_->write_row("lap_time,total_hit_cones", row_values);
         }
-        if (std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path))
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
         {
             if(current_best_time_ > best_time_){
-                std::ofstream file(file_path);
+                std::ofstream file(file_path_);
                 file << "lap,cones,best_time\n";
                 file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
                 file << "---PARAM_DUMP_BEGIN---\n";
@@ -180,7 +179,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         }
         else // Creates a .csv file and adds the time done in simulation.
         {
-            std::ofstream file(file_path, std::ios::out);
+            std::ofstream file(file_path_, std::ios::out);
             if (!file.is_open()) {
                 throw std::runtime_error("Could not create CSV file");
             }

@@ -105,13 +105,10 @@ private:
     std::unique_ptr<CSVGenerator> csv_generator_;
     bool kCSVSupervisor;
 
-    std::string abrv_circuit_;
     std::string circuit_;
     std::string parameters_dump_;
 
-    std::filesystem::path ws_path;
-    std::filesystem::path dir_path;
-    std::filesystem::path file_path;
+    std::filesystem::path file_path_;
 
     //Loginfo colors
     const std::string red = "\033[1;31m";
