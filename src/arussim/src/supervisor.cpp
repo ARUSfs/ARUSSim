@@ -85,7 +85,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         prev_time_ = this->get_clock()->now().seconds();
-        parameters_dump_ = exec_command();
+        parameters_dump_ = get_config_params();
         ws_path = std::filesystem::canonical("/proc/self/exe");
         for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
         dir_path = ws_path / "src/ARUSSim/src/arussim/laptimes";
@@ -240,7 +240,7 @@ void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
  * 
  * @return std::string
  */
-std::string Supervisor::exec_command()
+std::string Supervisor::get_config_params()
 {
     std::array<char, 256> buffer;
     std::string result;

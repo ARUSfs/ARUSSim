@@ -71,7 +71,7 @@ private:
      * 
      * @return std::string
      */
-    std::string exec_command();
+    std::string get_config_params();
 
 
 
