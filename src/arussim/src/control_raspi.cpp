@@ -64,12 +64,12 @@ private:
 ControlRaspi::ControlRaspi(const rclcpp::NodeOptions & options)
 : rclcpp::Node("control_raspi", options)
 {
-  launch_patata_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+  launch_raspi_ = this->create_subscription<std_msgs::msg::Bool>(
     kLaunchTopic,
     rclcpp::QoS(1),
     std::bind(&ControlRaspi::launch_callback, this, std::placeholders::_1));
 
-  reset_patata_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+  reset_raspi_ = this->create_subscription<std_msgs::msg::Bool>(
     kResetTopic,
     rclcpp::QoS(1),
     std::bind(&ControlRaspi::reset_callback, this, std::placeholders::_1));
@@ -159,6 +159,8 @@ void ControlRaspi::start_control_rasp()
  * 
  * Firstly tries to stop it by sending SIGINT, then SIGTERM and finally SIGKILL
  * to force stop it if it doesn't stop.
+ * 
+ * IMPORTANT: Sometimes Control-RaspPi doesn't stop instantly, just wait or spam Ctrl+C
  */
 void ControlRaspi::stop_control_rasp()
 {
@@ -208,6 +210,8 @@ void ControlRaspi::stop_control_rasp()
 
 /**
  * @brief Get the directory of the current executable
+ * 
+ * Not found or Not executable are related to a feilure to resolve the relative path
  * 
  */
 std::string ControlRaspi::resolve_control_rasp_path() const

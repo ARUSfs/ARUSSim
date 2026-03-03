@@ -27,8 +27,8 @@ private:
   std::string resolve_control_rasp_path() const;
   std::string resolve_control_rasp_working_dir(const std::string & control_rasp_path) const;
 
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_patata_sub_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_patata_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_raspi_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_raspi_;
 
   std::optional<pid_t> control_rasp_pid_;
   std::atomic<bool> stopping_{false};
