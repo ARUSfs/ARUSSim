@@ -74,6 +74,7 @@ class Simulator : public rclcpp::Node
     ControllerSim controller_sim_;
 
     std::string kTrackName;
+    std::string kSimulationCarCsv;
     double kStateUpdateRate;
     double kControllerRate; 
     bool kUseGSS;
@@ -210,6 +211,22 @@ class Simulator : public rclcpp::Node
      * @param track_msg Mensaje que contiene el nombre del track.
      */
     void load_track(const std_msgs::msg::String::SharedPtr track_msg);
+
+    /**
+     * @brief Loads the car parameters from resources.
+     * 
+     */
+    void select_csv(const std::string& simulation_car);
+
+    /**
+     * @brief Resolves the CSV file path based on the simulation_car 
+     */
+    std::string get_csv_path(const std::string& simulation_car);
+
+    /**
+     * @brief Load parameters from de according CSV file
+     */
+    std::map<std::string, double> load_car_parameters(const std::string &filepath);
 
     /**
      * @brief Detects if the vehicle is between two TPLs.

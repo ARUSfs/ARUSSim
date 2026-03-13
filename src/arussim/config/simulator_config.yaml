@@ -1,5 +1,6 @@
 arussim:
   ros__parameters:
+    simulation_car: 'ART25D-2WD'   # str    Simulation car model
     track: "FSG"
     state_update_rate: 1000.0      # Hz
     controller_rate:   400.0       # Hz

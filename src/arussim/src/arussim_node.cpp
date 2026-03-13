@@ -16,6 +16,7 @@
 Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
+    this->declare_parameter<std::string>("simulation_car", "ART25D-2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<bool>("use_gss", false);
@@ -41,6 +42,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<bool>("debug", false);
 
     this->get_parameter("track", kTrackName);
+    this->get_parameter("simulation_car", kSimulationCarCsv);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("use_gss", kUseGSS);
@@ -664,6 +666,84 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
         }
     }
 
+}
+
+/**
+ * @brief Select the CSV file based on simulation_car
+ */
+void select_csv(const std::string& simulation_car) {
+    std::string csv_filename;
+    if (simulation_car == "ART25D-2WD-DV")
+     {csv_filename = "ART-25D-2WD-DV.csv"; }
+    else if (simulation_car == "ART25D-2WD")
+     {csv_filename = "ART-25D-2WD.csv"; }
+    else if (simulation_car == "ART25D-4WD-DV")
+    { csv_filename = "ART-25D-4WD-DV.csv"; }
+    else if (simulation_car == "ART25D-4WD")
+     {csv_filename = "ART-25D-4WD.csv"; }
+    else if (simulation_car == "ART26D-DV")
+     {csv_filename = "ART-26D-DV.csv"; } 
+    else {
+        throw std::invalid_argument("Error simulating: " + simulation_car);
+    }
+}
+
+/**
+ * @brief Get the path to the CSV file based on simulation_car 
+ */
+std::string Simulator::get_csv_path(const std::string& simulation_car) {
+    // Implementation for loading car parameters based on simulation_car
+    std::string parameters_directory = ament_index_cpp::get_package_share_directory("arussim") + "/resources/parameters/";
+    std::string parameters_path = parameters_directory + simulation_car;
+    return parameters_path;
+}
+
+/**
+ * @brief Load car parameters from a CSV file and return them as a map.
+ * @param filepath The path to the CSV file containing the car parameters.
+ */
+std::map<std::string, double> Simulator::load_car_parameters(const std::string &filepath) {
+    std::map<std::string, double> parameters_map;
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        RCLCPP_ERROR(
+            this->get_logger(), 
+            "Could not open CSV parameter file: %s", 
+            filepath.c_str()
+        );
+        return parameters_map;
+    }
+
+    std::string line;
+
+    // Skip the first line (header)
+    std::getline(file, line);
+
+     // Read the file line by line
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string key;
+        std::string value_str;
+
+        // Separate the line by commas
+        if (std::getline(ss, key, ',') && std::getline(ss, value_str, ',')) {
+            try {
+                double value = std::stod(value_str);
+                parameters_map[key] = value;
+            }  
+            catch (const std::invalid_argument& e) {
+                RCLCPP_WARN(
+                    this->get_logger(), 
+                    "Warning: Parameter '%s' is not a number: '%s'", 
+                    key.c_str(), value_str.c_str()
+                );
+            }
+        }
+
+    }
+
+    file.close();
+    return parameters_map;
 }
 
 

@@ -15,6 +15,7 @@ def generate_launch_description():
     
     return LaunchDescription([
         Node(
+            simulation_car = 'ART-25D-2WD-DV',
             package='rviz2',
             executable='rviz2',
             name='rviz2',
@@ -33,6 +34,27 @@ def generate_launch_description():
                     config='supervisor_config.yaml')
     ])
 
+def read_parameters_file(simulation_car): # quitar, llevar a arussim_node.cpp
+    if (simulation_car == 'ART25D-2WD-DV'):
+        parameter_file = 'ART-25D-2WD-DV.csv'
+    elif (simulation_car == 'ART25D-2WD'):
+        parameter_file = 'ART-25D-2WD.csv'
+    elif (simulation_car == 'ART25D-4WD-DV'):
+        parameter_file = 'ART-25D-4WD-DV.csv'
+    elif (simulation_car == 'ART25D-4WD'):
+        parameter_file = 'ART-25D-4WD.csv'
+    elif (simulation_car == 'ART26D-DV'):
+        parameter_file = 'ART-26D-DV.csv'
+    else:
+        raise ValueError(f"Unknown simulation car: {simulation_car}")    
+    parameter_file_path = os.path.join(
+        get_package_share_directory('arussim'),
+        'resources',
+        'parameters'
+        parameter_file
+    )
+    return parameter_file_path
+    
 
 def create_node(pkg, config=None, exec=None, params=[]): 
 
