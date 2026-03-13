@@ -1,3 +1,6 @@
 [submodule "src/arussim/include/controller_sim"]
 	path = src/arussim/include/controller_sim
 	url = git@github.com:ARUSfs/controller_sim.git
+[submodule "src/arussim/resources/parameters"]
+	path = src/arussim/resources/parameters
+	url = git@github.com:ARUSfs/ART-Parameters.git
