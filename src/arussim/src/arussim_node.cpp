@@ -161,7 +161,7 @@ Simulator::Simulator() : Node("simulator")
         std::string csv_filename = select_csv(kSimulationCarCsv);
         std::string csv_path = get_csv_path(csv_filename);
         kParametersMap = load_car_parameters(csv_path);
-        vehicle_dynamics_.set_parameters(kParametersMap); // definir función en vehicle_dynamics
+        vehicle_dynamics_.set_parameters(kParametersMap);
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
     }
