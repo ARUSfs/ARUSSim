@@ -75,6 +75,7 @@ class Simulator : public rclcpp::Node
 
     std::string kTrackName;
     std::string kSimulationCarCsv;
+    std::map<std::string, double> kParametersMap;
     double kStateUpdateRate;
     double kControllerRate; 
     bool kUseGSS;
@@ -216,12 +217,12 @@ class Simulator : public rclcpp::Node
      * @brief Loads the car parameters from resources.
      * 
      */
-    void select_csv(const std::string& simulation_car);
+    std::string select_csv(const std::string& simulation_car);
 
     /**
      * @brief Resolves the CSV file path based on the simulation_car 
      */
-    std::string get_csv_path(const std::string& simulation_car);
+    std::string get_csv_path(const std::string& csv_filename);
 
     /**
      * @brief Load parameters from de according CSV file

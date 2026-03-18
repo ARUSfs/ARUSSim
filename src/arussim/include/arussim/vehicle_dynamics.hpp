@@ -9,6 +9,7 @@ class VehicleDynamics
     public:
         VehicleDynamics();
         void update_simulation(double input_delta, std::vector<double> input_torque, double dt);
+        void set_parameters(const std::map<std::string, double> &params);
 
         double x_;
         double y_;
@@ -59,7 +60,7 @@ class VehicleDynamics
         }
     
     private:
-
+        
         double kMass = 264.07;  // Mass of the car + LiDAR
         double kNsMassF = 17.0;
         double kNsMassR = 24.302;

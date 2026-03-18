@@ -155,6 +155,16 @@ Simulator::Simulator() : Node("simulator")
     auto track_msg = std::make_shared<std_msgs::msg::String>();
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
+
+    // Load car parameters
+    try {
+        std::string csv_filename = select_csv(kSimulationCarCsv);
+        std::string csv_path = get_csv_path(csv_filename);
+        kParametersMap = load_car_parameters(csv_path);
+        vehicle_dynamics_.set_parameters(kParametersMap); // definir función en vehicle_dynamics
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
 }
 
 /**
@@ -671,30 +681,31 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
 /**
  * @brief Select the CSV file based on simulation_car
  */
-void select_csv(const std::string& simulation_car) {
+std::string Simulator::select_csv(const std::string& kSimulationCarCsv) {
     std::string csv_filename;
-    if (simulation_car == "ART25D-2WD-DV")
-     {csv_filename = "ART-25D-2WD-DV.csv"; }
-    else if (simulation_car == "ART25D-2WD")
-     {csv_filename = "ART-25D-2WD.csv"; }
-    else if (simulation_car == "ART25D-4WD-DV")
-    { csv_filename = "ART-25D-4WD-DV.csv"; }
-    else if (simulation_car == "ART25D-4WD")
-     {csv_filename = "ART-25D-4WD.csv"; }
-    else if (simulation_car == "ART26D-DV")
-     {csv_filename = "ART-26D-DV.csv"; } 
+    if (kSimulationCarCsv == "ART25D_2WD_DV")
+     {csv_filename = "ART_25D_2WD_DV.csv"; }
+    else if (kSimulationCarCsv == "ART25D_2WD")
+     {csv_filename = "ART_25D_2WD.csv"; }
+    else if (kSimulationCarCsv == "ART25D_4WD_DV")
+    { csv_filename = "ART_25D_4WD_DV.csv"; }
+    else if (kSimulationCarCsv == "ART25D_4WD")
+     {csv_filename = "ART_25D_4WD.csv"; }
+    else if (kSimulationCarCsv == "ART26D_DV")
+     {csv_filename = "ART_26D_DV.csv"; } 
     else {
-        throw std::invalid_argument("Error simulating: " + simulation_car);
+        throw std::invalid_argument("Error simulating: " + kSimulationCarCsv);
     }
+    return csv_filename;
 }
 
 /**
  * @brief Get the path to the CSV file based on simulation_car 
  */
-std::string Simulator::get_csv_path(const std::string& simulation_car) {
+std::string Simulator::get_csv_path(const std::string& csv_filename) {
     // Implementation for loading car parameters based on simulation_car
     std::string parameters_directory = ament_index_cpp::get_package_share_directory("arussim") + "/resources/parameters/";
-    std::string parameters_path = parameters_directory + simulation_car;
+    std::string parameters_path = parameters_directory + csv_filename;
     return parameters_path;
 }
 

@@ -21,6 +21,45 @@ VehicleDynamics::VehicleDynamics(){
     dt_ = 0.001;
 }
 
+void VehicleDynamics::set_parameters(const std::map<std::string, double>& params) {
+
+    auto it = params.end(); // Inicializamos el buscador
+
+    // Generales
+    it = params.find("g");
+    if (it != params.end()) this->kG = it->second;
+
+    // Masas e inercias 
+    it = params.find("Izz");
+    if (it != params.end()) this->kIzz = it->second;
+
+    it = params.find("sm");
+    if (it != params.end()) this->kMass = it->second;
+
+    it = params.find("nsm_f");
+    if (it != params.end()) this->kNsMassF = it->second;
+
+    it = params.find("nsm_r");
+    if (it != params.end()) this->kNsMassR = it->second;
+
+    // Dimensiones
+    it = params.find("wheelbase");
+    if (it != params.end()) this->kWheelBase = it->second;
+
+    it = params.find("trackwidthF"); // Asumo trackwidthF para el global
+    if (it != params.end()) this->kTrackWidth = it->second;
+
+    it = params.find("h_cdg");
+    if (it != params.end()) this->kHCog = it->second;
+
+    it = params.find("r_cdg");
+    if (it != params.end()) this->kMassDistributionRear = it->second / 100.0; // Porcentaje
+ 
+    it = params.find("rdyn");
+    if (it != params.end()) this->kTireDynRadius = it->second;
+}
+
+
 void VehicleDynamics::update_simulation(double input_delta, 
                                         std::vector<double> input_torque, 
                                         double dt){
