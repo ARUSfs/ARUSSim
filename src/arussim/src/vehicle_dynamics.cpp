@@ -168,11 +168,11 @@ void VehicleDynamics::calculate_ackermann(){
     double delta_in_ackermann = std::atan( kWheelBase * std::tan(delta_) / (kWheelBase - std::abs(std::tan(delta_)) * kTrackWidth));
 
     if(delta_ <= 0){
-        delta_fl_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
-        delta_fr_ = kAckermann2 * delta_;
-    } else {
         delta_fl_ = kAckermann2 * delta_;
         delta_fr_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
+    } else {
+        delta_fl_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
+        delta_fr_ = kAckermann2 * delta_;
     }
 }
 
