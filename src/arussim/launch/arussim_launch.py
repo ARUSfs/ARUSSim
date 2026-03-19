@@ -15,7 +15,6 @@ def generate_launch_description():
     
     return LaunchDescription([
         Node(
-            simulation_car = 'ART-25D-2WD-DV',
             package='rviz2',
             executable='rviz2',
             name='rviz2',

@@ -16,7 +16,8 @@
 Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
-    this->declare_parameter<std::string>("simulation_car", "ART25D-2WD");
+    this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
+    this->declare_parameter<std::string>("simulation_car_csv", "ART_25D_2WD.csv");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<bool>("use_gss", false);
@@ -42,7 +43,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<bool>("debug", false);
 
     this->get_parameter("track", kTrackName);
-    this->get_parameter("simulation_car", kSimulationCarCsv);
+    this->get_parameter("simulation_car", kSimulationCar);
+    this->get_parameter("simulation_car_csv", kSimulationCarCsv);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("use_gss", kUseGSS);
@@ -156,12 +158,16 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 
-    // Load car parameters
+
+    // ... (tu código anterior) ...
+
+    this->get_parameter("simulation_car", kSimulationCar);
+
     try {
-        std::string csv_filename = select_csv(kSimulationCarCsv);
-        std::string csv_path = get_csv_path(csv_filename);
-        kParametersMap = load_car_parameters(csv_path);
-        vehicle_dynamics_.set_parameters(kParametersMap);
+        this->kSimulationCarCsv = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->kSimulationCarCsv);
+        this->kParametersMap = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->kParametersMap);
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
     }
@@ -681,20 +687,20 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
 /**
  * @brief Select the CSV file based on simulation_car
  */
-std::string Simulator::select_csv(const std::string& kSimulationCarCsv) {
+std::string Simulator::select_csv(const std::string& simulation_car) {
     std::string csv_filename;
-    if (kSimulationCarCsv == "ART25D_2WD_DV")
+    if (simulation_car == "ART25D_2WD_DV")
      {csv_filename = "ART_25D_2WD_DV.csv"; }
-    else if (kSimulationCarCsv == "ART25D_2WD")
+    else if (simulation_car == "ART25D_2WD")
      {csv_filename = "ART_25D_2WD.csv"; }
-    else if (kSimulationCarCsv == "ART25D_4WD_DV")
+    else if (simulation_car == "ART25D_4WD_DV")
     { csv_filename = "ART_25D_4WD_DV.csv"; }
-    else if (kSimulationCarCsv == "ART25D_4WD")
+    else if (simulation_car == "ART25D_4WD")
      {csv_filename = "ART_25D_4WD.csv"; }
-    else if (kSimulationCarCsv == "ART26D_DV")
+    else if (simulation_car == "ART26D_DV")
      {csv_filename = "ART_26D_DV.csv"; } 
     else {
-        throw std::invalid_argument("Error simulating: " + kSimulationCarCsv);
+        throw std::invalid_argument("Error simulating: " + simulation_car);
     }
     return csv_filename;
 }

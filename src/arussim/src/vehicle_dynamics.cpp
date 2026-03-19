@@ -1,4 +1,5 @@
 #include "arussim/vehicle_dynamics.hpp"
+#include "rclcpp/rclcpp.hpp" // quitar luego, lo uso para comprobar params
 
 VehicleDynamics::VehicleDynamics(){
     x_ = 0;
@@ -28,6 +29,9 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     // Generales
     it = params.find("g");
     if (it != params.end()) this->kG = it->second;
+    RCLCPP_INFO(
+    rclcpp::get_logger("VehicleDynamics"),
+    "kG: %f", this->kG);
 
     // Masas e inercias 
     it = params.find("Izz");
@@ -42,7 +46,7 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     it = params.find("nsm_r");
     if (it != params.end()) this->kNsMassR = it->second;
     std::cout << "nsm_r: " << kNsMassR << std::endl;
-     it = params.find("r_cdg");
+    it = params.find("r_cdg");
     if (it != params.end()) this->kMassDistributionRear = it->second;
     std::cout << "r_cdg: " << kMassDistributionRear << std::endl;
     kSMassF = kSMass * (1-kMassDistributionRear);
@@ -54,7 +58,7 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     if (it != params.end()) this->kWheelBase = it->second;
 
     kLf = kWheelBase*kMassDistributionRear;
-    Lr = kWheelBase*(1-kMassDistributionRear);
+    kLr = kWheelBase*(1-kMassDistributionRear);
 
     it = params.find("trackwidthF"); // Asumo trackwidthF para el global pero puede ser distinto (hay F y R en csv)
     if (it != params.end()) this->kTrackWidth = it->second;
