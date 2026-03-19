@@ -1,0 +1,4 @@
+automatic_simulations:
+  ros__parameters:
+    event: 'AutoX' # 'AutoX' or 'Endurance' or 'SkidPad' or 'Acceleration'
+    laps_target: 10.0
