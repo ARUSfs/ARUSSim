@@ -1,5 +1,4 @@
 #include "arussim/vehicle_dynamics.hpp"
-#include "rclcpp/rclcpp.hpp" // quitar luego, lo uso para comprobar params
 
 VehicleDynamics::VehicleDynamics(){
     x_ = 0;
@@ -24,48 +23,34 @@ VehicleDynamics::VehicleDynamics(){
 
 void VehicleDynamics::set_parameters(const std::map<std::string, double>& params) {
 
-    auto it = params.end(); // Inicializamos el buscador
+    auto it = params.end();
 
-    // Generales
     it = params.find("g");
     if (it != params.end()) this->kG = it->second;
-    RCLCPP_INFO(
-    rclcpp::get_logger("VehicleDynamics"),
-    "kG: %f", this->kG);
 
-    // Masas e inercias 
     it = params.find("Izz");
     if (it != params.end()) this->kIzz = it->second;
-    std::cout << "Izz: " << kIzz << std::endl;
     it = params.find("sm");
     if (it != params.end()) this->kSMass = it->second;
-    std::cout  << "sm: " << kSMass << std::endl;
     it = params.find("nsm_f");
     if (it != params.end()) this->kNsMassF = it->second;
-    std::cout  << "nsm_f: " << kNsMassF << std::endl;
     it = params.find("nsm_r");
     if (it != params.end()) this->kNsMassR = it->second;
-    std::cout << "nsm_r: " << kNsMassR << std::endl;
     it = params.find("r_cdg");
     if (it != params.end()) this->kMassDistributionRear = it->second;
-    std::cout << "r_cdg: " << kMassDistributionRear << std::endl;
     kSMassF = kSMass * (1-kMassDistributionRear);
     kSMassR = kSMass * kMassDistributionRear;
 
-
-    // Dimensiones
     it = params.find("wheelbase");
     if (it != params.end()) this->kWheelBase = it->second;
 
     kLf = kWheelBase*kMassDistributionRear;
     kLr = kWheelBase*(1-kMassDistributionRear);
 
-    it = params.find("trackwidthF"); // Asumo trackwidthF para el global pero puede ser distinto (hay F y R en csv)
+    it = params.find("trackwidthF");
     if (it != params.end()) this->kTrackWidth = it->second;
-
     it = params.find("h_cdg");
     if (it != params.end()) this->kHCog = it->second;
- 
     it = params.find("rdyn");
     if (it != params.end()) this->kTireDynRadius = it->second;
 }
