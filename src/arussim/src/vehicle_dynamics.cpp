@@ -103,6 +103,7 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
     delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_ = std::clamp(delta_, kSteeringMin, kSteeringMax);
     delta_v_ += delta_v_dot_ * dt_;
 
     if(vx_ < 0){

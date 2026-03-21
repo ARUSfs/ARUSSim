@@ -153,6 +153,8 @@ class VehicleDynamics
         double kCoefInput = 256.0;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
+        double kSteeringMin = -20.0 * M_PI / 180.0;
+        double kSteeringMax = 20.0 * M_PI / 180.0;
 
         void calculate_dynamics();
         void integrate_dynamics();
