@@ -22,6 +22,7 @@ class VehicleDynamics
         double delta_fl_;
         double delta_fr_;
         double delta_v_;
+        std::vector<double> rdyn_ = {0.23,0.23,0.23,0.23};
 
         struct {
             double fl_ = 0;
@@ -91,8 +92,9 @@ class VehicleDynamics
         double kAckermann1 = 0.1175;
         double kAckermann2 = 0.9724;
 
-        double kTireDynRadius = 0.23;
-        double kTireInertia = 0.4;
+        double kTireStaticRadius = 0.23;
+        double kTireStiffness = 114000.0;
+        double kTireInertia = 0.26;
 
         struct {
             double Dlat = -1.3323;
@@ -158,6 +160,7 @@ class VehicleDynamics
         double calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr);
 
         void calculate_tire_loads();
+        void calculate_dynamic_radius();
         void calculate_ackermann();
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
