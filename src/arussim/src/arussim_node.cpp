@@ -36,6 +36,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.position_lidar_x", 1.5);
     this->declare_parameter<double>("sensor.position_camera_x", 0.0);
     this->declare_parameter<double>("sensor.camera_color_probability", 0.85);
+    this->declare_parameter<double>("sensor.perception_delay_mu", 2.3156);
+    this->declare_parameter<double>("sensor.perception_delay_sigma", 0.3460);
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
     this->declare_parameter<bool>("debug", false);
@@ -61,6 +63,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
     this->get_parameter("sensor.position_camera_x", kPosCameraX);
     this->get_parameter("sensor.camera_color_probability", kCameraColorProbability);
+    this->get_parameter("sensor.perception_delay_mu", kDelayMu);
+    this->get_parameter("sensor.perception_delay_sigma", kDelaySigma);
     this->get_parameter("csv_state", kCSVState);
     this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
     this->get_parameter("debug", kDebug);
@@ -134,6 +138,10 @@ Simulator::Simulator() : Node("simulator")
 
     // Set controller_sim period and GSS usage
     controller_sim_.init(1/kControllerRate, kUseGSS);
+
+    // Lognormal perception delay (μ=2.3156, σ=0.3460 en log(ms))
+    perception_delay_gen = std::mt19937(std::random_device{}());
+    perception_delay_dist = std::lognormal_distribution<double>(2.3156, 0.3460);
 
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -264,6 +272,19 @@ void Simulator::on_slow_timer()
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
             p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
+            // Moving the cone center 0.15m in your direction (in order to test how much does it affect you)
+           /*
+            double dist = std::sqrt(p.x * p.x + p.y * p.y);
+            if (dist > 0.15) {
+                double dx = (p.x / dist) * 0.15;
+                double dy = (p.y / dist) * 0.15;
+                p.x -= dx;
+                p.y -= dy;
+            } else {
+                p.x = 0.0;
+                p.y = 0.0;
+            }
+                */ 
             if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
                 perception_cloud.push_back(p);
             } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
@@ -277,7 +298,19 @@ void Simulator::on_slow_timer()
 
     sensor_msgs::msg::PointCloud2 perception_msg;
     pcl::toROSMsg(perception_cloud, perception_msg);
-    perception_msg.header.stamp = clock_->now();
+
+    // --- PERCEPTION DELAY (mu=2.3156, sigma=0.3460) ---
+    std::random_device rd_delay;
+    std::mt19937 gen_delay(rd_delay());
+    std::normal_distribution<> dist_delay(kDelayMu, kDelaySigma);
+    double delay_ms = dist_delay(gen_delay);
+    if (delay_ms > 0) {
+        //rclcpp::sleep_for(std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
+        std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
+    }
+    // --- END ---
+
+    perception_msg.header.stamp = clock_->now();  // stamp DESPUÉS del delay
     perception_msg.header.frame_id="arussim/vehicle_cog";
     lidar_perception_pub_->publish(perception_msg);
 

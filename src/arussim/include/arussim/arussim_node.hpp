@@ -38,9 +38,10 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include "arussim/sensors.hpp"
 #include <random>
+#include <thread>
+#include <chrono>
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
-
 
 #include "controller_sim/controller_sim.hpp"
 #include "controller_sim/estimation.hpp"
@@ -92,9 +93,14 @@ class Simulator : public rclcpp::Node
     double kNoiseCameraPerception;
     double kNoiseCameraColor;
     double kMinPerceptionX;
+    double kDelayMu;
+    double kDelaySigma;
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
+
+    std::mt19937 perception_delay_gen;
+    std::lognormal_distribution<double> perception_delay_dist;
     
     //Car boundaries
     double kCOGFrontDist;
