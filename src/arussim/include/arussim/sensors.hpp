@@ -56,6 +56,9 @@ private:
         double rr_ = 0;
     } torque_cmd_;
 
+    double kNoiseGroundspeed;
+    double kGroundspeedFrequency;
+
     double kExtensometerFrequency;
     double kNoiseExtensometer;
 
@@ -84,6 +87,12 @@ private:
      * @param msg 
      */
     void state_callback(const arussim_msgs::msg::State::SharedPtr msg);
+
+    /**
+     * @brief Timer function for the groundspeed
+     * 
+     */
+    void groundspeed_timer();
 
     /**
      * @brief Timer function for the extensometer
@@ -123,7 +132,9 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
     rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
-
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vx_pub_; // Groundspeed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vy_pub_; // Groundspeed publisher
+    rclcpp::TimerBase::SharedPtr gss_timer_; // Groundspeed timer
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
 

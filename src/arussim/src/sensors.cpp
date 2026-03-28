@@ -34,6 +34,10 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("torque.noise_torque_rear_right", 0.01);
     this->declare_parameter<double>("torque.noise_torque_rear_left", 0.01);
     this->declare_parameter<double>("torque.torque_frequency", 100.0);
+
+    // Declare ground speed parameters
+    this->declare_parameter<double>("groundspeed.noise_groundspeed", 0.01);
+    this->declare_parameter<double>("groundspeed.groundspeed_frequency", 100.0);
     
     // Declare extensometer parameters
     this->declare_parameter<double>("extensometer.extensometer_frequency", 100.0);
@@ -57,6 +61,9 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("torque.noise_torque_rear_right", kNoiseTorqueRearRight);
     this->get_parameter("torque.noise_torque_rear_left", kNoiseTorqueRearLeft);
     this->get_parameter("torque.torque_frequency", kTorqueFrequency);
+
+    this->get_parameter("groundspeed.noise_groundspeed", kNoiseGroundspeed);
+    this->get_parameter("groundspeed.groundspeed_frequency", kGroundspeedFrequency);
 
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
@@ -92,6 +99,17 @@ Sensors::Sensors() : Node("sensors")
         std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
         std::bind(&Sensors::wheel_speed_timer, this)
     );
+
+    // Groundspeed
+    gss_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/gss/vx", 10);
+    gss_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/gss/vy", 10);
+    gss_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kGroundspeedFrequency)),
+        std::bind(&Sensors::groundspeed_timer, this)
+    );
+
 
     // Extensometer
     ext_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/extensometer", 10);
@@ -232,6 +250,27 @@ void Sensors::wheel_speed_timer()
     ws_fl_pub_->publish(msg_fl);
     ws_rr_pub_->publish(msg_rr);
     ws_rl_pub_->publish(msg_rl);
+}
+
+/**
+ * @brief Timer function for the groundspeed 
+ * 
+ */
+void Sensors::groundspeed_timer()
+{
+    // Random noise generation
+    std::random_device rd; 
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(0.0, kNoiseGroundspeed);
+
+    auto msg_vx = std_msgs::msg::Float32();
+    auto msg_vy = std_msgs::msg::Float32();
+
+    msg_vx.data = vx_ + dist(gen);
+    msg_vy.data = vy_ + dist(gen);
+
+    gss_vx_pub_->publish(msg_vx);
+    gss_vy_pub_->publish(msg_vy);
 }
 
 /**

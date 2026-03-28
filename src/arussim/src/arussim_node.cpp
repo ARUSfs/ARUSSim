@@ -134,7 +134,11 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/rl_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rl_callback, this, std::placeholders::_1));
     noisy_ws_rr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/rr_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rr_callback, this, std::placeholders::_1));
-    
+    noisy_gss_vx_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/gss/vx", 10, std::bind(&Simulator::noisy_gss_vx_callback, this, std::placeholders::_1));
+    noisy_gss_vy_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/gss/vy", 10, std::bind(&Simulator::noisy_gss_vy_callback, this, std::placeholders::_1));
+
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
@@ -370,6 +374,14 @@ void Simulator::on_controller_sim_timer() {
     current_sensors.angular_z = noisy_r_; 
     current_sensors.steering_angle = vehicle_dynamics_.delta_; 
 
+   if (kUseGSS) {
+        current_sensors.speed_x = noisy_gss_vx_;
+        current_sensors.speed_y = noisy_gss_vy_;
+    } else {
+        current_sensors.speed_x = 0.0;
+        current_sensors.speed_y = 0.0;
+    }
+
     current_sensors.motor_speed[0] = noisy_ws_fl_ * kGearRatio;
     current_sensors.motor_speed[1] = noisy_ws_fr_ * kGearRatio;
     current_sensors.motor_speed[2] = noisy_ws_rl_ * kGearRatio;
@@ -564,6 +576,16 @@ void Simulator::noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg
 void Simulator::noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
     noisy_ws_rr_ = msg->data;
+}
+/**
+ * @brief Callbacks for receiving noisy groundspeed data.
+ * 
+ */
+void Simulator::noisy_gss_vx_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+    noisy_gss_vx_ = msg->data;
+}
+void Simulator::noisy_gss_vy_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+    noisy_gss_vy_ = msg->data;
 }
 
 /**
