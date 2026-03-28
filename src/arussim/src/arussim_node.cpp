@@ -118,23 +118,23 @@ Simulator::Simulator() : Node("simulator")
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
-
+    
     noisy_ax_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
+        "/arussim/IMU/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
     noisy_ay_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ay", 10, std::bind(&Simulator::noisy_ay_callback, this, std::placeholders::_1));
+        "/arussim/IMU/ay", 10, std::bind(&Simulator::noisy_ay_callback, this, std::placeholders::_1));
     noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/r", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
+        "/arussim/IMU/yaw_rate", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
+        
     noisy_ws_fl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ws_fl", 10, std::bind(&Simulator::noisy_ws_fl_callback, this, std::placeholders::_1));
+        "/arussim/fl_wheel_speed", 10, std::bind(&Simulator::noisy_ws_fl_callback, this, std::placeholders::_1));
     noisy_ws_fr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ws_fr", 10, std::bind(&Simulator::noisy_ws_fr_callback, this, std::placeholders::_1));
+        "/arussim/fr_wheel_speed", 10, std::bind(&Simulator::noisy_ws_fr_callback, this, std::placeholders::_1));
     noisy_ws_rl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ws_rl", 10, std::bind(&Simulator::noisy_ws_rl_callback, this, std::placeholders::_1));
+        "/arussim/rl_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rl_callback, this, std::placeholders::_1));
     noisy_ws_rr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/sensors/ws_rr", 10, std::bind(&Simulator::noisy_ws_rr_callback, this, std::placeholders::_1));
-
-
+        "/arussim/rr_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rr_callback, this, std::placeholders::_1));
+    
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;

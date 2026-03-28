@@ -66,8 +66,6 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    //ControllerSim controller_sim_;
-    //CON_VehicleControl controller_sim_;
 
     std::string kTrackName;
     std::string kSimulationCar;

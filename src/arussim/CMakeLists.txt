@@ -118,23 +118,6 @@ ament_target_dependencies(arussim_exec
   nlohmann_json
 )
 
-
-
-# generate executable for arussim_node.cpp
-
-#add_executable(arussim_exec src/arussim_node.cpp src/vehicle_dynamics.cpp)
-#ament_target_dependencies(arussim_exec rclcpp 
- #                           std_msgs 
-  #                          geometry_msgs 
-   #                         sensor_msgs 
-    #                        visualization_msgs 
-    #                        arussim_msgs 
-     #                       tf2_ros
-      #                      tf2
-       #                     PCL
-        #                    pcl_conversions
-         #                   nlohmann_json)
-
 # generate executable for sensors.cpp
 add_executable(sensors_exec src/sensors.cpp)
 ament_target_dependencies(sensors_exec rclcpp 
