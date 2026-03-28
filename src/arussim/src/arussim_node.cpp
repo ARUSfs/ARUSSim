@@ -379,6 +379,7 @@ void Simulator::on_controller_sim_timer() {
 
     // State parameters 
     current_dv.autonomous = 1; // 1 -> DV mode
+    current_dv.driving = 1; // 1 -> Car is driving
     current_dv.acc = input_acc_;
     current_dv.target_r = target_r_;
 
