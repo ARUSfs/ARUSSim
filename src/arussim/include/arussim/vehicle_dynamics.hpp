@@ -3,7 +3,6 @@
 #include <iostream>
 #include "arussim/csv_generator.hpp"
 #include <fstream>
-#include "controller_sim/controller_sim.hpp"
 class VehicleDynamics
 {
     public:
@@ -94,6 +93,8 @@ class VehicleDynamics
 
         double kTireDynRadius = 0.23;
         double kTireInertia = 0.4;
+
+        double kGearRatio = 12.48;
 
         struct {
             double Dlat = -1.3323;

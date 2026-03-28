@@ -119,6 +119,22 @@ Simulator::Simulator() : Node("simulator")
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
 
+    noisy_ax_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
+    noisy_ay_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ay", 10, std::bind(&Simulator::noisy_ay_callback, this, std::placeholders::_1));
+    noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/r", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
+    noisy_ws_fl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ws_fl", 10, std::bind(&Simulator::noisy_ws_fl_callback, this, std::placeholders::_1));
+    noisy_ws_fr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ws_fr", 10, std::bind(&Simulator::noisy_ws_fr_callback, this, std::placeholders::_1));
+    noisy_ws_rl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ws_rl", 10, std::bind(&Simulator::noisy_ws_rl_callback, this, std::placeholders::_1));
+    noisy_ws_rr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/sensors/ws_rr", 10, std::bind(&Simulator::noisy_ws_rr_callback, this, std::placeholders::_1));
+
+
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
     marker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
@@ -135,10 +151,9 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.b = 70.0/255.0;
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
-
-    // Set controller_sim period and GSS usage
-    controller_sim_.init(1/kControllerRate, kUseGSS);
-
+    
+    //Initialize CON-VehicleControl
+    control_init(); 
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
@@ -157,9 +172,6 @@ Simulator::Simulator() : Node("simulator")
     auto track_msg = std::make_shared<std_msgs::msg::String>();
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
-
-
-    // ... (tu código anterior) ...
 
     this->get_parameter("simulation_car", kSimulationCar);
 
@@ -349,35 +361,51 @@ void Simulator::on_slow_timer()
 }
 
 void Simulator::on_controller_sim_timer() {
-    // Update sensor data in ControllerSim
-    // TO DO: use sensors with noise instead of ground truth
-    controller_sim_.set_sensors(
-        vehicle_dynamics_.ax_,
-        vehicle_dynamics_.ay_,
-        vehicle_dynamics_.r_,
-        vehicle_dynamics_.delta_,
-        vehicle_dynamics_.wheel_speed_.fl_,
-        vehicle_dynamics_.wheel_speed_.fr_,
-        vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_,
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_
-    );
+    // Update sensor data in CON-VehicleControl
+    SensorData current_sensors{}; 
+    DV current_dv{};
 
-    // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
+    current_sensors.acceleration_x = noisy_ax_;
+    current_sensors.acceleration_y = noisy_ay_;
+    current_sensors.angular_z = noisy_r_; 
+    current_sensors.steering_angle = vehicle_dynamics_.delta_; 
+
+    current_sensors.motor_speed[0] = noisy_ws_fl_ * kGearRatio;
+    current_sensors.motor_speed[1] = noisy_ws_fr_ * kGearRatio;
+    current_sensors.motor_speed[2] = noisy_ws_rl_ * kGearRatio;
+    current_sensors.motor_speed[3] = noisy_ws_rr_ * kGearRatio;
+
+    current_sensors.V_soc = 500;
+
+    // State parameters 
+    current_dv.autonomous = 1; // 1 -> DV mode
+    current_dv.acc = input_acc_;
+    current_dv.target_r = target_r_;
+
+    // Save controller output
+    float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4];
+
+    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out);
+
+    torque_cmd_ = {
+        static_cast<double>(torque_cmd_out[0]), 
+        static_cast<double>(torque_cmd_out[1]), 
+        static_cast<double>(torque_cmd_out[2]), 
+        static_cast<double>(torque_cmd_out[3])
+    };
     
-    // Publish control estimation 
+    extern float state[3];
+    
     std_msgs::msg::Float32 control_vx_msg;
-    control_vx_msg.data = controller_sim_.vx_;
+    control_vx_msg.data = state[0];
     control_vx_pub_->publish(control_vx_msg);
 
     std_msgs::msg::Float32 control_vy_msg;
-    control_vy_msg.data = controller_sim_.vy_;
+    control_vy_msg.data = state[1];
     control_vy_pub_->publish(control_vy_msg);   
 
     std_msgs::msg::Float32 control_r_msg;   
-    control_r_msg.data = controller_sim_.r_;
+    control_r_msg.data = state[2];
     control_r_pub_->publish(control_r_msg);
 }
 
@@ -458,6 +486,83 @@ void Simulator::on_fast_timer()
     // Update vehicle marker
     marker_.header.stamp = clock_->now();
     marker_pub_->publish(marker_);
+}
+
+/**
+ * @brief Callback for receiving noisy x_acceleration data.
+ * 
+ * This method updates the noisy acceleration value based on incoming messages.
+ * @param msg Incoming message containing the noisy x_acceleration data.
+ */
+void Simulator::noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ax_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy y_acceleration data.
+ * 
+ * This method updates the noisy acceleration value based on incoming messages.
+ * @param msg Incoming message containing the noisy y_acceleration data.
+ */
+void Simulator::noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ay_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy angular velocity data.
+ * 
+ * This method updates the noisy angular velocity value based on incoming messages.
+ * @param msg Incoming message containing the noisy angular velocity data.
+ */
+void Simulator::noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_r_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy front left wheel speed data.
+ * 
+ * This method updates the noisy front left wheel speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy front left wheel speed data.
+ */
+void Simulator::noisy_ws_fl_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ws_fl_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy front right wheel speed data.
+ * 
+ * This method updates the noisy front right wheel speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy front right wheel speed data.
+ */
+void Simulator::noisy_ws_fr_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ws_fr_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy rear left wheel speed data.
+ * 
+ * This method updates the noisy rear left wheel speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy rear left wheel speed data.
+ */
+void Simulator::noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ws_rl_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy rear right wheel speed data.
+ * 
+ * This method updates the noisy rear right wheel speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy rear right wheel speed data.
+ */
+void Simulator::noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ws_rr_ = msg->data;
 }
 
 /**

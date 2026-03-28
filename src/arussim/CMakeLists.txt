@@ -86,18 +86,54 @@ install(FILES plot_interface.xml
 )
 
 # generate executable for arussim_node.cpp
-add_executable(arussim_exec src/arussim_node.cpp src/vehicle_dynamics.cpp)
-ament_target_dependencies(arussim_exec rclcpp 
-                            std_msgs 
-                            geometry_msgs 
-                            sensor_msgs 
-                            visualization_msgs 
-                            arussim_msgs 
-                            tf2_ros
-                            tf2
-                            PCL
-                            pcl_conversions
-                            nlohmann_json)
+add_executable(arussim_exec 
+  src/arussim_node.cpp 
+  src/vehicle_dynamics.cpp
+  include/CON-VehicleControl/src/control.c
+  include/CON-VehicleControl/src/aux_functions.c
+  include/CON-VehicleControl/src/estimation.c
+  include/CON-VehicleControl/src/Parameters.c
+  include/CON-VehicleControl/src/power_control.c
+  include/CON-VehicleControl/src/torque_vectoring.c
+  include/CON-VehicleControl/src/traction_control.c
+)
+
+# Le indicamos a CMake dónde están los .h del controlador
+target_include_directories(arussim_exec PRIVATE 
+  include/CON-VehicleControl/include
+  include
+)
+
+ament_target_dependencies(arussim_exec 
+  rclcpp 
+  std_msgs 
+  geometry_msgs 
+  sensor_msgs 
+  visualization_msgs 
+  arussim_msgs 
+  tf2_ros
+  tf2
+  PCL
+  pcl_conversions
+  nlohmann_json
+)
+
+
+
+# generate executable for arussim_node.cpp
+
+#add_executable(arussim_exec src/arussim_node.cpp src/vehicle_dynamics.cpp)
+#ament_target_dependencies(arussim_exec rclcpp 
+ #                           std_msgs 
+  #                          geometry_msgs 
+   #                         sensor_msgs 
+    #                        visualization_msgs 
+    #                        arussim_msgs 
+     #                       tf2_ros
+      #                      tf2
+       #                     PCL
+        #                    pcl_conversions
+         #                   nlohmann_json)
 
 # generate executable for sensors.cpp
 add_executable(sensors_exec src/sensors.cpp)

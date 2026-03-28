@@ -43,6 +43,8 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
 
     it = params.find("wheelbase");
     if (it != params.end()) this->kWheelBase = it->second;
+    it = params.find("gear_ratio");
+    if (it != params.end()) this->kGearRatio = it->second;
 
     kLf = kWheelBase*kMassDistributionRear;
     kLr = kWheelBase*(1-kMassDistributionRear);

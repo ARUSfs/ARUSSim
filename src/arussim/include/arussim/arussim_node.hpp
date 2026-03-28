@@ -41,12 +41,7 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
-
-#include "controller_sim/controller_sim.hpp"
-#include "controller_sim/estimation.hpp"
-#include "controller_sim/power_limitation.hpp"
-#include "controller_sim/traction_control.hpp"
-#include "controller_sim/torque_vectoring.hpp"
+#include "control.h"
 
 /**
  * @class Simulator
@@ -71,7 +66,8 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    ControllerSim controller_sim_;
+    //ControllerSim controller_sim_;
+    //CON_VehicleControl controller_sim_;
 
     std::string kTrackName;
     std::string kSimulationCar;
@@ -98,7 +94,17 @@ class Simulator : public rclcpp::Node
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
+    double kGearRatio = 1.0;
     
+    // Sensor data with noise
+    double noisy_ax_ = 0.0;
+    double noisy_ay_ = 0.0;
+    double noisy_r_ = 0.0;
+    double noisy_ws_fl_ = 0.0;
+    double noisy_ws_fr_ = 0.0;
+    double noisy_ws_rl_ = 0.0;
+    double noisy_ws_rr_ = 0.0;
+
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
@@ -161,6 +167,18 @@ class Simulator : public rclcpp::Node
      * broadcast its transform to the ROS TF system.
      */
     void on_fast_timer();
+
+    /**
+     * @brief Callback functions for receiving noisy sensor data.
+     * 
+     */
+    void noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_fl_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_fr_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg);
 
     /**
      * @brief Callback for receiving control commands.
@@ -247,6 +265,13 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_fl_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_fr_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rl_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rr_sub_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
