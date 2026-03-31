@@ -31,6 +31,9 @@
 #include <iostream>
 #include "ConeXYZColorScore.h"
 #include "PointXYZProbColorScore.h"
+#include <random>
+#include <thread>
+#include <chrono>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
@@ -92,10 +95,15 @@ class Simulator : public rclcpp::Node
     double kNoiseCameraPerception;
     double kNoiseCameraColor;
     double kMinPerceptionX;
+    double kDelayMu;
+    double kDelaySigma;
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
     
+    std::mt19937 perception_delay_gen;
+    std::lognormal_distribution<double> perception_delay_dist;
+
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
