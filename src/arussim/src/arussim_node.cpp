@@ -400,6 +400,20 @@ void Simulator::on_controller_sim_timer() {
 
     control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out);
 
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *clock_, 500, 
+        "\n--- DIAGNOSTICO DE TORQUE ---\n"
+        "0. INPUT    | Acc_cmd: %.2f | Driving: %d\n"
+        "1. TV_out   | FL: %7.1f | FR: %7.1f\n"
+        "2. TC_out   | FL: %7.1f | FR: %7.1f\n"
+        "3. PL_out   | FL: %7.1f | FR: %7.1f\n"
+        "4. CMD FINAL| FL: %7.1f | FR: %7.1f\n"
+        "-----------------------------",
+        current_dv.acc, current_dv.driving,
+        tv_out[0], tv_out[1],
+        tc_out[0], tc_out[1],
+        pl_out[0], pl_out[1],
+        torque_cmd_out[0], torque_cmd_out[1]);
+
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0]), 
         static_cast<double>(torque_cmd_out[1]), 
