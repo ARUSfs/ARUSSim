@@ -49,6 +49,13 @@ class VehicleDynamics
             double lambda_rr_ = 0;
         } tire_slip_;
         
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } tire_loads_;
+        
         double input_delta_;
         double input_acc_;
         double dt_;
@@ -132,13 +139,6 @@ class VehicleDynamics
 
         double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
         double kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
-
-        struct {
-            double fl_ = 0;
-            double fr_ = 0;
-            double rl_ = 0;
-            double rr_ = 0;
-        } tire_loads_;
 
         struct Tire_force {
             double fy;

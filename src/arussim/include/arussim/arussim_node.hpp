@@ -92,7 +92,7 @@ class Simulator : public rclcpp::Node
     double kSimulationSpeedMultiplier;
     bool kTorqueVectoring;
     bool kDebug;
-    double kGearRatio = 1.0;
+    double kGearRatio = 12.48;
     
     // Sensor data with noise
     double noisy_ax_ = 0.0;
@@ -281,7 +281,11 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
+
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_angle_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tire_load_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;

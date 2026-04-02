@@ -96,6 +96,12 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/fixed_trajectory", 10);
     camera_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/camera_perception", 10);
+    slip_ratio_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_ratio", 10);
+    slip_angle_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_angle", 10);
+    tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tire_load", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -400,25 +406,11 @@ void Simulator::on_controller_sim_timer() {
 
     control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out);
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *clock_, 500, 
-        "\n--- DIAGNOSTICO DE TORQUE ---\n"
-        "0. INPUT    | Acc_cmd: %.2f | Driving: %d\n"
-        "1. TV_out   | FL: %7.1f | FR: %7.1f\n"
-        "2. TC_out   | FL: %7.1f | FR: %7.1f\n"
-        "3. PL_out   | FL: %7.1f | FR: %7.1f\n"
-        "4. CMD FINAL| FL: %7.1f | FR: %7.1f\n"
-        "-----------------------------",
-        current_dv.acc, current_dv.driving,
-        tv_out[0], tv_out[1],
-        tc_out[0], tc_out[1],
-        pl_out[0], pl_out[1],
-        torque_cmd_out[0], torque_cmd_out[1]);
-
     torque_cmd_ = {
-        static_cast<double>(torque_cmd_out[0]), 
-        static_cast<double>(torque_cmd_out[1]), 
-        static_cast<double>(torque_cmd_out[2]), 
-        static_cast<double>(torque_cmd_out[3])
+        static_cast<double>(kGearRatio*torque_cmd_out[0]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[1]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[2]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[3])
     };
     
     extern float state[3];
@@ -506,6 +498,28 @@ void Simulator::on_fast_timer()
     }
     
     state_pub_->publish(message);
+
+
+    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
+    slip_ratio_pub_->publish(slip_ratio_msg);
+
+    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
+    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
+    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
+    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
+    slip_angle_pub_->publish(slip_angle_msg);
+
+    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
+    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
+    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
+    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
+    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
+    tire_load_pub_->publish(tire_load_msg);
 
 
     broadcast_transform();
