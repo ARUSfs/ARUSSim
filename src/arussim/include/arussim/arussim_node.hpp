@@ -69,8 +69,6 @@ class Simulator : public rclcpp::Node
 
     std::string kTrackName;
     std::string kSimulationCar;
-    std::string kSimulationCarCsv;
-    std::map<std::string, double> kParametersMap;
     double kStateUpdateRate;
     double kControllerRate; 
     bool kUseGSS;
@@ -90,7 +88,6 @@ class Simulator : public rclcpp::Node
     double kNoiseCameraColor;
     double kMinPerceptionX;
     double kSimulationSpeedMultiplier;
-    bool kTorqueVectoring;
     bool kDebug;
     double kGearRatio = 12.48;
     
@@ -109,6 +106,10 @@ class Simulator : public rclcpp::Node
     double kCOGFrontDist;
     double kCOGBackDist;
     double kCarWidth;
+
+    // Car parameters
+    std::string simulation_car_csv_;
+    std::map<std::string, double> parameters_map_;
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;

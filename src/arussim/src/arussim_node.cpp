@@ -17,7 +17,6 @@ Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
-    this->declare_parameter<std::string>("simulation_car_csv", "ART_25D_2WD.csv");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<bool>("use_gss", false);
@@ -44,7 +43,6 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("simulation_car", kSimulationCar);
-    this->get_parameter("simulation_car_csv", kSimulationCarCsv);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("use_gss", kUseGSS);
@@ -186,10 +184,10 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("simulation_car", kSimulationCar);
 
     try {
-        this->kSimulationCarCsv = this->select_csv(kSimulationCar);
-        std::string csv_path = this->get_csv_path(this->kSimulationCarCsv);
-        this->kParametersMap = this->load_car_parameters(csv_path);
-        this->vehicle_dynamics_.set_parameters(this->kParametersMap);
+        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
     }
