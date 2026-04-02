@@ -99,8 +99,9 @@ class Simulator : public rclcpp::Node
     double noisy_ws_fr_ = 0.0;
     double noisy_ws_rl_ = 0.0;
     double noisy_ws_rr_ = 0.0;
-    double noisy_gss_vx_ = 0.0;
-    double noisy_gss_vy_ = 0.0;
+    double noisy_vx_ = 0.0;
+    double noisy_vy_ = 0.0;
+    double noisy_delta_ = 0.0;
 
     //Car boundaries
     double kCOGFrontDist;
@@ -180,9 +181,10 @@ class Simulator : public rclcpp::Node
     void noisy_ws_fr_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_gss_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_gss_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    
+    void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
+
     /**
      * @brief Callback for receiving control commands.
      * 
@@ -275,8 +277,10 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_fr_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rl_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rr_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_gss_vx_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_gss_vy_sub_;    rclcpp::TimerBase::SharedPtr slow_timer_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
+    rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
