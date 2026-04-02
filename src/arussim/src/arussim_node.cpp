@@ -402,9 +402,9 @@ void Simulator::on_controller_sim_timer() {
     current_dv.target_r = target_r_;
 
     // Save controller output
-    float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4];
+    float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3];
 
-    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out);
+    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out);
 
     torque_cmd_ = {
         static_cast<double>(kGearRatio*torque_cmd_out[0]), 
@@ -412,19 +412,17 @@ void Simulator::on_controller_sim_timer() {
         static_cast<double>(kGearRatio*torque_cmd_out[2]), 
         static_cast<double>(kGearRatio*torque_cmd_out[3])
     };
-    
-    extern float state[3];
-    
+        
     std_msgs::msg::Float32 control_vx_msg;
-    control_vx_msg.data = state[0];
+    control_vx_msg.data = state_out[0];
     control_vx_pub_->publish(control_vx_msg);
 
     std_msgs::msg::Float32 control_vy_msg;
-    control_vy_msg.data = state[1];
+    control_vy_msg.data = state_out[1];
     control_vy_pub_->publish(control_vy_msg);   
 
     std_msgs::msg::Float32 control_r_msg;   
-    control_r_msg.data = state[2];
+    control_r_msg.data = state_out[2];
     control_r_pub_->publish(control_r_msg);
 }
 

@@ -28,33 +28,47 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     it = params.find("g");
     if (it != params.end()) this->kG = it->second;
 
-    it = params.find("Izz");
-    if (it != params.end()) this->kIzz = it->second;
     it = params.find("sm");
     if (it != params.end()) this->kSMass = it->second;
     it = params.find("nsm_f");
     if (it != params.end()) this->kNsMassF = it->second;
     it = params.find("nsm_r");
     if (it != params.end()) this->kNsMassR = it->second;
-    it = params.find("r_cdg");
-    if (it != params.end()) this->kMassDistributionRear = it->second;
-    kSMassF = kSMass * (1-kMassDistributionRear);
-    kSMassR = kSMass * kMassDistributionRear;
+    it = params.find("Iz");
+    if (it != params.end()) this->kIzz = it->second;
+    it = params.find("I_wheel_F");
+    if (it != params.end()) this->kTireInertia_F = it->second;
+    it = params.find("I_wheel_R");
+    if (it != params.end()) this->kTireInertia_R = it->second;
 
     it = params.find("wheelbase");
     if (it != params.end()) this->kWheelBase = it->second;
+    it = params.find("h_cdg");
+    if (it != params.end()) this->kHCog = it->second;
+    it = params.find("r_cdg");
+    if (it != params.end()) this->kMassDistributionRear = it->second;
+    it = params.find("trackwidthF"); 
+    if (it != params.end()) this->kTrackWidth = it->second;
+    it = params.find("rdyn");
+    if (it != params.end()) this->kTireDynRadius = it->second;
+
+    it = params.find("rho");
+    if (it != params.end()) this->kAirDensity = it->second;
+    it = params.find("CDA");
+    if (it != params.end()) this->kCDA = it->second;
+    it = params.find("CLA");
+    if (it != params.end()) this->kCLA = it->second;
+
     it = params.find("gear_ratio");
     if (it != params.end()) this->kGearRatio = it->second;
 
-    kLf = kWheelBase*kMassDistributionRear;
-    kLr = kWheelBase*(1-kMassDistributionRear);
 
-    it = params.find("trackwidthF");
-    if (it != params.end()) this->kTrackWidth = it->second;
-    it = params.find("h_cdg");
-    if (it != params.end()) this->kHCog = it->second;
-    it = params.find("rdyn");
-    if (it != params.end()) this->kTireDynRadius = it->second;
+    kSMassF = kSMass * (1-kMassDistributionRear);
+    kSMassR = kSMass * kMassDistributionRear;
+    kMass = kSMass + kNsMassF + kNsMassR;
+
+    kLf = kWheelBase*kMassDistributionRear;
+    kLr = kWheelBase*(1-kMassDistributionRear); 
 }
 
 
@@ -111,10 +125,10 @@ void VehicleDynamics::calculate_dynamics(){
 
     // Tire angular acceleration
     double alpha_w = std::min(std::max(0.01,0.01*vx_),1.0);
-    w_fl_dot_ = alpha_w*(torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fl_dot_;
-    w_fr_dot_ = alpha_w*(torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_fr_dot_;
-    w_rl_dot_ = alpha_w*(torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rl_dot_;
-    w_rr_dot_ = alpha_w*(torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia + (1-alpha_w)*w_rr_dot_;
+    w_fl_dot_ = alpha_w*(torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia_F + (1-alpha_w)*w_fl_dot_;
+    w_fr_dot_ = alpha_w*(torque_cmd_.fr_ - force_fr.fx * kTireDynRadius) / kTireInertia_F + (1-alpha_w)*w_fr_dot_;
+    w_rl_dot_ = alpha_w*(torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia_R + (1-alpha_w)*w_rl_dot_;
+    w_rr_dot_ = alpha_w*(torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia_R + (1-alpha_w)*w_rr_dot_;
 
     delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
     delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;

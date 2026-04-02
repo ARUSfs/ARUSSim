@@ -99,7 +99,8 @@ class VehicleDynamics
         double kAckermann2 = 0.9724;
 
         double kTireDynRadius = 0.23;
-        double kTireInertia = 0.4;
+        double kTireInertia_F = 0.4;
+        double kTireInertia_R = 0.4;
 
         double kGearRatio = 12.48;
 
