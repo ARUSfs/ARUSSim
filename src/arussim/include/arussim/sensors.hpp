@@ -56,23 +56,9 @@ private:
         double rr_ = 0;
     } torque_cmd_;
 
-    double kNoiseGroundspeed;
-    double kGroundspeedFrequency;
-
-    double kExtensometerFrequency;
-    double kNoiseExtensometer;
-
-    double kWheelSpeedFrequency;
-    double kNoiseWheelSpeedFrontRight;
-    double kNoiseWheelSpeedFrontLeft;
-    double kNoiseWheelSpeedRearRight;
-    double kNoiseWheelSpeedRearLeft;
-
-    double kTorqueFrequency;
-    double kNoiseTorqueFrontRight;
-    double kNoiseTorqueFrontLeft;
-    double kNoiseTorqueRearRight;
-    double kNoiseTorqueRearLeft;
+    double kGssFrequency;
+    double kNoiseGssVx;
+    double kNoiseGssVy;
 
     double kImuFrequency;
     double kNoiseImuX;
@@ -80,6 +66,19 @@ private:
     double kNoiseImuAx;
     double kNoiseImuAy;
     double kNoiseImuR;
+
+    double kInverterFrequency;
+    double kNoiseWheelSpeedFrontRight;
+    double kNoiseWheelSpeedFrontLeft;
+    double kNoiseWheelSpeedRearRight;
+    double kNoiseWheelSpeedRearLeft;
+    double kNoiseTorqueFrontRight;
+    double kNoiseTorqueFrontLeft;
+    double kNoiseTorqueRearRight;
+    double kNoiseTorqueRearLeft;
+
+    double kExtensometerFrequency;
+    double kNoiseExtensometer;
 
     /**
      * @brief Callback function for the state subscriber
@@ -89,22 +88,10 @@ private:
     void state_callback(const arussim_msgs::msg::State::SharedPtr msg);
 
     /**
-     * @brief Timer function for the groundspeed
+     * @brief Timer function for the groundspeed sensor
      * 
      */
     void groundspeed_timer();
-
-    /**
-     * @brief Timer function for the extensometer
-     * 
-     */
-    void extensometer_timer();
-
-    /**
-     * @brief Timer function for the wheel speed sensors
-     * 
-     */
-    void wheel_speed_timer();
     
     /**
      * @brief Timer function for the IMU
@@ -113,14 +100,23 @@ private:
     void imu_timer();
 
     /**
-     * @brief Timer function for the 4WD torque
+     * @brief Timer function for the inverters
      * 
      */
-    void torque_cmd_timer();
+    void inverter_timer();
     
-    
+    /**
+     * @brief Timer function for the extensometer
+     * 
+     */
+    void extensometer_timer();
+
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
+
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vx_pub_; // Groundspeed publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vy_pub_; // Groundspeed publisher
+    rclcpp::TimerBase::SharedPtr gss_timer_; // Groundspeed timer
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ax_pub_; // ax publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ay_pub_; // ay publisher
@@ -131,13 +127,10 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fl_pub_; // Wheel speed publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
-    rclcpp::TimerBase::SharedPtr ws_timer_; // Wheel speed timer
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vx_pub_; // Groundspeed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr gss_vy_pub_; // Groundspeed publisher
-    rclcpp::TimerBase::SharedPtr gss_timer_; // Groundspeed timer
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
+    rclcpp::TimerBase::SharedPtr inv_timer_; // Wheel speed timer
+
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
 
-    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
-    rclcpp::TimerBase::SharedPtr torque_timer_; // Torque timer
 };

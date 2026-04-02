@@ -15,55 +15,52 @@
  */
 Sensors::Sensors() : Node("sensors")
 {
+    // Declare ground speed parameters
+    this->declare_parameter<double>("gss.noise_gss_vx", 0.01);
+    this->declare_parameter<double>("gss.noise_gss_vy", 0.01);
+    this->declare_parameter<double>("gss.gss_frequency", 200.0);
+    
     // Declare and get noise parameters for each IMU variable
     this->declare_parameter<double>("imu.noise_imu_ax", 0.01);
     this->declare_parameter<double>("imu.noise_imu_ay", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
-    this->declare_parameter<double>("imu.imu_frequency", 100.0);
+    this->declare_parameter<double>("imu.imu_frequency", 200.0);
 
     // Declare wheel speed parameters
-    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_front_right", 0.01);
-    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_front_left", 0.01);
-    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_rear_right", 0.01);
-    this->declare_parameter<double>("wheel_speed.noise_wheel_speed_rear_left", 0.01);
-    this->declare_parameter<double>("wheel_speed.wheel_speed_frequency", 100.0);
+    this->declare_parameter<double>("inverter.noise_wheel_speed_front_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_wheel_speed_front_left", 0.01);
+    this->declare_parameter<double>("inverter.noise_wheel_speed_rear_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_wheel_speed_rear_left", 0.01);
+    this->declare_parameter<double>("inverter.noise_torque_front_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_torque_front_left", 0.01);
+    this->declare_parameter<double>("inverter.noise_torque_rear_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_torque_rear_left", 0.01);
+    this->declare_parameter<double>("inverter.inverter_frequency", 200.0);
 
-    // Declare 4WD torque parameters
-    this->declare_parameter<double>("torque.noise_torque_front_right", 0.01);
-    this->declare_parameter<double>("torque.noise_torque_front_left", 0.01);
-    this->declare_parameter<double>("torque.noise_torque_rear_right", 0.01);
-    this->declare_parameter<double>("torque.noise_torque_rear_left", 0.01);
-    this->declare_parameter<double>("torque.torque_frequency", 100.0);
-
-    // Declare ground speed parameters
-    this->declare_parameter<double>("groundspeed.noise_groundspeed", 0.01);
-    this->declare_parameter<double>("groundspeed.groundspeed_frequency", 100.0);
-    
     // Declare extensometer parameters
     this->declare_parameter<double>("extensometer.extensometer_frequency", 100.0);
     this->declare_parameter<double>("extensometer.noise_extensometer", 0.01);
 
 
     // Get parameters
+    this->get_parameter("gss.noise_gss_vx", kNoiseGssVx);
+    this->get_parameter("gss.noise_gss_vy", kNoiseGssVy);
+    this->get_parameter("gss.gss_frequency", kGssFrequency);
+    
     this->get_parameter("imu.noise_imu_ax", kNoiseImuAx);
     this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
     this->get_parameter("imu.imu_frequency", kImuFrequency);
 
-    this->get_parameter("wheel_speed.noise_wheel_speed_front_right", kNoiseWheelSpeedFrontRight);
-    this->get_parameter("wheel_speed.noise_wheel_speed_front_left", kNoiseWheelSpeedFrontLeft);
-    this->get_parameter("wheel_speed.noise_wheel_speed_rear_right", kNoiseWheelSpeedRearRight);
-    this->get_parameter("wheel_speed.noise_wheel_speed_rear_left", kNoiseWheelSpeedRearLeft);
-    this->get_parameter("wheel_speed.wheel_speed_frequency", kWheelSpeedFrequency);
-
-    this->get_parameter("torque.noise_torque_front_right", kNoiseTorqueFrontRight);
-    this->get_parameter("torque.noise_torque_front_left", kNoiseTorqueFrontLeft);
-    this->get_parameter("torque.noise_torque_rear_right", kNoiseTorqueRearRight);
-    this->get_parameter("torque.noise_torque_rear_left", kNoiseTorqueRearLeft);
-    this->get_parameter("torque.torque_frequency", kTorqueFrequency);
-
-    this->get_parameter("groundspeed.noise_groundspeed", kNoiseGroundspeed);
-    this->get_parameter("groundspeed.groundspeed_frequency", kGroundspeedFrequency);
+    this->get_parameter("inverter.noise_wheel_speed_front_right", kNoiseWheelSpeedFrontRight);
+    this->get_parameter("inverter.noise_wheel_speed_front_left", kNoiseWheelSpeedFrontLeft);
+    this->get_parameter("inverter.noise_wheel_speed_rear_right", kNoiseWheelSpeedRearRight);
+    this->get_parameter("inverter.noise_wheel_speed_rear_left", kNoiseWheelSpeedRearLeft);
+    this->get_parameter("inverter.noise_torque_front_right", kNoiseTorqueFrontRight);
+    this->get_parameter("inverter.noise_torque_front_left", kNoiseTorqueFrontLeft);
+    this->get_parameter("inverter.noise_torque_rear_right", kNoiseTorqueRearRight);
+    this->get_parameter("inverter.noise_torque_rear_left", kNoiseTorqueRearLeft);
+    this->get_parameter("inverter.inverter_frequency", kInverterFrequency);
 
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
@@ -73,6 +70,17 @@ Sensors::Sensors() : Node("sensors")
     state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
         "/arussim/state", 1, 
         std::bind(&Sensors::state_callback, this, std::placeholders::_1)
+    );
+
+    // Groundspeed
+    gss_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/gss/vx", 10);
+    gss_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/gss/vy", 10);
+        
+    gss_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kGssFrequency)),
+        std::bind(&Sensors::groundspeed_timer, this)
     );
 
     // IMU
@@ -85,7 +93,7 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::imu_timer, this)
     );
 
-    // Wheel speed
+    // Inverter
     ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
         "/arussim/fr_wheel_speed", 10);
     ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
@@ -94,38 +102,23 @@ Sensors::Sensors() : Node("sensors")
         "/arussim/rr_wheel_speed", 10);
     ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
         "/arussim/rl_wheel_speed", 10);
+    torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/torque4WD", 10);
         
-    ws_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kWheelSpeedFrequency)),
-        std::bind(&Sensors::wheel_speed_timer, this)
+    inv_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kInverterFrequency)),
+        std::bind(&Sensors::inverter_timer, this)
     );
-
-    // Groundspeed
-    gss_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/gss/vx", 10);
-    gss_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/gss/vy", 10);
-    gss_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kGroundspeedFrequency)),
-        std::bind(&Sensors::groundspeed_timer, this)
-    );
-
 
     // Extensometer
-    ext_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/extensometer", 10);
+    ext_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/extensometer", 10);
 
     ext_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kExtensometerFrequency)),
         std::bind(&Sensors::extensometer_timer, this)
     );
 
-    // Torque cmd
-    torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>("/arussim/torque4WD", 10);
-
-    torque_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kTorqueFrequency)),
-        std::bind(&Sensors::torque_cmd_timer, this)
-    );
 }
 
 /**
@@ -147,39 +140,6 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     delta_ = msg->delta;
     wheel_speed = msg->wheel_speeds;
     torque_cmd = msg->torque;
-}
-
-/**
- * @brief Timer function for the 4WD torque
- * 
- */
-void Sensors::torque_cmd_timer(){
-    // Random noise generation with different noise for each wheel speed
-    std::random_device rd; 
-    std::mt19937 gen(rd());
-
-    // Corrected noise distributions
-    std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
-    std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
-    std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
-    std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
-
-    // Apply noise to the state variables
-    torque_cmd_.fr_ = torque_cmd.front_right + dist_fr(gen);
-    torque_cmd_.fl_ = torque_cmd.front_left + dist_fl(gen);
-    torque_cmd_.rr_ = torque_cmd.rear_right + dist_rr(gen);
-    torque_cmd_.rl_ = torque_cmd.rear_left + dist_rl(gen);
-
-    // Create the torque message
-    auto message = arussim_msgs::msg::FourWheelDrive();
-
-    message.front_right = torque_cmd_.fr_;    
-    message.front_left = torque_cmd_.fl_;      
-    message.rear_right = torque_cmd_.rr_;     
-    message.rear_left = torque_cmd_.rl_;     
-
-    // Publish the torque message
-    torque_pub_->publish(message);
 }
 
 /**
@@ -218,11 +178,13 @@ void Sensors::imu_timer()
  * @brief Timer function for the wheel speed sensors
  * 
  */
-void Sensors::wheel_speed_timer()
+void Sensors::inverter_timer()
 {
-    // Random noise generation with different noise for each wheel speed
+    // Random noise generation with different noise for each wheel
     std::random_device rd; 
     std::mt19937 gen(rd());
+
+    // ---------- Wheelspeed ------------
     std::normal_distribution<> dist_front_right(0.0, kNoiseWheelSpeedFrontRight);
     std::normal_distribution<> dist_front_left(0.0, kNoiseWheelSpeedFrontLeft);
     std::normal_distribution<> dist_rear_right(0.0, kNoiseWheelSpeedRearRight);
@@ -250,6 +212,29 @@ void Sensors::wheel_speed_timer()
     ws_fl_pub_->publish(msg_fl);
     ws_rr_pub_->publish(msg_rr);
     ws_rl_pub_->publish(msg_rl);
+
+    // ---------- Torque ------------
+    std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
+    std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
+    std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
+    std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
+
+    // Apply noise to the state variables
+    torque_cmd_.fr_ = torque_cmd.front_right + dist_fr(gen);
+    torque_cmd_.fl_ = torque_cmd.front_left + dist_fl(gen);
+    torque_cmd_.rr_ = torque_cmd.rear_right + dist_rr(gen);
+    torque_cmd_.rl_ = torque_cmd.rear_left + dist_rl(gen);
+
+    // Create the torque message
+    auto message = arussim_msgs::msg::FourWheelDrive();
+
+    message.front_right = torque_cmd_.fr_;    
+    message.front_left = torque_cmd_.fl_;      
+    message.rear_right = torque_cmd_.rr_;     
+    message.rear_left = torque_cmd_.rl_;     
+
+    // Publish the torque message
+    torque_pub_->publish(message);
 }
 
 /**
@@ -261,13 +246,14 @@ void Sensors::groundspeed_timer()
     // Random noise generation
     std::random_device rd; 
     std::mt19937 gen(rd());
-    std::normal_distribution<> dist(0.0, kNoiseGroundspeed);
+    std::normal_distribution<> dist_vx(0.0, kNoiseGssVx);
+    std::normal_distribution<> dist_vy(0.0, kNoiseGssVy);
 
     auto msg_vx = std_msgs::msg::Float32();
     auto msg_vy = std_msgs::msg::Float32();
 
-    msg_vx.data = vx_ + dist(gen);
-    msg_vy.data = vy_ + dist(gen);
+    msg_vx.data = vx_ + dist_vx(gen);
+    msg_vy.data = vy_ + dist_vy(gen);
 
     gss_vx_pub_->publish(msg_vx);
     gss_vy_pub_->publish(msg_vy);
