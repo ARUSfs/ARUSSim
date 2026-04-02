@@ -123,10 +123,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fr_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_fl_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rr_pub_; // Wheel speed publisher
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ws_rl_pub_; // Wheel speed publisher
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
     rclcpp::TimerBase::SharedPtr inv_timer_; // Wheel speed timer
 

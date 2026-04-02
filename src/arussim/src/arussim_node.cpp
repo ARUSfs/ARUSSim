@@ -130,14 +130,8 @@ Simulator::Simulator() : Node("simulator")
     noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/yaw_rate", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
         
-    noisy_ws_fl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/fl_wheel_speed", 10, std::bind(&Simulator::noisy_ws_fl_callback, this, std::placeholders::_1));
-    noisy_ws_fr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/fr_wheel_speed", 10, std::bind(&Simulator::noisy_ws_fr_callback, this, std::placeholders::_1));
-    noisy_ws_rl_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/rl_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rl_callback, this, std::placeholders::_1));
-    noisy_ws_rr_sub_ = this->create_subscription<std_msgs::msg::Float32>(
-        "/arussim/rr_wheel_speed", 10, std::bind(&Simulator::noisy_ws_rr_callback, this, std::placeholders::_1));
+    noisy_ws_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/wheel_speed", 10, std::bind(&Simulator::noisy_ws_callback, this, std::placeholders::_1));
     noisy_vx_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/gss/vx", 10, std::bind(&Simulator::noisy_vx_callback, this, std::placeholders::_1));
     noisy_vy_sub_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -560,43 +554,14 @@ void Simulator::noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg)
  * This method updates the noisy front left wheel speed value based on incoming messages.
  * @param msg Incoming message containing the noisy front left wheel speed data.
  */
-void Simulator::noisy_ws_fl_callback(const std_msgs::msg::Float32::SharedPtr msg)
+void Simulator::noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg)
 {
-    noisy_ws_fl_ = msg->data;
+    noisy_ws_fl_ = msg->front_left;
+    noisy_ws_fr_ = msg->front_right;
+    noisy_ws_rl_ = msg->rear_left;
+    noisy_ws_rr_ = msg->rear_right;
 }
 
-/**
- * @brief Callback for receiving noisy front right wheel speed data.
- * 
- * This method updates the noisy front right wheel speed value based on incoming messages.
- * @param msg Incoming message containing the noisy front right wheel speed data.
- */
-void Simulator::noisy_ws_fr_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    noisy_ws_fr_ = msg->data;
-}
-
-/**
- * @brief Callback for receiving noisy rear left wheel speed data.
- * 
- * This method updates the noisy rear left wheel speed value based on incoming messages.
- * @param msg Incoming message containing the noisy rear left wheel speed data.
- */
-void Simulator::noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    noisy_ws_rl_ = msg->data;
-}
-
-/**
- * @brief Callback for receiving noisy rear right wheel speed data.
- * 
- * This method updates the noisy rear right wheel speed value based on incoming messages.
- * @param msg Incoming message containing the noisy rear right wheel speed data.
- */
-void Simulator::noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg)
-{
-    noisy_ws_rr_ = msg->data;
-}
 /**
  * @brief Callbacks for receiving noisy groundspeed data.
  * 

@@ -77,7 +77,7 @@ Sensors::Sensors() : Node("sensors")
         "/arussim/gss/vx", 10);
     gss_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
         "/arussim/gss/vy", 10);
-        
+
     gss_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kGssFrequency)),
         std::bind(&Sensors::groundspeed_timer, this)
@@ -94,14 +94,8 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Inverter
-    ws_fr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/fr_wheel_speed", 10);
-    ws_fl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/fl_wheel_speed", 10);
-    ws_rr_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/rr_wheel_speed", 10);
-    ws_rl_pub_ = this->create_publisher<std_msgs::msg::Float32>(
-        "/arussim/rl_wheel_speed", 10);
+    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/wheel_speed", 10);
     torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/torque4WD", 10);
         
@@ -197,21 +191,15 @@ void Sensors::inverter_timer()
     wheel_speed_.rl_ = wheel_speed.rear_left + dist_rear_left(gen);
 
     // Create the wheel speed message
-    auto msg_fr = std_msgs::msg::Float32();
-    auto msg_fl = std_msgs::msg::Float32();
-    auto msg_rr = std_msgs::msg::Float32();
-    auto msg_rl = std_msgs::msg::Float32();
+    auto message = arussim_msgs::msg::FourWheelDrive();
 
-    msg_fr.data = wheel_speed_.fr_;    
-    msg_fl.data = wheel_speed_.fl_;
-    msg_rr.data = wheel_speed_.rr_;
-    msg_rl.data = wheel_speed_.rl_;
+    message.front_right = wheel_speed_.fr_;    
+    message.front_left = wheel_speed_.fl_;
+    message.rear_right = wheel_speed_.rr_;
+    message.rear_left = wheel_speed_.rl_;
 
     // Publish the torque message
-    ws_fr_pub_->publish(msg_fr);
-    ws_fl_pub_->publish(msg_fl);
-    ws_rr_pub_->publish(msg_rr);
-    ws_rl_pub_->publish(msg_rl);
+    ws_pub_->publish(message);
 
     // ---------- Torque ------------
     std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
@@ -226,8 +214,6 @@ void Sensors::inverter_timer()
     torque_cmd_.rl_ = torque_cmd.rear_left + dist_rl(gen);
 
     // Create the torque message
-    auto message = arussim_msgs::msg::FourWheelDrive();
-
     message.front_right = torque_cmd_.fr_;    
     message.front_left = torque_cmd_.fl_;      
     message.rear_right = torque_cmd_.rr_;     

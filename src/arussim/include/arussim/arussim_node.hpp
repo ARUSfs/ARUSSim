@@ -177,10 +177,7 @@ class Simulator : public rclcpp::Node
     void noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_ws_fl_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_ws_fr_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_ws_rl_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_ws_rr_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
     void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
@@ -273,10 +270,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_fl_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_fr_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rl_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ws_rr_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ws_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
