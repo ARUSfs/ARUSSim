@@ -39,8 +39,8 @@ private:
     double ax_ = 0;
     double ay_ = 0;
     double delta_ = 0;
-    arussim_msgs::msg::FourWheelDrive wheel_speed;
-    arussim_msgs::msg::FourWheelDrive torque_cmd;
+    arussim_msgs::msg::FourWheelDrive wheel_speed_msg_;
+    arussim_msgs::msg::FourWheelDrive torque_cmd_msg_;
 
     struct {
         double fl_ = 0;

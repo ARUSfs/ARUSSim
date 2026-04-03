@@ -36,21 +36,52 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     if (it != params.end()) this->kNsMassR = it->second;
     it = params.find("Iz");
     if (it != params.end()) this->kIzz = it->second;
-    it = params.find("I_wheel_F");
-    if (it != params.end()) this->kTireInertia_F = it->second;
-    it = params.find("I_wheel_R");
-    if (it != params.end()) this->kTireInertia_R = it->second;
-
     it = params.find("wheelbase");
     if (it != params.end()) this->kWheelBase = it->second;
     it = params.find("h_cdg");
     if (it != params.end()) this->kHCog = it->second;
     it = params.find("r_cdg");
     if (it != params.end()) this->kMassDistributionRear = it->second;
+
+    kSMassF = kSMass * (1-kMassDistributionRear);
+    kSMassR = kSMass * kMassDistributionRear;
+    kMass = kSMass + kNsMassF + kNsMassR;
+    kLf = kWheelBase*kMassDistributionRear;
+    kLr = kWheelBase*(1-kMassDistributionRear); 
+
+    kHRollCenterF = 0.033;  // TODO: añadir roll centers al csv
+    kHRollCenterR = 0.097;
+    kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
+
+    it = params.find("k_F"); 
+    if (it != params.end()) this->kSpringStiffnessF = it->second;
+    it = params.find("k_R"); 
+    if (it != params.end()) this->kSpringStiffnessR = it->second;
+    it = params.find("MR_F"); 
+    if (it != params.end()) this->kMotionRatioF = it->second;
+    it = params.find("MR_R"); 
+    if (it != params.end()) this->kMotionRatioR = it->second;
+
+    kWheelRateF = kSpringStiffnessF / std::pow(kMotionRatioF,2);
+    kWheelRateR = kSpringStiffnessR / std::pow(kMotionRatioR,2);
+    kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
+    kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
+    kRollStiffness = kRollStiffnessF + kRollStiffnessR;
+
     it = params.find("trackwidthF"); 
     if (it != params.end()) this->kTrackWidth = it->second;
     it = params.find("rdyn");
     if (it != params.end()) this->kTireDynRadius = it->second;
+    it = params.find("I_wheel_F");
+    if (it != params.end()) this->kTireInertia_F = it->second;
+    it = params.find("I_wheel_R");
+    if (it != params.end()) this->kTireInertia_R = it->second;
+
+    kHCogNsF = kTireDynRadius;
+    kHCogNsR = kTireDynRadius;
+
+    kAckermann1 = 0.1175;   // TODO: añadir ackermann al csv
+    kAckermann2 = 0.9724;
 
     it = params.find("rho");
     if (it != params.end()) this->kAirDensity = it->second;
@@ -58,17 +89,24 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     if (it != params.end()) this->kCDA = it->second;
     it = params.find("CLA");
     if (it != params.end()) this->kCLA = it->second;
+    it = params.find("r_cdp");
+    if (it != params.end()) this->kCOPx = it->second;
+    it = params.find("h_cdp");
+    if (it != params.end()) this->kCOPy = it->second;
 
     it = params.find("gear_ratio");
     if (it != params.end()) this->kGearRatio = it->second;
 
+    kRollingResistance = 100;   // TODO: añadir resistencia rodadura al csv
 
-    kSMassF = kSMass * (1-kMassDistributionRear);
-    kSMassR = kSMass * kMassDistributionRear;
-    kMass = kSMass + kNsMassF + kNsMassR;
+    kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
+    kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
 
-    kLf = kWheelBase*kMassDistributionRear;
-    kLr = kWheelBase*(1-kMassDistributionRear); 
+    kCoefDelta = 306.3; // TODO: añadir coeficientes de dirección al csv
+    kCoefV = 25.69;
+    kCoefInput = 307;
+    kSteeringAMax = 3.0;
+    kSteeringVMax = 2.3;
 }
 
 
@@ -190,7 +228,7 @@ void VehicleDynamics::calculate_tire_loads(){
 
     // Longitudinal load transfer 
     double longitudinal_ns = (kNsMassF * kHCogNsF + kNsMassR * kHCogNsR) * ax_ / kWheelBase;
-    double longitudinal_s = kSMass * ax_ / kWheelBase;
+    double longitudinal_s = kSMass * kHCog * ax_ / kWheelBase;
 
     double lateral_load_transfer_front = lateral_ns_f + lateral_s_e_f + lateral_s_g_f;
     double lateral_load_transfer_rear = lateral_ns_r + lateral_s_e_r + lateral_s_g_r;
@@ -204,10 +242,10 @@ void VehicleDynamics::calculate_tire_loads(){
     double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
     double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
 
-    tire_loads_.fl_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
-    tire_loads_.fr_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag;
-    tire_loads_.rl_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
-    tire_loads_.rr_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag;
+    tire_loads_.fl_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag / 2;
+    tire_loads_.fr_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag / 2;
+    tire_loads_.rl_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag / 2;
+    tire_loads_.rr_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag / 2;
 
     if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
     if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}
@@ -254,17 +292,15 @@ void VehicleDynamics::calculate_tire_slip(){
     tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps) - 1;
 
     if(vx_ < 0.1){
-        tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps);
-        tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps);
-        tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps);
-        tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps);
+        tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ - vx_fl;
+        tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ - vx_fr;
+        tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ - vx_rl;
+        tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ - vx_rr;
     }
 
 }
 
 VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load){
-
-    slip_angle = std::tan(slip_angle);
 
     // Combined scaling factors
     double gx_alpha = (1 - pac_param_.bx) * std::exp(-pac_param_.Gx1 * 

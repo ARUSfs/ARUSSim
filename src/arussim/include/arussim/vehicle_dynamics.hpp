@@ -67,42 +67,46 @@ class VehicleDynamics
     
     private:
         
-        double kMass = 264.07;  // Mass of the car + LiDAR
-        double kNsMassF = 17.0;
-        double kNsMassR = 24.302;
-        double kSMass = kMass - kNsMassF - kNsMassR;
-        double kIzz = 190;
+        double kMass;
+        double kNsMassF;
+        double kNsMassR;
+        double kSMass;
+        double kIzz;
 
-        double kMassDistributionRear = 0.5689;
-        double kSMassF = kSMass * (1-kMassDistributionRear);
-        double kSMassR = kSMass * kMassDistributionRear;
+        double kMassDistributionRear;
+        double kSMassF;
+        double kSMassR;
 
-        double kWheelBase = 1.535;
-        double kTrackWidth = 1.22;
-        double kLf = kWheelBase*kMassDistributionRear;
-        double kLr = kWheelBase*(1-kMassDistributionRear);
+        double kWheelBase;
+        double kTrackWidth;
+        double kLf;
+        double kLr;
 
-        double kHCog = 0.27;
-        double kHCogNsF = 0.23;
-        double kHCogNsR = 0.23;
-        double kHRollCenterF = 0.033;
-        double kHRollCenterR = 0.097;
-        double kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
+        double kHCog;
+        double kHCogNsF;
+        double kHCogNsR;
+        double kHRollCenterF;
+        double kHRollCenterR;
+        double kHRollAxis;
 
-        double kWheelRateF = 105000 / std::pow(1.02,2); // spring_stiffness (N/mm) / motion_ratio ^ 2
-        double kWheelRateR = 105000 / std::pow(1.02,2);
-        double kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
-        double kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
-        double kRollStiffness = kRollStiffnessF + kRollStiffnessR;
+        double kSpringStiffnessF;
+        double kSpringStiffnessR;
+        double kMotionRatioF;
+        double kMotionRatioR;        
+        double kWheelRateF;
+        double kWheelRateR;
+        double kRollStiffnessF;
+        double kRollStiffnessR;
+        double kRollStiffness;
 
-        double kAckermann1 = 0.1175;
-        double kAckermann2 = 0.9724;
+        double kAckermann1;
+        double kAckermann2;
 
-        double kTireDynRadius = 0.23;
-        double kTireInertia_F = 0.4;
-        double kTireInertia_R = 0.4;
+        double kTireDynRadius;
+        double kTireInertia_F;
+        double kTireInertia_R;
 
-        double kGearRatio = 12.48;
+        double kGearRatio;
 
         struct {
             double Dlat = -1.3323;
@@ -123,23 +127,21 @@ class VehicleDynamics
             double by = 0.5365;
         } pac_param_;
 
-        double kRollingResistance = 100;
-        double kCDA = 1.5;
-        double kCLA = 3.6;
-        double kCOPx = 0.5795; //longitudinal distribution (rear)
-        double kCOPy = 0.31;
-        double kAirDensity = 1.225;
+        double kRollingResistance;
+        double kCDA;
+        double kCLA;
+        double kCOPx; //longitudinal distribution (rear)
+        double kCOPy;
+        double kAirDensity;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
         double delta_dot_{0.0}, delta_v_dot_{0.0};
 
-        double kG = 9.81;
+        double kG;
 
-        
-
-        double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
-        double kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
+        double kStaticLoadFront;
+        double kStaticLoadRear;
 
         struct Tire_force {
             double fy;

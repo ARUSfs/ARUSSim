@@ -132,8 +132,8 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     ax_ = msg->ax;
     ay_ = msg->ay;
     delta_ = msg->delta;
-    wheel_speed = msg->wheel_speeds;
-    torque_cmd = msg->torque;
+    wheel_speed_msg_ = msg->wheel_speeds;
+    torque_cmd_msg_ = msg->torque;
 }
 
 /**
@@ -185,10 +185,10 @@ void Sensors::inverter_timer()
     std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
 
     // Apply noise to the state variables
-    wheel_speed_.fr_ = wheel_speed.front_right + dist_front_right(gen);
-    wheel_speed_.fl_ = wheel_speed.front_left + dist_front_left(gen);
-    wheel_speed_.rr_ = wheel_speed.rear_right + dist_rear_right(gen);
-    wheel_speed_.rl_ = wheel_speed.rear_left + dist_rear_left(gen);
+    wheel_speed_.fr_ = wheel_speed_msg_.front_right + dist_front_right(gen);
+    wheel_speed_.fl_ = wheel_speed_msg_.front_left + dist_front_left(gen);
+    wheel_speed_.rr_ = wheel_speed_msg_.rear_right + dist_rear_right(gen);
+    wheel_speed_.rl_ = wheel_speed_msg_.rear_left + dist_rear_left(gen);
 
     // Create the wheel speed message
     auto message = arussim_msgs::msg::FourWheelDrive();
@@ -208,10 +208,10 @@ void Sensors::inverter_timer()
     std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
 
     // Apply noise to the state variables
-    torque_cmd_.fr_ = torque_cmd.front_right + dist_fr(gen);
-    torque_cmd_.fl_ = torque_cmd.front_left + dist_fl(gen);
-    torque_cmd_.rr_ = torque_cmd.rear_right + dist_rr(gen);
-    torque_cmd_.rl_ = torque_cmd.rear_left + dist_rl(gen);
+    torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
+    torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
+    torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
+    torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
 
     // Create the torque message
     message.front_right = torque_cmd_.fr_;    
