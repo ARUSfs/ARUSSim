@@ -242,10 +242,10 @@ void VehicleDynamics::calculate_tire_loads(){
     double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
     double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
 
-    tire_loads_.fl_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag / 2;
-    tire_loads_.fr_ += kCOPx * aero_lift / 2 - (kCOPy - kHCog) * aero_drag / 2;
-    tire_loads_.rl_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag / 2;
-    tire_loads_.rr_ += (1 - kCOPx) * aero_lift / 2 + (kCOPy - kHCog) * aero_drag / 2;
+    tire_loads_.fl_ += (1 - kCOPx) * aero_lift / 2 - kCOPy / kWheelBase * aero_drag / 2;
+    tire_loads_.fr_ += (1 - kCOPx) * aero_lift / 2 - kCOPy / kWheelBase * aero_drag / 2;
+    tire_loads_.rl_ += kCOPx * aero_lift / 2 + kCOPy / kWheelBase * aero_drag / 2;
+    tire_loads_.rr_ += kCOPx * aero_lift / 2 + kCOPy / kWheelBase * aero_drag / 2;
 
     if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
     if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}
