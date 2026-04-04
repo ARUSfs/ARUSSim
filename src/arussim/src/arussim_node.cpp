@@ -299,6 +299,8 @@ void Simulator::on_slow_timer()
     sensor_msgs::msg::PointCloud2 perception_msg;
     pcl::toROSMsg(perception_cloud, perception_msg);
 
+    perception_msg.header.stamp = clock_->now(); 
+
     // --- PERCEPTION DELAY (mu=2.3156, sigma=0.3460) ---
     std::random_device rd_delay;
     std::mt19937 gen_delay(rd_delay());
@@ -310,7 +312,6 @@ void Simulator::on_slow_timer()
     }
     // --- END ---
 
-    perception_msg.header.stamp = clock_->now();  // stamp DESPUÉS del delay
     perception_msg.header.frame_id="arussim/vehicle_cog";
     lidar_perception_pub_->publish(perception_msg);
 
