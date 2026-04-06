@@ -302,10 +302,7 @@ void Simulator::on_slow_timer()
     perception_msg.header.stamp = clock_->now(); 
 
     // --- PERCEPTION DELAY (mu=2.3156, sigma=0.3460) ---
-    std::random_device rd_delay;
-    std::mt19937 gen_delay(rd_delay());
-    std::normal_distribution<> dist_delay(kDelayMu, kDelaySigma);
-    double delay_ms = dist_delay(gen_delay);
+    double delay_ms = perception_delay_dist(perception_delay_gen);
     if (delay_ms > 0) {
         //rclcpp::sleep_for(std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
         std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
