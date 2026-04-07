@@ -21,27 +21,31 @@ VehicleDynamics::VehicleDynamics(){
     dt_ = 0.001;
 }
 
-void VehicleDynamics::set_parameters(const std::map<std::string, double>& params) {
+void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
 
-    auto it = params.end();
+    kG = params["g"];
+    kSMass = params["sm"];
+    kNsMassF = params["nsm_f"];
+    kNsMassR = params["nsm_r"];
+    kIzz = params["Iz"];
+    kWheelBase = params["wheelbase"];
+    kHCog = params["h_cdg"];
+    kMassDistributionRear = params["r_cdg"];
+    kSpringStiffnessF = params["k_F"];
+    kSpringStiffnessR = params["k_R"];
+    kMotionRatioF = params["MR_F"];
+    kMotionRatioR = params["MR_R"];
+    kTrackWidth = params["trackwidthF"];
+    kTireDynRadius = params["rdyn"];
+    kTireInertia_F = params["I_wheel_F"];
+    kTireInertia_R = params["I_wheel_R"];
+    kAirDensity = params["rho"];
+    kCDA = params["CDA"];
+    kCLA = params["CLA"];
+    kCOPx = params["r_cdp"];
+    kCOPy = params["h_cdp"];
+    kGearRatio = params["gear_ratio"];
 
-    it = params.find("g");
-    if (it != params.end()) this->kG = it->second;
-
-    it = params.find("sm");
-    if (it != params.end()) this->kSMass = it->second;
-    it = params.find("nsm_f");
-    if (it != params.end()) this->kNsMassF = it->second;
-    it = params.find("nsm_r");
-    if (it != params.end()) this->kNsMassR = it->second;
-    it = params.find("Iz");
-    if (it != params.end()) this->kIzz = it->second;
-    it = params.find("wheelbase");
-    if (it != params.end()) this->kWheelBase = it->second;
-    it = params.find("h_cdg");
-    if (it != params.end()) this->kHCog = it->second;
-    it = params.find("r_cdg");
-    if (it != params.end()) this->kMassDistributionRear = it->second;
 
     kSMassF = kSMass * (1-kMassDistributionRear);
     kSMassR = kSMass * kMassDistributionRear;
@@ -53,56 +57,24 @@ void VehicleDynamics::set_parameters(const std::map<std::string, double>& params
     kHRollCenterR = 0.097;
     kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
 
-    it = params.find("k_F"); 
-    if (it != params.end()) this->kSpringStiffnessF = it->second;
-    it = params.find("k_R"); 
-    if (it != params.end()) this->kSpringStiffnessR = it->second;
-    it = params.find("MR_F"); 
-    if (it != params.end()) this->kMotionRatioF = it->second;
-    it = params.find("MR_R"); 
-    if (it != params.end()) this->kMotionRatioR = it->second;
-
     kWheelRateF = kSpringStiffnessF / std::pow(kMotionRatioF,2);
     kWheelRateR = kSpringStiffnessR / std::pow(kMotionRatioR,2);
     kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
     kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
     kRollStiffness = kRollStiffnessF + kRollStiffnessR;
 
-    it = params.find("trackwidthF"); 
-    if (it != params.end()) this->kTrackWidth = it->second;
-    it = params.find("rdyn");
-    if (it != params.end()) this->kTireDynRadius = it->second;
-    it = params.find("I_wheel_F");
-    if (it != params.end()) this->kTireInertia_F = it->second;
-    it = params.find("I_wheel_R");
-    if (it != params.end()) this->kTireInertia_R = it->second;
-
     kHCogNsF = kTireDynRadius;
     kHCogNsR = kTireDynRadius;
 
-    kAckermann1 = 0.1175;   // TODO: añadir ackermann al csv
+    kAckermann1 = 0.1175;
     kAckermann2 = 0.9724;
 
-    it = params.find("rho");
-    if (it != params.end()) this->kAirDensity = it->second;
-    it = params.find("CDA");
-    if (it != params.end()) this->kCDA = it->second;
-    it = params.find("CLA");
-    if (it != params.end()) this->kCLA = it->second;
-    it = params.find("r_cdp");
-    if (it != params.end()) this->kCOPx = it->second;
-    it = params.find("h_cdp");
-    if (it != params.end()) this->kCOPy = it->second;
-
-    it = params.find("gear_ratio");
-    if (it != params.end()) this->kGearRatio = it->second;
-
-    kRollingResistance = 100;   // TODO: añadir resistencia rodadura al csv
+    kRollingResistance = 100;
 
     kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
     kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
 
-    kCoefDelta = 306.3; // TODO: añadir coeficientes de dirección al csv
+    kCoefDelta = 306.3; 
     kCoefV = 25.69;
     kCoefInput = 307;
     kSteeringAMax = 3.0;

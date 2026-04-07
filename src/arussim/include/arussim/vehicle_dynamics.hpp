@@ -8,7 +8,7 @@ class VehicleDynamics
     public:
         VehicleDynamics();
         void update_simulation(double input_delta, std::vector<double> input_torque, double dt);
-        void set_parameters(const std::map<std::string, double> &params);
+        void set_parameters(std::map<std::string, double> &params);
 
         double x_;
         double y_;
