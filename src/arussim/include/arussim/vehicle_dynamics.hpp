@@ -22,7 +22,6 @@ class VehicleDynamics
         double delta_fl_;
         double delta_fr_;
         double delta_v_;
-        std::vector<double> rdyn_ = {0.23,0.23,0.23,0.23};
 
         struct {
             double fl_ = 0;
@@ -152,13 +151,11 @@ class VehicleDynamics
         Tire_force force;
 
         // Steering dynamics
-        double kCoefDelta = 257.1;
-        double kCoefV = 29.81;
-        double kCoefInput = 256.0;
+        double kCoefDelta = 306.3;
+        double kCoefV = 25.69;
+        double kCoefInput = 307;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
-        double kSteeringMin = -20.0 * M_PI / 180.0;
-        double kSteeringMax = 20.0 * M_PI / 180.0;
 
         void calculate_dynamics();
         void integrate_dynamics();
@@ -166,7 +163,6 @@ class VehicleDynamics
         double calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr);
 
         void calculate_tire_loads();
-        void calculate_dynamic_radius();
         void calculate_ackermann();
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
