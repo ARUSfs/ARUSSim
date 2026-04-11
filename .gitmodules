@@ -4,9 +4,6 @@
 [submodule "src/arussim/include/CON_VehicleControl"]
 	path = src/arussim/include/CON_VehicleControl
 	url = git@github.com:ARUSfs/CON-VehicleControl.git
-[submodule "controller_sim"]
-	path = controller_sim
-	url = git@github.com:ARUSfs/controller_sim.git
 [submodule "src/arussim/include/CON-VehicleControl"]
 	path = src/arussim/include/CON-VehicleControl
 	url = git@github.com:ARUSfs/CON-VehicleControl.git
