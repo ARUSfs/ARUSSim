@@ -102,6 +102,7 @@ void VehicleDynamics::calculate_dynamics(){
     calculate_ackermann();
     calculate_tire_slip();
     calculate_tire_loads();
+    calculate_dynamic_radius();
 
     Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_slip_.lambda_fl_, tire_loads_.fl_);
     Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_);
@@ -164,6 +165,7 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
     delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_ = std::clamp(delta_, kSteeringMin, kSteeringMax);
     delta_v_ += delta_v_dot_ * dt_;
 
     if(vx_ < 0){
@@ -226,15 +228,24 @@ void VehicleDynamics::calculate_tire_loads(){
 
 }
 
+void VehicleDynamics::calculate_dynamic_radius(){
+
+    rdyn_[0] = kTireStaticRadius - (tire_loads_.fl_ - kStaticLoadFront) / kTireStiffness;
+    rdyn_[1] = kTireStaticRadius - (tire_loads_.fr_ - kStaticLoadFront) / kTireStiffness;
+    rdyn_[2] = kTireStaticRadius - (tire_loads_.rl_ - kStaticLoadRear) / kTireStiffness;
+    rdyn_[3] = kTireStaticRadius - (tire_loads_.rr_ - kStaticLoadRear) / kTireStiffness;
+
+}
+
 void VehicleDynamics::calculate_ackermann(){
     double delta_in_ackermann = std::atan( kWheelBase * std::tan(delta_) / (kWheelBase - std::abs(std::tan(delta_)) * kTrackWidth));
 
     if(delta_ <= 0){
-        delta_fl_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
-        delta_fr_ = kAckermann2 * delta_;
-    } else {
         delta_fl_ = kAckermann2 * delta_;
         delta_fr_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
+    } else {
+        delta_fl_ = kAckermann1 * (delta_in_ackermann - delta_) + delta_;
+        delta_fr_ = kAckermann2 * delta_;
     }
 }
 
@@ -258,10 +269,10 @@ void VehicleDynamics::calculate_tire_slip(){
 
     double eps = 0.001;
 
-    tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ / (vx_fl + eps) - 1;
-    tire_slip_.lambda_fr_ = kTireDynRadius * wheel_speed_.fr_ / (vx_fr + eps) - 1;
-    tire_slip_.lambda_rl_ = kTireDynRadius * wheel_speed_.rl_ / (vx_rl + eps) - 1;
-    tire_slip_.lambda_rr_ = kTireDynRadius * wheel_speed_.rr_ / (vx_rr + eps) - 1;
+    tire_slip_.lambda_fl_ = rdyn_[0] * wheel_speed_.fl_ / (vx_fl + eps) - 1;
+    tire_slip_.lambda_fr_ = rdyn_[1] * wheel_speed_.fr_ / (vx_fr + eps) - 1;
+    tire_slip_.lambda_rl_ = rdyn_[2] * wheel_speed_.rl_ / (vx_rl + eps) - 1;
+    tire_slip_.lambda_rr_ = rdyn_[3] * wheel_speed_.rr_ / (vx_rr + eps) - 1;
 
     if(vx_ < 0.1){
         tire_slip_.lambda_fl_ = kTireDynRadius * wheel_speed_.fl_ - vx_fl;
