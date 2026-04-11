@@ -1,9 +1,6 @@
 [submodule "src/arussim/resources/parameters"]
 	path = src/arussim/resources/parameters
 	url = git@github.com:ARUSfs/ART-Parameters.git
-[submodule "src/arussim/include/CON_VehicleControl"]
-	path = src/arussim/include/CON_VehicleControl
-	url = git@github.com:ARUSfs/CON-VehicleControl.git
 [submodule "src/arussim/include/CON-VehicleControl"]
 	path = src/arussim/include/CON-VehicleControl
 	url = git@github.com:ARUSfs/CON-VehicleControl.git
