@@ -614,6 +614,15 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 
     vehicle_dynamics_ = VehicleDynamics();
 
+    try {
+        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
+
     started_acc_ = false;
     if (prev_circuit_ != track_name_){
         fixed_trajectory_msg_.points.clear();
