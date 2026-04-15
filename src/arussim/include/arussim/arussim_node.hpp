@@ -41,6 +41,14 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
+#include <linux/can.h>       
+#include <linux/can/raw.h>   
+#include <net/if.h>          
+#include <sys/ioctl.h>       
+#include <sys/socket.h>    
+#include <fcntl.h>
+#include <thread> 
+
 #include "control.h"
 
 /**
@@ -71,6 +79,7 @@ class Simulator : public rclcpp::Node
     std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate; 
+    bool kUseHILControl;
     bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
@@ -119,6 +128,13 @@ class Simulator : public rclcpp::Node
     double target_r_;
     std::vector<double> torque_cmd_;
 
+    //Can
+    float can_acc_;
+    float can_target_r_;
+    float can_delta_;
+    std::vector<double> can_torque_cmd_;
+    uint16_t as_status_ = 0x02;
+
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
     arussim_msgs::msg::Trajectory fixed_trajectory_msg_;
@@ -146,6 +162,10 @@ class Simulator : public rclcpp::Node
 
     visualization_msgs::msg::MarkerArray current_cone_markers_;
 
+    /**
+    * @brief Configures and links POSIX sockets for the CAN bus
+    */
+    void init_can_sockets();
     /**
      * @brief Callback function for the slow timer.
      * 
@@ -220,6 +240,14 @@ class Simulator : public rclcpp::Node
     void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
+     * @brief Callback for receiving launch commands.
+     * 
+     * This method is needed for the HIL control, to start the simulation when the real Raspberry Pi starts sending commands.
+     * 
+     */
+    void launch_callback(const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
      * 
      * This method sends the vehicle's transform to the TF tree so that other nodes 
@@ -267,6 +295,13 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    /**
+     * @brief Can reception functions for both CAN interfaces
+     */
+    void receive_can_0();
+    void receive_can_1();
+
+
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
@@ -298,6 +333,20 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
+
+    //CAN Communication
+    int can_socket_0_;
+    struct ifreq ifr_0_{};
+    struct sockaddr_can addr_0_{};
+    struct can_frame frame_0_;
+    std::thread thread_0_;
+
+    int can_socket_1_;
+    struct ifreq ifr_1_{};
+    struct sockaddr_can addr_1_{};
+    struct can_frame frame_1_;
+    std::thread thread_1_;
     
 };
