@@ -66,6 +66,7 @@ private:
     double kNoiseImuAx;
     double kNoiseImuAy;
     double kNoiseImuR;
+    double kNoiseImuPose;
 
     double kInverterFrequency;
     double kNoiseWheelSpeedFrontRight;
@@ -121,6 +122,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ax_pub_; // ax publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ay_pub_; // ay publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr x_pub_; // x publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr y_pub_; // y publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
