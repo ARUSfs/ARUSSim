@@ -730,6 +730,12 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     input_acc_ = 0.0;
     input_delta_ = 0.0;
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    can_acc_ = 0.0;
+    can_delta_ = 0.0;
+    can_target_r_ = 0.0;
+    can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+
+    as_status_ = 0x02;
     vehicle_dynamics_ = VehicleDynamics();
 
     started_acc_ = false;
