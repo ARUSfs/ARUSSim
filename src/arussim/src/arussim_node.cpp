@@ -152,7 +152,7 @@ Simulator::Simulator() : Node("simulator")
     
     if (!kUseHILControl) {
         control_init(); // Initialize CON-VehicleControl
-
+        RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kControllerRate)),
         std::bind(&Simulator::on_controller_sim_timer, this));
@@ -160,7 +160,7 @@ Simulator::Simulator() : Node("simulator")
         cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     } else {
-        RCLCPP_INFO(this->get_logger(), "HIL control simulation enabled.");
+        RCLCPP_WARN(this->get_logger(), "HIL control simulation enabled.");
 
         //Thread for CAN reception
         init_can_sockets();
@@ -251,7 +251,7 @@ void Simulator::check_acc_start(){
  * @brief Configures and links POSIX sockets for the CAN bus
  */
 void Simulator::init_can_sockets() {
-    // Initit CAN0
+    // Init CAN0
     can_socket_0_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     std::strcpy(ifr_0_.ifr_name, "can0");
     ioctl(can_socket_0_, SIOCGIFINDEX, &ifr_0_);
