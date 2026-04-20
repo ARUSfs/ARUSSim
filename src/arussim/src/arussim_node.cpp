@@ -25,7 +25,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
     this->declare_parameter<double>("sensor.lidar_max_dist", 3.0);
-    this->declare_parameter<double>("sensor.lidar_mu_time", 2.3156);  // (μ=2.3156, σ=0.3460 en log(ms))
+    this->declare_parameter<double>("sensor.lidar_mu_time", 2.3156);
     this->declare_parameter<double>("sensor.lidar_sigma_time", 0.3460);
     this->declare_parameter<double>("sensor.camera_fov", 10);
     this->declare_parameter<double>("sensor.pub_rate", 10);
@@ -288,19 +288,6 @@ void Simulator::on_slow_timer()
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
             p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
-            // Moving the cone center 0.15m in your direction (in order to test how much does it affect you)
-           /*
-            double dist = std::sqrt(p.x * p.x + p.y * p.y);
-            if (dist > 0.15) {
-                double dx = (p.x / dist) * 0.15;
-                double dy = (p.y / dist) * 0.15;
-                p.x -= dx;
-                p.y -= dy;
-            } else {
-                p.x = 0.0;
-                p.y = 0.0;
-            }
-                */ 
             if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
                 perception_cloud.push_back(p);
             } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
@@ -318,7 +305,6 @@ void Simulator::on_slow_timer()
     perception_msg.header.stamp = clock_->now(); 
     perception_msg.header.frame_id="arussim/vehicle_cog";
 
-    // --- PERCEPTION DELAY (mu=2.3156, sigma=0.3460) ---
     double delay_ms = perception_delay_dist(perception_delay_gen);
     rclcpp::Time publish_time = clock_->now() + rclcpp::Duration::from_seconds(delay_ms / 1000.0);
     perception_queue_.push({perception_msg, publish_time});
