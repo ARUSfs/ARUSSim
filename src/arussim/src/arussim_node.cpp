@@ -25,6 +25,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
     this->declare_parameter<double>("sensor.lidar_max_dist", 3.0);
+    this->declare_parameter<double>("sensor.lidar_mu_time", 2.3156);  // (μ=2.3156, σ=0.3460 en log(ms))
+    this->declare_parameter<double>("sensor.lidar_sigma_time", 0.3460);
     this->declare_parameter<double>("sensor.camera_fov", 10);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_position_lidar_perception", 0.01);
@@ -52,6 +54,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
     this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
     this->get_parameter("sensor.lidar_max_dist", kMaxLidarDistance);
+    this->get_parameter("sensor.lidar_mu_time", kLidarMuTime);
+    this->get_parameter("sensor.lidar_sigma_time", kLidarSigmaTime);
     this->get_parameter("sensor.camera_fov", kCameraFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_position_lidar_perception", kNoiseLidarPosPerception);
@@ -106,6 +110,9 @@ Simulator::Simulator() : Node("simulator")
     controller_sim_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kControllerRate)),
         std::bind(&Simulator::on_controller_sim_timer, this));
+    perception_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(1),
+        std::bind(&Simulator::process_perception_queue, this));
 
     cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
@@ -139,9 +146,9 @@ Simulator::Simulator() : Node("simulator")
     // Set controller_sim period and GSS usage
     controller_sim_.init(1/kControllerRate, kUseGSS);
 
-    // Lognormal perception delay (μ=2.3156, σ=0.3460 en log(ms))
+    // Lognormal perception delay
     perception_delay_gen = std::mt19937(std::random_device{}());
-    perception_delay_dist = std::lognormal_distribution<double>(2.3156, 0.3460);
+    perception_delay_dist = std::lognormal_distribution<double>(kLidarMuTime, kLidarSigmaTime);
 
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -200,6 +207,15 @@ void Simulator::check_acc_start(){
         lap_signal_pub_->publish(msg);
         started_acc_ = true;
 
+    }
+}
+
+void Simulator::process_perception_queue()
+{
+    while (!perception_queue_.empty() && clock_->now() >= perception_queue_.front().publish_time)
+    {
+        lidar_perception_pub_->publish(perception_queue_.front().msg);
+        perception_queue_.pop();
     }
 }
 
@@ -300,18 +316,12 @@ void Simulator::on_slow_timer()
     pcl::toROSMsg(perception_cloud, perception_msg);
 
     perception_msg.header.stamp = clock_->now(); 
+    perception_msg.header.frame_id="arussim/vehicle_cog";
 
     // --- PERCEPTION DELAY (mu=2.3156, sigma=0.3460) ---
     double delay_ms = perception_delay_dist(perception_delay_gen);
-    if (delay_ms > 0) {
-        //rclcpp::sleep_for(std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
-        std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(static_cast<int64_t>(delay_ms)));
-    }
-    // --- END ---
-
-    perception_msg.header.frame_id="arussim/vehicle_cog";
-    lidar_perception_pub_->publish(perception_msg);
-
+    rclcpp::Time publish_time = clock_->now() + rclcpp::Duration::from_seconds(delay_ms / 1000.0);
+    perception_queue_.push({perception_msg, publish_time});
 
     // Random noise generation for position (camera)
     std::random_device rd_pc; 
