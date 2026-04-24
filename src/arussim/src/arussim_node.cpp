@@ -167,8 +167,8 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
-    // Set controller_sim period and GSS usage
-    controller_sim_.init(1/kControllerRate, kUseGSS);
+    //Initialize CON-VehicleControl
+    control_init(); 
 
     // Lognormal perception delay
     perception_delay_gen = std::mt19937(std::random_device{}());
