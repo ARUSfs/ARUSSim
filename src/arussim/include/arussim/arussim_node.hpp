@@ -31,6 +31,10 @@
 #include <iostream>
 #include "ConeXYZColorScore.h"
 #include "PointXYZProbColorScore.h"
+#include <random>
+#include <thread>
+#include <queue>
+#include <chrono>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
@@ -87,10 +91,22 @@ class Simulator : public rclcpp::Node
     double kNoiseCameraPerception;
     double kNoiseCameraColor;
     double kMinPerceptionX;
+    double kDelayMu;
+    double kDelaySigma;
     double kSimulationSpeedMultiplier;
     bool kDebug;
     double kGearRatio = 12.48;
     
+    struct DelayedMsg {
+      sensor_msgs::msg::PointCloud2 msg;
+      rclcpp::Time publish_time;
+    };
+    std::queue<DelayedMsg> perception_queue_;
+    rclcpp::TimerBase::SharedPtr publisher_timer_;
+    std::mt19937 perception_delay_gen;
+    std::lognormal_distribution<double> perception_delay_dist;
+    double kLidarMuTime;
+    double kLidarSigmaTime;
     // Sensor data with noise
     double noisy_ax_ = 0.0;
     double noisy_ay_ = 0.0;
@@ -262,6 +278,11 @@ class Simulator : public rclcpp::Node
     void check_acc_start();
 
     /**
+     * @brief Checks every milisecond if there is a new perception message to publish
+     */
+    void process_perception_queue();
+
+    /**
      * @brief Make a MarkerArray of all cones of the track
      * 
      */
@@ -277,6 +298,7 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
+    rclcpp::TimerBase::SharedPtr perception_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
