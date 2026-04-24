@@ -16,6 +16,7 @@
 Simulator::Simulator() : Node("simulator")
 {   
     this->declare_parameter<std::string>("track", "FSG");
+    this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
     this->declare_parameter<bool>("use_gss", false);
@@ -45,6 +46,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<bool>("debug", false);
 
     this->get_parameter("track", kTrackName);
+    this->get_parameter("simulation_car", kSimulationCar);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("use_gss", kUseGSS);
@@ -100,6 +102,12 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/fixed_trajectory", 10);
     camera_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/camera_perception", 10);
+    slip_ratio_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_ratio", 10);
+    slip_angle_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/slip_angle", 10);
+    tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tire_load", 10);
 
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kSensorRate)), 
@@ -125,6 +133,22 @@ Simulator::Simulator() : Node("simulator")
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
+    
+    noisy_ax_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/IMU/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
+    noisy_ay_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/IMU/ay", 10, std::bind(&Simulator::noisy_ay_callback, this, std::placeholders::_1));
+    noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/IMU/yaw_rate", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
+        
+    noisy_ws_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/wheel_speed", 10, std::bind(&Simulator::noisy_ws_callback, this, std::placeholders::_1));
+    noisy_vx_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/gss/vx", 10, std::bind(&Simulator::noisy_vx_callback, this, std::placeholders::_1));
+    noisy_vy_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/gss/vy", 10, std::bind(&Simulator::noisy_vy_callback, this, std::placeholders::_1));
+    noisy_delta_sub_ = this->create_subscription<std_msgs::msg::Float32>(
+        "/arussim/extensometer", 10, std::bind(&Simulator::noisy_delta_callback, this, std::placeholders::_1));
 
     // Load the car mesh
     marker_.header.frame_id = "arussim/vehicle_cog";
@@ -168,6 +192,17 @@ Simulator::Simulator() : Node("simulator")
     auto track_msg = std::make_shared<std_msgs::msg::String>();
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
+
+    this->get_parameter("simulation_car", kSimulationCar);
+
+    try {
+        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
 }
 
 /**
@@ -358,35 +393,52 @@ void Simulator::on_slow_timer()
 }
 
 void Simulator::on_controller_sim_timer() {
-    // Update sensor data in ControllerSim
-    // TO DO: use sensors with noise instead of ground truth
-    controller_sim_.set_sensors(
-        vehicle_dynamics_.ax_,
-        vehicle_dynamics_.ay_,
-        vehicle_dynamics_.r_,
-        vehicle_dynamics_.delta_,
-        vehicle_dynamics_.wheel_speed_.fl_,
-        vehicle_dynamics_.wheel_speed_.fr_,
-        vehicle_dynamics_.wheel_speed_.rl_,
-        vehicle_dynamics_.wheel_speed_.rr_,
-        vehicle_dynamics_.vx_,
-        vehicle_dynamics_.vy_
-    );
+    // Update sensor data in CON-VehicleControl
+    SensorData current_sensors{}; 
+    DV current_dv{};
 
-    // Torque command calculation
-    torque_cmd_ = controller_sim_.get_torque_cmd(input_acc_, target_r_);
-    
-    // Publish control estimation 
+    current_sensors.acceleration_x = noisy_ax_;
+    current_sensors.acceleration_y = noisy_ay_;
+    current_sensors.angular_z = noisy_r_; 
+    current_sensors.steering_angle = noisy_delta_; 
+    current_sensors.speed_x = noisy_vx_;
+    current_sensors.speed_y = noisy_vy_;
+
+    current_sensors.motor_speed[0] = noisy_ws_fl_ * kGearRatio;
+    current_sensors.motor_speed[1] = noisy_ws_fr_ * kGearRatio;
+    current_sensors.motor_speed[2] = noisy_ws_rl_ * kGearRatio;
+    current_sensors.motor_speed[3] = noisy_ws_rr_ * kGearRatio;
+
+    current_sensors.V_soc = 500;
+
+    // State parameters 
+    current_dv.autonomous = 1; // 1 -> DV mode
+    current_dv.driving = 1; // 1 -> Car is driving
+    current_dv.acc = input_acc_;
+    current_dv.target_r = target_r_;
+
+    // Save controller output
+    float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3];
+
+    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out);
+
+    torque_cmd_ = {
+        static_cast<double>(kGearRatio*torque_cmd_out[0]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[1]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[2]), 
+        static_cast<double>(kGearRatio*torque_cmd_out[3])
+    };
+        
     std_msgs::msg::Float32 control_vx_msg;
-    control_vx_msg.data = controller_sim_.vx_;
+    control_vx_msg.data = state_out[0];
     control_vx_pub_->publish(control_vx_msg);
 
     std_msgs::msg::Float32 control_vy_msg;
-    control_vy_msg.data = controller_sim_.vy_;
+    control_vy_msg.data = state_out[1];
     control_vy_pub_->publish(control_vy_msg);   
 
     std_msgs::msg::Float32 control_r_msg;   
-    control_r_msg.data = controller_sim_.r_;
+    control_r_msg.data = state_out[2];
     control_r_pub_->publish(control_r_msg);
 }
 
@@ -462,11 +514,96 @@ void Simulator::on_fast_timer()
     state_pub_->publish(message);
 
 
+    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
+    slip_ratio_pub_->publish(slip_ratio_msg);
+
+    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
+    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
+    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
+    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
+    slip_angle_pub_->publish(slip_angle_msg);
+
+    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
+    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
+    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
+    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
+    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
+    tire_load_pub_->publish(tire_load_msg);
+
+
     broadcast_transform();
     
     // Update vehicle marker
     marker_.header.stamp = clock_->now();
     marker_pub_->publish(marker_);
+}
+
+/**
+ * @brief Callback for receiving noisy x_acceleration data.
+ * 
+ * This method updates the noisy acceleration value based on incoming messages.
+ * @param msg Incoming message containing the noisy x_acceleration data.
+ */
+void Simulator::noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ax_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy y_acceleration data.
+ * 
+ * This method updates the noisy acceleration value based on incoming messages.
+ * @param msg Incoming message containing the noisy y_acceleration data.
+ */
+void Simulator::noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_ay_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy angular velocity data.
+ * 
+ * This method updates the noisy angular velocity value based on incoming messages.
+ * @param msg Incoming message containing the noisy angular velocity data.
+ */
+void Simulator::noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
+    noisy_r_ = msg->data;
+}
+
+/**
+ * @brief Callback for receiving noisy front left wheel speed data.
+ * 
+ * This method updates the noisy front left wheel speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy front left wheel speed data.
+ */
+void Simulator::noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg)
+{
+    noisy_ws_fl_ = msg->front_left;
+    noisy_ws_fr_ = msg->front_right;
+    noisy_ws_rl_ = msg->rear_left;
+    noisy_ws_rr_ = msg->rear_right;
+}
+
+/**
+ * @brief Callbacks for receiving noisy groundspeed data.
+ * 
+ */
+void Simulator::noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+    noisy_vx_ = msg->data;
+}
+
+void Simulator::noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+    noisy_vy_ = msg->data;
+}
+
+void Simulator::noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+    noisy_delta_ = msg->data;
 }
 
 /**
@@ -504,6 +641,15 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     vehicle_dynamics_ = VehicleDynamics();
+
+    try {
+        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
 
     started_acc_ = false;
     if (prev_circuit_ != track_name_){
@@ -691,6 +837,85 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
         }
     }
 
+}
+
+/**
+ * @brief Select the CSV file based on simulation_car
+ */
+std::string Simulator::select_csv(const std::string& simulation_car) {
+    std::string csv_filename;
+    if (simulation_car == "ART25D_2WD_DV")
+     {csv_filename = "ART_25D_2WD_DV.csv"; }
+    else if (simulation_car == "ART25D_2WD")
+     {csv_filename = "ART_25D_2WD.csv"; }
+    else if (simulation_car == "ART25D_4WD_DV")
+    { csv_filename = "ART_25D_4WD_DV.csv"; }
+    else if (simulation_car == "ART25D_4WD")
+     {csv_filename = "ART_25D_4WD.csv"; }
+    else if (simulation_car == "ART26D_DV")
+     {csv_filename = "ART_26D_DV.csv"; } 
+    else {
+        throw std::invalid_argument("Error simulating: " + simulation_car);
+    }
+    return csv_filename;
+}
+
+/**
+ * @brief Get the path to the CSV file based on simulation_car 
+ */
+std::string Simulator::get_csv_path(const std::string& csv_filename) {
+    // Implementation for loading car parameters based on simulation_car
+    std::string parameters_directory = ament_index_cpp::get_package_share_directory("arussim") + "/resources/parameters/";
+    std::string parameters_path = parameters_directory + csv_filename;
+    return parameters_path;
+}
+
+/**
+ * @brief Load car parameters from a CSV file and return them as a map.
+ * @param filepath The path to the CSV file containing the car parameters.
+ */
+std::map<std::string, double> Simulator::load_car_parameters(const std::string &filepath) {
+    std::map<std::string, double> parameters_map;
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        RCLCPP_ERROR(
+            this->get_logger(), 
+            "Could not open CSV parameter file: %s", 
+            filepath.c_str()
+        );
+        return parameters_map;
+    }
+
+    std::string line;
+
+    // Skip the first line (header)
+    std::getline(file, line);
+
+     // Read the file line by line
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string key;
+        std::string value_str;
+
+        // Separate the line by commas
+        if (std::getline(ss, key, ',') && std::getline(ss, value_str, ',')) {
+            try {
+                double value = std::stod(value_str);
+                parameters_map[key] = value;
+            }  
+            catch (const std::invalid_argument& e) {
+                RCLCPP_WARN(
+                    this->get_logger(), 
+                    "Warning: Parameter '%s' is not a number: '%s'", 
+                    key.c_str(), value_str.c_str()
+                );
+            }
+        }
+
+    }
+
+    file.close();
+    return parameters_map;
 }
 
 

@@ -3,12 +3,12 @@
 #include <iostream>
 #include "arussim/csv_generator.hpp"
 #include <fstream>
-#include "controller_sim/controller_sim.hpp"
 class VehicleDynamics
 {
     public:
         VehicleDynamics();
         void update_simulation(double input_delta, std::vector<double> input_torque, double dt);
+        void set_parameters(std::map<std::string, double> &params);
 
         double x_;
         double y_;
@@ -22,7 +22,6 @@ class VehicleDynamics
         double delta_fl_;
         double delta_fr_;
         double delta_v_;
-        std::vector<double> rdyn_ = {0.23,0.23,0.23,0.23};
 
         struct {
             double fl_ = 0;
@@ -50,6 +49,13 @@ class VehicleDynamics
             double lambda_rr_ = 0;
         } tire_slip_;
         
+        struct {
+            double fl_ = 0;
+            double fr_ = 0;
+            double rl_ = 0;
+            double rr_ = 0;
+        } tire_loads_;
+        
         double input_delta_;
         double input_acc_;
         double dt_;
@@ -60,41 +66,47 @@ class VehicleDynamics
         }
     
     private:
+        
+        double kMass;
+        double kNsMassF;
+        double kNsMassR;
+        double kSMass;
+        double kIzz;
 
-        double kMass = 264.07;  // Mass of the car + LiDAR
-        double kNsMassF = 17.0;
-        double kNsMassR = 24.302;
-        double kSMass = kMass - kNsMassF - kNsMassR;
-        double kIzz = 190;
+        double kMassDistributionRear;
+        double kSMassF;
+        double kSMassR;
 
-        double kMassDistributionRear = 0.5689;
-        double kSMassF = kSMass * (1-kMassDistributionRear);
-        double kSMassR = kSMass * kMassDistributionRear;
+        double kWheelBase;
+        double kTrackWidth;
+        double kLf;
+        double kLr;
 
-        double kWheelBase = 1.535;
-        double kTrackWidth = 1.22;
-        double kLf = kWheelBase*kMassDistributionRear;
-        double kLr = kWheelBase*(1-kMassDistributionRear);
+        double kHCog;
+        double kHCogNsF;
+        double kHCogNsR;
+        double kHRollCenterF;
+        double kHRollCenterR;
+        double kHRollAxis;
 
-        double kHCog = 0.27;
-        double kHCogNsF = 0.23;
-        double kHCogNsR = 0.23;
-        double kHRollCenterF = 0.033;
-        double kHRollCenterR = 0.097;
-        double kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
+        double kSpringStiffnessF;
+        double kSpringStiffnessR;
+        double kMotionRatioF;
+        double kMotionRatioR;        
+        double kWheelRateF;
+        double kWheelRateR;
+        double kRollStiffnessF;
+        double kRollStiffnessR;
+        double kRollStiffness;
 
-        double kWheelRateF = 105000 / std::pow(1.02,2); // spring_stiffness (N/mm) / motion_ratio ^ 2
-        double kWheelRateR = 105000 / std::pow(1.02,2);
-        double kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
-        double kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
-        double kRollStiffness = kRollStiffnessF + kRollStiffnessR;
+        double kAckermann1;
+        double kAckermann2;
 
-        double kAckermann1 = 0.1175;
-        double kAckermann2 = 0.9724;
+        double kTireDynRadius;
+        double kTireInertia_F;
+        double kTireInertia_R;
 
-        double kTireStaticRadius = 0.23;
-        double kTireStiffness = 114000.0;
-        double kTireInertia = 0.26;
+        double kGearRatio;
 
         struct {
             double Dlat = -1.3323;
@@ -115,30 +127,21 @@ class VehicleDynamics
             double by = 0.5365;
         } pac_param_;
 
-        double kRollingResistance = 100;
-        double kCDA = 1.5;
-        double kCLA = 3.6;
-        double kCOPx = 0.5795; //longitudinal distribution (rear)
-        double kCOPy = 0.31;
-        double kAirDensity = 1.225;
+        double kRollingResistance;
+        double kCDA;
+        double kCLA;
+        double kCOPx; //longitudinal distribution (rear)
+        double kCOPy;
+        double kAirDensity;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
         double delta_dot_{0.0}, delta_v_dot_{0.0};
 
-        double kG = 9.81;
+        double kG;
 
-        
-
-        double kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
-        double kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
-
-        struct {
-            double fl_ = 0;
-            double fr_ = 0;
-            double rl_ = 0;
-            double rr_ = 0;
-        } tire_loads_;
+        double kStaticLoadFront;
+        double kStaticLoadRear;
 
         struct Tire_force {
             double fy;
@@ -148,13 +151,11 @@ class VehicleDynamics
         Tire_force force;
 
         // Steering dynamics
-        double kCoefDelta = 257.1;
-        double kCoefV = 29.81;
-        double kCoefInput = 256.0;
+        double kCoefDelta = 306.3;
+        double kCoefV = 25.69;
+        double kCoefInput = 307;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
-        double kSteeringMin = -20.0 * M_PI / 180.0;
-        double kSteeringMax = 20.0 * M_PI / 180.0;
 
         void calculate_dynamics();
         void integrate_dynamics();
@@ -162,7 +163,6 @@ class VehicleDynamics
         double calculate_fx(Tire_force force_fl, Tire_force force_fr, Tire_force force_rl, Tire_force force_rr);
 
         void calculate_tire_loads();
-        void calculate_dynamic_radius();
         void calculate_ackermann();
         void calculate_tire_slip();
         Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);

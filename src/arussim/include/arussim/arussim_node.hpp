@@ -45,12 +45,7 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
-
-#include "controller_sim/controller_sim.hpp"
-#include "controller_sim/estimation.hpp"
-#include "controller_sim/power_limitation.hpp"
-#include "controller_sim/traction_control.hpp"
-#include "controller_sim/torque_vectoring.hpp"
+#include "control.h"
 
 /**
  * @class Simulator
@@ -75,9 +70,9 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    ControllerSim controller_sim_;
 
     std::string kTrackName;
+    std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate; 
     bool kUseGSS;
@@ -99,8 +94,8 @@ class Simulator : public rclcpp::Node
     double kDelayMu;
     double kDelaySigma;
     double kSimulationSpeedMultiplier;
-    bool kTorqueVectoring;
     bool kDebug;
+    double kGearRatio = 12.48;
     
     struct DelayedMsg {
       sensor_msgs::msg::PointCloud2 msg;
@@ -112,11 +107,26 @@ class Simulator : public rclcpp::Node
     std::lognormal_distribution<double> perception_delay_dist;
     double kLidarMuTime;
     double kLidarSigmaTime;
+    // Sensor data with noise
+    double noisy_ax_ = 0.0;
+    double noisy_ay_ = 0.0;
+    double noisy_r_ = 0.0;
+    double noisy_ws_fl_ = 0.0;
+    double noisy_ws_fr_ = 0.0;
+    double noisy_ws_rl_ = 0.0;
+    double noisy_ws_rr_ = 0.0;
+    double noisy_vx_ = 0.0;
+    double noisy_vy_ = 0.0;
+    double noisy_delta_ = 0.0;
 
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
     double kCarWidth;
+
+    // Car parameters
+    std::string simulation_car_csv_;
+    std::map<std::string, double> parameters_map_;
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
@@ -177,6 +187,18 @@ class Simulator : public rclcpp::Node
     void on_fast_timer();
 
     /**
+     * @brief Callback functions for receiving noisy sensor data.
+     * 
+     */
+    void noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
+    void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
+
+    /**
      * @brief Callback for receiving control commands.
      * 
      * This method processes incoming control commands (acceleration and steering angle) 
@@ -229,6 +251,22 @@ class Simulator : public rclcpp::Node
     void load_track(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
+     * @brief Loads the car parameters from resources.
+     * 
+     */
+    std::string select_csv(const std::string& kSimulationCar);
+
+    /**
+     * @brief Resolves the CSV file path based on the simulation_car 
+     */
+    std::string get_csv_path(const std::string& csv_filename);
+
+    /**
+     * @brief Load parameters from de according CSV file
+     */
+    std::map<std::string, double> load_car_parameters(const std::string &filepath);
+
+    /**
      * @brief Detects if the vehicle is between two TPLs.
      */
     void check_lap();
@@ -250,6 +288,13 @@ class Simulator : public rclcpp::Node
      */
     void cone_visualization();
 
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ws_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
@@ -257,7 +302,11 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
+
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_angle_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tire_load_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
