@@ -1,7 +1,7 @@
 arussim:
   ros__parameters:
     simulation_car: 'ART25D_2WD_DV'   # str    Simulation car model
-    use_hil_control: false             # bool   Use HIL control instead of CON-VehicleControl
+    simulation_mode: 'default'             # str   default/raspi_sim/hil 
     track: "FSG"
     state_update_rate: 1000.0      # Hz
     controller_rate:   400.0       # Hz

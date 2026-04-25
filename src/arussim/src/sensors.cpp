@@ -7,6 +7,10 @@
  * 
  */
 #include "arussim/sensors.hpp"
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
+std::vector<Sensors::CanFrame> Sensors::frames;
 
 /**
  * @class Sensors
@@ -65,6 +69,9 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
+    //CAN Socket setup
+    can0_socket_ = setup_can_socket("can0");
+    can1_socket_ = setup_can_socket("can1");
 
     // State subscriber
     state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
@@ -113,6 +120,56 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::extensometer_timer, this)
     );
 
+}
+
+int Sensors::setup_can_socket(const char * interface_name)
+{
+    const int can_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (can_socket < 0) {
+        RCLCPP_ERROR(this->get_logger(), "socket(PF_CAN) failed for %s: %s", interface_name, std::strerror(errno));
+        return -1;
+    }
+
+    struct ifreq ifr = {};
+    std::strncpy(ifr.ifr_name, interface_name, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+
+    if (ioctl(can_socket, SIOCGIFINDEX, &ifr) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "ioctl(SIOCGIFINDEX) failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    struct sockaddr_can addr = {};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+
+    if (bind(can_socket, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "bind() failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    return can_socket;
+}
+
+//Function to encode a signal into a CAN frame
+uint64_t Sensors::encode_signal(double value, double scale, double offset, int bit_len, bool is_signed) {
+    double raw_f = (value - offset) / scale;
+    int64_t raw_i = static_cast<int64_t>(std::llround(raw_f));
+
+    if (is_signed) {
+        int64_t min_val = -(1LL << (bit_len - 1));
+        int64_t max_val =  (1LL << (bit_len - 1)) - 1;
+        raw_i = std::clamp(raw_i, min_val, max_val);
+        return static_cast<uint64_t>(raw_i) &
+               ((1ULL << bit_len) - 1);
+    } else {
+        int64_t min_val = static_cast<int64_t>(0);
+        int64_t max_val = static_cast<int64_t>((1ULL << bit_len) - 1);
+        uint64_t raw_u = static_cast<uint64_t>(std::clamp(raw_i, min_val, max_val));
+        return raw_u;
+    }
 }
 
 /**
@@ -190,37 +247,54 @@ void Sensors::inverter_timer()
     wheel_speed_.rr_ = wheel_speed_msg_.rear_right + dist_rear_right(gen);
     wheel_speed_.rl_ = wheel_speed_msg_.rear_left + dist_rear_left(gen);
 
-    // Create the wheel speed message
-    auto message = arussim_msgs::msg::FourWheelDrive();
+    if (kSimulationMode == "default"){
+        // Create the wheel speed message
+        auto message = arussim_msgs::msg::FourWheelDrive();
 
-    message.front_right = wheel_speed_.fr_;    
-    message.front_left = wheel_speed_.fl_;
-    message.rear_right = wheel_speed_.rr_;
-    message.rear_left = wheel_speed_.rl_;
+        message.front_right = wheel_speed_.fr_;    
+        message.front_left = wheel_speed_.fl_;
+        message.rear_right = wheel_speed_.rr_;
+        message.rear_left = wheel_speed_.rl_;
 
-    // Publish the torque message
-    ws_pub_->publish(message);
+        // Publish the torque message
+        ws_pub_->publish(message);
 
-    // ---------- Torque ------------
-    std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
-    std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
-    std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
-    std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
+        // ---------- Torque ------------
+        std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
+        std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
+        std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
+        std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
 
-    // Apply noise to the state variables
-    torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
-    torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
-    torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
-    torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
+        // Apply noise to the state variables
+        torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
+        torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
+        torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
+        torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
 
-    // Create the torque message
-    message.front_right = torque_cmd_.fr_;    
-    message.front_left = torque_cmd_.fl_;      
-    message.rear_right = torque_cmd_.rr_;     
-    message.rear_left = torque_cmd_.rl_;     
+        // Create the torque message
+        message.front_right = torque_cmd_.fr_;    
+        message.front_left = torque_cmd_.fl_;      
+        message.rear_right = torque_cmd_.rr_;     
+        message.rear_left = torque_cmd_.rl_;     
 
-    // Publish the torque message
-    torque_pub_->publish(message);
+        // Publish the torque message
+        torque_pub_->publish(message);
+    }
+    else{
+        //Send Inverter CAN frames
+        std::map<std::string,double> values = {
+        {"fl_inv_speed", wheel_speed_.fl_*kGearRatio},{"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 
+        {"fr_inv_speed", wheel_speed_.fr_*kGearRatio}, {"fr_inv_torque", torque_cmd_.fr_/kGearRatio}, 
+        {"rl_inv_speed", wheel_speed_.rl_*kGearRatio}, {"rl_inv_torque", torque_cmd_.rl_/kGearRatio}, 
+        {"rr_inv_speed", wheel_speed_.rr_*kGearRatio}, {"rr_inv_torque", torque_cmd_.rr_/kGearRatio},
+        {"enable_amk_status_byte1", 96.0}
+        }; 
+
+        for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
+        send_can_frame(frame, values);
+        }
+        } 
+    }
 }
 
 /**
@@ -241,8 +315,22 @@ void Sensors::groundspeed_timer()
     msg_vx.data = vx_ + dist_vx(gen);
     msg_vy.data = vy_ + dist_vy(gen);
 
-    gss_vx_pub_->publish(msg_vx);
-    gss_vy_pub_->publish(msg_vy);
+    if(kSimulationMode == "default"){
+        gss_vx_pub_->publish(msg_vx);
+        gss_vy_pub_->publish(msg_vy);
+    }
+    else{
+        std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
+        {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)}, 
+        {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)},
+        {"dv_autonomous", 1.0}, {"dv_driving", 3.0}, {"enable_flag", 1.0} }; 
+
+        for (auto &frame : frames) { 
+            if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0 || frame.id == 0x161 || frame.id == 0x221)  { 
+                send_can_frame(frame, values); 
+            } 
+        }
+    }
 }
 
 /**
@@ -256,10 +344,69 @@ void Sensors::extensometer_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
-
+    if (kSimulationMode == "default"){
     auto message = std_msgs::msg::Float32();
     message.data = delta_ + dist(gen);
     ext_pub_->publish(message);
+    }
+    else{
+        //Send CAN frame for extensometer
+        std::map<std::string,double> values = { {"extensometer", delta_ + dist(gen)} }; 
+
+        for (auto &frame : frames) { 
+        if (frame.id == 0x134) { 
+            send_can_frame(frame, values); 
+        }
+    } 
+    }
+}
+
+void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values) { 
+    canMsg_.can_id = frame.id; 
+    canMsg_.can_dlc = frame.size; 
+    std::memset(canMsg_.data, 0, sizeof(canMsg_.data)); 
+    
+    for (const auto &sig_pair : frame.signals) {
+        const auto &topic = sig_pair.first;
+        const auto &sig = sig_pair.second;
+
+        int bit_len = sig.bit_fin - sig.bit_in + 1;
+        uint64_t raw = encode_signal(values.at(topic),
+                                     sig.scale,
+                                     sig.offset,
+                                     bit_len,
+                                     sig.is_signed);
+
+        // Inserción bit a bit (formato Intel / little-endian)
+        for (int i = 0; i < bit_len; ++i) {
+            int bit_pos = sig.bit_in + i;
+            int byte_idx = bit_pos / 8;
+            int bit_offset = bit_pos % 8;
+
+            if (raw & (1ULL << i)) {
+                canMsg_.data[byte_idx] |= (1U << bit_offset);
+            }
+        }
+    }
+
+    if (frame.can_bus == CanBus::kCan0) {
+        if (can0_socket_ < 0) {
+            RCLCPP_ERROR(this->get_logger(), "can0_socket_ not initialized for frame 0x%X", frame.id);
+            return;
+        }
+        write(can0_socket_, &canMsg_, sizeof(canMsg_)); 
+        return;
+    }
+    
+    if (frame.can_bus == CanBus::kCan1) {
+        if (can1_socket_ < 0) {
+            RCLCPP_ERROR(this->get_logger(), "can1_socket_ not initialized for frame 0x%X", frame.id);
+            return;
+        }
+        write(can1_socket_, &canMsg_, sizeof(canMsg_));
+        return;
+    }
+  
 }
 
 /**

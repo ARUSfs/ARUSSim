@@ -19,7 +19,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
-    this->declare_parameter<bool>("use_hil_control", false);
+    this->declare_parameter<std::string>("simulation_mode", "default");
     this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
@@ -46,7 +46,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("simulation_car", kSimulationCar);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
-    this->get_parameter("use_hil_control", kUseHILControl);
+    this->get_parameter("simulation_mode", kSimulationMode);
     this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
@@ -150,19 +150,7 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
     
-    if (!kUseHILControl) {
-        control_init(); // Initialize CON-VehicleControl
-        RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
-        controller_sim_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kControllerRate)),
-        std::bind(&Simulator::on_controller_sim_timer, this));
-
-        cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
-        std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
-    } else {
-        RCLCPP_WARN(this->get_logger(), "HIL control simulation enabled.");
-
-        //Thread for CAN reception
+    //Thread for CAN reception
         init_can_sockets();
         
         std::thread thread_0_(&Simulator::receive_can_0, this);
@@ -174,10 +162,23 @@ Simulator::Simulator() : Node("simulator")
         launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1, 
         std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
 
-    }
+        // Initialize torque variable 
+        torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
-    // Initialize torque variable 
-    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    if (kSimulationMode == "default") {
+        control_init(); // Initialize CON-VehicleControl
+        RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
+        controller_sim_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kControllerRate)),
+        std::bind(&Simulator::on_controller_sim_timer, this));
+
+        cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
+        std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
+    } else {
+        RCLCPP_WARN(this->get_logger(), "HIL control simulation enabled.");
+
+
+    }
 
     // Set CSV file
     if (kCSVState) {
@@ -194,8 +195,6 @@ Simulator::Simulator() : Node("simulator")
     auto track_msg = std::make_shared<std_msgs::msg::String>();
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
-
-    this->get_parameter("simulation_car", kSimulationCar);
 
     try {
         this->simulation_car_csv_ = this->select_csv(kSimulationCar);
@@ -465,7 +464,7 @@ void Simulator::on_fast_timer()
 {   
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
-    if(kUseHILControl){
+    if(kSimulationMode == "default"){
         if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0) {
         can_acc_ = 0;
     }

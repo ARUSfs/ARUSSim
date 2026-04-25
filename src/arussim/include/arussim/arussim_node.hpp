@@ -79,7 +79,7 @@ class Simulator : public rclcpp::Node
     std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate; 
-    bool kUseHILControl;
+    std::string kSimulationMode;
     bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;

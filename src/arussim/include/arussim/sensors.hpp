@@ -13,7 +13,15 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include <map>
 #include <random>
+#include <string>
+#include <vector>
+#include <linux/can.h>       
+#include <linux/can/raw.h>   
+#include <net/if.h>          
+#include <sys/ioctl.h>       
+#include <sys/socket.h>  
 
 /**
  * @class Sensors
@@ -27,6 +35,27 @@ public:
      * 
      */
     Sensors(); // Constructor
+
+    //Define CAN frame and signal structures
+    enum class CanBus {
+        kCan0,
+        kCan1,
+    };
+
+    struct CanSignal {
+        int bit_in;
+        int bit_fin;
+        bool is_signed;
+        double scale;
+        double offset;
+    };
+    struct CanFrame {
+        uint32_t id;
+        int size;
+        std::map<std::string, CanSignal> signals;
+        CanBus can_bus = CanBus::kCan0;
+    };
+    static std::vector<CanFrame> frames; 
 
 private:
     // Variables
@@ -56,6 +85,7 @@ private:
         double rr_ = 0;
     } torque_cmd_;
 
+    std::string kSimulationMode;
     double kGssFrequency;
     double kNoiseGssVx;
     double kNoiseGssVy;
@@ -76,9 +106,15 @@ private:
     double kNoiseTorqueFrontLeft;
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
+    double kGearRatio;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;
+
+    /*
+    double kBMSFrequency;
+    double kNoiseBatteryVoltage;
+    */
 
     /**
      * @brief Callback function for the state subscriber
@@ -105,11 +141,16 @@ private:
      */
     void inverter_timer();
     
+    // void bms_timer(); ???
     /**
      * @brief Timer function for the extensometer
      * 
      */
     void extensometer_timer();
+
+    static uint64_t encode_signal(double value, double scale, double offset, int bit_len, bool is_signed);
+    void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values);
+    int setup_can_socket(const char * interface_name);
 
     // ROS Communication
     rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_; // State subscriber
@@ -130,4 +171,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
 
+    //CAN Communication
+    int can0_socket_ = -1;
+    int can1_socket_ = -1;
+    struct can_frame canMsg_{}; 
 };
