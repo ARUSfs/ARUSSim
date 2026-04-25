@@ -78,6 +78,7 @@ class Simulator : public rclcpp::Node
     bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
+    double kLidarHeight;
     double kMinLidarDistance;
     double kMaxLidarDistance;
     double kCameraFOV;

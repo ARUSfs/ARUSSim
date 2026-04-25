@@ -15,6 +15,7 @@ arussim:
 
     sensor:
       lidar_fov:         120.0                  # º   LiDAR circular range
+      lidar_height:      0.64                   # m   LiDAR height from the ground
       lidar_min_dist:    3.0                    # m   LiDAR min range
       lidar_max_dist:    40.0                   # m   LiDAR max range
       lidar_mu_time:     2.3156                 #     LiDAR distribution processing time
