@@ -40,6 +40,7 @@ public:
     enum class CanBus {
         kCan0,
         kCan1,
+        kCan2
     };
 
     struct CanSignal {
@@ -76,7 +77,7 @@ private:
         double fr_ = 0;
         double rl_ = 0;
         double rr_ = 0;
-    } wheel_speed_;
+    } motor_speed_;
 
     struct {
         double fl_ = 0;
@@ -89,6 +90,9 @@ private:
     double kGssFrequency;
     double kNoiseGssVx;
     double kNoiseGssVy;
+    double kNoiseGssAx;
+    double kNoiseGssAy;
+    double kNoiseGssR;
 
     double kImuFrequency;
     double kNoiseImuX;
@@ -98,21 +102,23 @@ private:
     double kNoiseImuR;
 
     double kInverterFrequency;
-    double kNoiseWheelSpeedFrontRight;
-    double kNoiseWheelSpeedFrontLeft;
-    double kNoiseWheelSpeedRearRight;
-    double kNoiseWheelSpeedRearLeft;
+    double kNoiseMotorSpeedFrontRight;
+    double kNoiseMotorSpeedFrontLeft;
+    double kNoiseMotorSpeedRearRight;
+    double kNoiseMotorSpeedRearLeft;
     double kNoiseTorqueFrontRight;
     double kNoiseTorqueFrontLeft;
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
-    double kGearRatio;
+    double kGearRatio = 12.48;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;
 
     double kBMSFrequency;
     double kNoiseBatteryVoltage;
+
+    double kASFrequency;
 
     /**
      * @brief Callback function for the state subscriber
@@ -151,6 +157,11 @@ private:
      */
     void extensometer_timer();
 
+    /**
+     * @brief Timer function for the AS PCB
+     */
+    void as_timer();
+
     static uint64_t encode_signal(double value, double scale, double offset, int bit_len, bool is_signed);
     void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values);
     int setup_can_socket(const char * interface_name);
@@ -167,7 +178,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
-    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ws_pub_; // Wheel speed publisher
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr motor_speed_pub_; // Motor speed publisher
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_pub_; // Torque publisher
     rclcpp::TimerBase::SharedPtr inv_timer_; // Wheel speed timer
 
@@ -176,8 +187,11 @@ private:
     
     rclcpp::TimerBase::SharedPtr bms_timer_; // BMS timer
 
+    rclcpp::TimerBase::SharedPtr as_timer_; // AS PCB timer
+
     //CAN Communication
     int can0_socket_ = -1;
     int can1_socket_ = -1;
+    int can2_socket_ = -1;
     struct can_frame canMsg_{}; 
 };
