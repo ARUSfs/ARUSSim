@@ -111,10 +111,8 @@ private:
     double kExtensometerFrequency;
     double kNoiseExtensometer;
 
-    /*
     double kBMSFrequency;
     double kNoiseBatteryVoltage;
-    */
 
     /**
      * @brief Callback function for the state subscriber
@@ -141,7 +139,12 @@ private:
      */
     void inverter_timer();
     
-    // void bms_timer(); ???
+    /**
+     * @brief Timer function for the BMS
+     * 
+     */
+    void bms_timer();
+    
     /**
      * @brief Timer function for the extensometer
      * 
@@ -170,6 +173,8 @@ private:
 
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ext_pub_; // Extensometer publisher
     rclcpp::TimerBase::SharedPtr ext_timer_; // Extensometer timer
+    
+    rclcpp::TimerBase::SharedPtr bms_timer_; // BMS timer
 
     //CAN Communication
     int can0_socket_ = -1;

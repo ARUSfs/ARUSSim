@@ -45,6 +45,10 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("extensometer.extensometer_frequency", 100.0);
     this->declare_parameter<double>("extensometer.noise_extensometer", 0.01);
 
+    // Declare BMS parameters
+    this->declare_parameter<double>("bms.bms_frequency", 100.0);
+    this->declare_parameter<double>("bms.noise_battery_voltage", 0.1);
+
 
     // Get parameters
     this->get_parameter("gss.noise_gss_vx", kNoiseGssVx);
@@ -69,6 +73,9 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
+    this->get_parameter("bms.bms_frequency", kBMSFrequency);
+    this->get_parameter("bms.noise_battery_voltage", kNoiseBatteryVoltage);
+    
     //CAN Socket setup
     can0_socket_ = setup_can_socket("can0");
     can1_socket_ = setup_can_socket("can1");
@@ -120,6 +127,81 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::extensometer_timer, this)
     );
 
+    // BMS
+    bms_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kBMSFrequency)),
+        std::bind(&Sensors::bms_timer, this)
+    );
+
+    frames = {
+        {0x1A0, 4, {
+            {"GSS/vx", {0, 15, true, 0.02/3.6, 0.0}},
+            {"GSS/vy", {16, 31, true, 0.02/3.6, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x1A3, 4, { // GSS
+            {"IMU/ax", {0, 15, true, 0.02, 0.0}},
+            {"IMU/ay", {16, 31, true, 0.02, 0.0}},
+            }, Sensors::CanBus::kCan0
+        },
+        {0x1A4, 6, { // IMU yaw_rate
+            {"IMU/yaw_rate", {32, 47, true, 0.02*M_PI/180, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x134, 2, { // Extensometer
+            {"extensometer", {0, 15, true, 0.000035, -0.482442}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x102, 6, { // Front Left inverter
+            {"fl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"fl_inv_torque", {32, 47, true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x106, 6, { // Front Right inverter
+            {"fr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"fr_inv_torque", {32, 47,  true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x110, 6, { // Rear Left inverter
+            {"rl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"rl_inv_torque", {32, 47,  true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x114, 6, { // Rear Right inverter
+            {"rr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"rr_inv_torque", {32, 47, true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x100, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x104, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x108, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x112, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x161, 2, {
+            {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
+            {"dv_driving", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x221, 1, {
+            {"enable_flag", {0, 7, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x192, 6, {
+            {"battery_voltage", {16, 47, true, 0.001, 0.0}}
+            }, Sensors::CanBus::kCan0
+        }
+    };
 }
 
 int Sensors::setup_can_socket(const char * interface_name)
@@ -247,53 +329,52 @@ void Sensors::inverter_timer()
     wheel_speed_.rr_ = wheel_speed_msg_.rear_right + dist_rear_right(gen);
     wheel_speed_.rl_ = wheel_speed_msg_.rear_left + dist_rear_left(gen);
 
-    if (kSimulationMode == "default"){
-        // Create the wheel speed message
-        auto message = arussim_msgs::msg::FourWheelDrive();
+    // Create the wheel speed message
+    auto ws_message = arussim_msgs::msg::FourWheelDrive();
 
-        message.front_right = wheel_speed_.fr_;    
-        message.front_left = wheel_speed_.fl_;
-        message.rear_right = wheel_speed_.rr_;
-        message.rear_left = wheel_speed_.rl_;
+    ws_message.front_right = wheel_speed_.fr_;    
+    ws_message.front_left = wheel_speed_.fl_;
+    ws_message.rear_right = wheel_speed_.rr_;
+    ws_message.rear_left = wheel_speed_.rl_;
 
-        // Publish the torque message
-        ws_pub_->publish(message);
+    // Publish the wheel speed message
+    ws_pub_->publish(ws_message);
 
-        // ---------- Torque ------------
-        std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
-        std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
-        std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
-        std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
+    // ---------- Torque ------------
+    std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
+    std::normal_distribution<> dist_fl(0.0, kNoiseTorqueFrontLeft);
+    std::normal_distribution<> dist_rr(0.0, kNoiseTorqueRearRight);
+    std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
 
-        // Apply noise to the state variables
-        torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
-        torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
-        torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
-        torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
+    // Apply noise to the state variables
+    torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
+    torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
+    torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
+    torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
 
-        // Create the torque message
-        message.front_right = torque_cmd_.fr_;    
-        message.front_left = torque_cmd_.fl_;      
-        message.rear_right = torque_cmd_.rr_;     
-        message.rear_left = torque_cmd_.rl_;     
+    // Create the torque message
+    auto torque_message = arussim_msgs::msg::FourWheelDrive();
 
-        // Publish the torque message
-        torque_pub_->publish(message);
+    torque_message.front_right = torque_cmd_.fr_;    
+    torque_message.front_left = torque_cmd_.fl_;      
+    torque_message.rear_right = torque_cmd_.rr_;     
+    torque_message.rear_left = torque_cmd_.rl_;     
+
+    // Publish the torque message
+    torque_pub_->publish(torque_message);
+    
+    //Send Inverter CAN frames
+    std::map<std::string,double> values = {
+    {"fl_inv_speed", wheel_speed_.fl_*kGearRatio}, {"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 
+    {"fr_inv_speed", wheel_speed_.fr_*kGearRatio}, {"fr_inv_torque", torque_cmd_.fr_/kGearRatio}, 
+    {"rl_inv_speed", wheel_speed_.rl_*kGearRatio}, {"rl_inv_torque", torque_cmd_.rl_/kGearRatio}, 
+    {"rr_inv_speed", wheel_speed_.rr_*kGearRatio}, {"rr_inv_torque", torque_cmd_.rr_/kGearRatio},
+    {"enable_amk_status_byte1", 96.0}
+    }; 
+
+    for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
+    send_can_frame(frame, values);
     }
-    else{
-        //Send Inverter CAN frames
-        std::map<std::string,double> values = {
-        {"fl_inv_speed", wheel_speed_.fl_*kGearRatio},{"fl_inv_torque", torque_cmd_.fl_/kGearRatio}, 
-        {"fr_inv_speed", wheel_speed_.fr_*kGearRatio}, {"fr_inv_torque", torque_cmd_.fr_/kGearRatio}, 
-        {"rl_inv_speed", wheel_speed_.rl_*kGearRatio}, {"rl_inv_torque", torque_cmd_.rl_/kGearRatio}, 
-        {"rr_inv_speed", wheel_speed_.rr_*kGearRatio}, {"rr_inv_torque", torque_cmd_.rr_/kGearRatio},
-        {"enable_amk_status_byte1", 96.0}
-        }; 
-
-        for (auto &frame : frames) { if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
-        send_can_frame(frame, values);
-        }
-        } 
     }
 }
 
@@ -308,6 +389,9 @@ void Sensors::groundspeed_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist_vx(0.0, kNoiseGssVx);
     std::normal_distribution<> dist_vy(0.0, kNoiseGssVy);
+    std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
+    std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
+    std::normal_distribution<> dist_r(0.0, kNoiseImuR);
 
     auto msg_vx = std_msgs::msg::Float32();
     auto msg_vy = std_msgs::msg::Float32();
@@ -315,21 +399,39 @@ void Sensors::groundspeed_timer()
     msg_vx.data = vx_ + dist_vx(gen);
     msg_vy.data = vy_ + dist_vy(gen);
 
-    if(kSimulationMode == "default"){
-        gss_vx_pub_->publish(msg_vx);
-        gss_vy_pub_->publish(msg_vy);
-    }
-    else{
-        std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
-        {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)}, 
-        {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)},
-        {"dv_autonomous", 1.0}, {"dv_driving", 3.0}, {"enable_flag", 1.0} }; 
+    gss_vx_pub_->publish(msg_vx);
+    gss_vy_pub_->publish(msg_vy);
+    
+    std::map<std::string,double> values = { {"IMU/ax", ax_ + dist_ax(gen)}, 
+    {"IMU/ay", ay_ + dist_ay(gen)}, {"IMU/yaw_rate", r_ + dist_r(gen)}, 
+    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)},
+    {"dv_autonomous", 1.0}, {"dv_driving", 3.0}, {"enable_flag", 1.0} }; 
 
-        for (auto &frame : frames) { 
-            if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0 || frame.id == 0x161 || frame.id == 0x221)  { 
-                send_can_frame(frame, values); 
-            } 
-        }
+    for (auto &frame : frames) { 
+        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0 || frame.id == 0x161 || frame.id == 0x221)  { 
+            send_can_frame(frame, values); 
+        } 
+        
+    }
+}
+
+/**
+ * @brief Timer function for the BMS
+ * 
+ */
+void Sensors::bms_timer() {
+    // Random noise generation with different noise for each variable
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::normal_distribution<> dist_voltage(0.0, kNoiseBatteryVoltage);
+    // TODO: add battery voltage simulation
+    std::map<std::string,double> values = { {"battery_voltage", 500 + dist_voltage(gen)} };
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x192)  { 
+            send_can_frame(frame, values); 
+        } 
     }
 }
 
@@ -344,20 +446,17 @@ void Sensors::extensometer_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
-    if (kSimulationMode == "default"){
     auto message = std_msgs::msg::Float32();
     message.data = delta_ + dist(gen);
     ext_pub_->publish(message);
-    }
-    else{
-        //Send CAN frame for extensometer
-        std::map<std::string,double> values = { {"extensometer", delta_ + dist(gen)} }; 
 
-        for (auto &frame : frames) { 
-        if (frame.id == 0x134) { 
-            send_can_frame(frame, values); 
-        }
-    } 
+    //Send CAN frame for extensometer
+    std::map<std::string,double> values = { {"extensometer", delta_ + dist(gen)} }; 
+
+    for (auto &frame : frames) { 
+    if (frame.id == 0x134) { 
+        send_can_frame(frame, values); 
+    }
     }
 }
 
