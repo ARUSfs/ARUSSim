@@ -4,6 +4,7 @@
  */
 
 #include "arussim/arussim_node.hpp"
+#include <cstdlib>
 
 /**
  * @class Simulator
@@ -159,6 +160,9 @@ Simulator::Simulator() : Node("simulator")
         std::thread thread_1_(&Simulator::receive_can_1, this);
         thread_1_.detach();
 
+        std::thread thread_2_(&Simulator::receive_can_2, this);
+        thread_2_.detach();
+
         launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1, 
         std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
 
@@ -247,9 +251,51 @@ void Simulator::check_acc_start(){
 }
 
 /**
- * @brief Configures and links POSIX sockets for the CAN bus
+ * @brief Creates, configures and links POSIX sockets for the CAN bus
  */
 void Simulator::init_can_sockets() {
+
+    if (kSimulationMode == "default" || kSimulationMode == "raspi_simulation") {
+
+        // Virtual can
+        RCLCPP_INFO(this->get_logger(), "Rising virtual CAN interfaces (vcan0, vcan1 and vcan2)...");
+
+        std::system("sudo modprobe vcan");
+
+        std::system("ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan");
+        std::system("sudo ip link set up can0");
+
+        std::system("ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan");
+        std::system("sudo ip link set up can1");
+
+        std::system("ip link show can2 >/dev/null 2>&1 || sudo ip link add dev can2 type vcan");
+        std::system("sudo ip link set up can2");
+
+    } 
+    else if (kSimulationMode == "hil_simulation") {
+        
+        // Hardware CAN
+        RCLCPP_INFO(this->get_logger(), "Rising hardware CAN interfaces (can0, can1 and can2)...");
+
+        std::system("ip link show can0 >/dev/null 2>&1 && sudo ip link set can0 down"); // La apagamos primero por si acaso
+        std::system("sudo ip link set can0 type can bitrate 500000"); // Asignamos velocidad
+        std::system("sudo ip link set up can0"); // La encendemos
+
+        std::system("ip link show can1 >/dev/null 2>&1 && sudo ip link set can1 down");
+        std::system("sudo ip link set can1 type can bitrate 500000");
+        std::system("sudo ip link set up can1");
+
+        std::system("ip link show can2 >/dev/null 2>&1 && sudo ip link set can2 down");
+        std::system("sudo ip link set can2 type can bitrate 500000");
+        std::system("sudo ip link set up can2");
+        
+    } 
+    else {
+        // Salvaguarda arquitectónica
+        RCLCPP_ERROR(this->get_logger(), "Error: Unknown simulation mode ('%s'). Aborting init_can.", kSimulationMode.c_str());
+        return;
+    }
+
     // Init CAN0
     can_socket_0_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     std::strcpy(ifr_0_.ifr_name, "can0");
@@ -265,6 +311,14 @@ void Simulator::init_can_sockets() {
     addr_1_.can_family = AF_CAN;
     addr_1_.can_ifindex = ifr_1_.ifr_ifindex;
     bind(can_socket_1_, (struct sockaddr *)&addr_1_, sizeof(addr_1_));
+
+    // Init CAN2
+    can_socket_2_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    std::strcpy(ifr_2_.ifr_name, "can2");
+    ioctl(can_socket_2_, SIOCGIFINDEX, &ifr_2_);
+    addr_2_.can_family = AF_CAN;
+    addr_2_.can_ifindex = ifr_2_.ifr_ifindex;
+    bind(can_socket_2_, (struct sockaddr *)&addr_2_, sizeof(addr_2_));
     
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 }
@@ -627,6 +681,24 @@ void Simulator::receive_can_1()
         }
     }
 }
+
+void Simulator::receive_can_2()
+{
+    int flags = fcntl(can_socket_2_, F_GETFL, 0);
+    fcntl(can_socket_2_, F_SETFL, flags | O_NONBLOCK);
+    while (rclcpp::ok()) {
+        int nbytes = read(can_socket_2_, &frame_2_, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
+
+        if (frame_2_.can_id == 0x261) {
+            as_status_ = frame_2_.data[1];
+        }
+    }
+}
+
 void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
     if (as_status_ == 0x02) as_status_ = 0x03;

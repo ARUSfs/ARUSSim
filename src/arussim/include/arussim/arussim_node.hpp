@@ -300,6 +300,7 @@ class Simulator : public rclcpp::Node
      */
     void receive_can_0();
     void receive_can_1();
+    void receive_can_2();
 
 
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
@@ -348,5 +349,11 @@ class Simulator : public rclcpp::Node
     struct sockaddr_can addr_1_{};
     struct can_frame frame_1_;
     std::thread thread_1_;
+
+    int can_socket_2_;
+    struct ifreq ifr_2_{};
+    struct sockaddr_can addr_2_{};
+    struct can_frame frame_2_;
+    std::thread thread_2_;
     
 };
