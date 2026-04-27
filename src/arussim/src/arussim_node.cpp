@@ -23,6 +23,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
+    this->declare_parameter<double>("cone.height", 0.325);
+    this->declare_parameter<double>("cone.weight", 0.228);
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
     this->declare_parameter<double>("sensor.lidar_height", 0.64);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
@@ -54,6 +56,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
+    this->get_parameter("cone.height", kConeHeight);
+    this->get_parameter("cone.weight", kConeWeight);
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
     this->get_parameter("sensor.lidar_height", kLidarHeight);
     this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
@@ -302,9 +306,6 @@ void Simulator::on_slow_timer()
         double depth;
     };
 
-    double h_C = 0.325;
-    double w_C = 0.23;
-
     std::vector<ConeData> cones;
     auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
 
@@ -319,7 +320,7 @@ void Simulator::on_slow_timer()
         double angle_to_cone = std::atan2(dy, dx) - yaw;
         while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
         while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
-        double delta = std::atan2(w_C/2.0, d);
+        double delta = std::atan2(kConeWeight/2.0, d);
 
         PointXYZProbColorScore p;
         p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
@@ -348,10 +349,9 @@ void Simulator::on_slow_timer()
             c.angle = angle_to_cone;
             c.p_min = angle_to_cone - delta;
             c.p_max = angle_to_cone + delta;
-            c.depth = d * (kLidarHeight / (kLidarHeight - h_C));
+            c.depth = d * (kLidarHeight / (kLidarHeight - kConeHeight));
 
             cones.push_back(c);
-            //perception_cloud.push_back(p);
         } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
             arussim_msgs::msg::PointXY msg;
             msg.x = point.x;
@@ -372,10 +372,10 @@ void Simulator::on_slow_timer()
             const auto &coneB = cones[j];
             if (i == j || coneA.d >= coneB.d) continue;
 
-            bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= h_C;
+            bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= kConeHeight;
             bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
 
-            if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max) && z_ray) occluded[j] = true;
+            if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max) && in_depth) occluded[j] = true;
         }
         if (!occluded[i]) perception_cloud.push_back(cones[i].p);
     }

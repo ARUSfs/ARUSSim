@@ -120,6 +120,10 @@ class Simulator : public rclcpp::Node
     double noisy_vy_ = 0.0;
     double noisy_delta_ = 0.0;
 
+    //Cones geometry
+    double kConeHeight = 0.325;
+    double kConeWeight = 0.228;
+
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
