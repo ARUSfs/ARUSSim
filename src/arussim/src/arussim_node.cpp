@@ -364,6 +364,7 @@ void Simulator::on_slow_timer()
           [](const auto &a, const auto &b){ return a.d < b.d; });
     
     std::vector<bool> occluded(cones.size(), false);
+    bool infinite_shadow = kLidarHeight <= kConeHeight;
     
     for (size_t i = 0; i < cones.size(); ++i) {
         const auto &coneA = cones[i];
@@ -372,10 +373,23 @@ void Simulator::on_slow_timer()
             const auto &coneB = cones[j];
             if (i == j || coneA.d >= coneB.d) continue;
 
+            if (infinite_shadow) {
+                if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max)) occluded[j] = true;
+                continue;
+            }
+
+            double t = (coneB.d - coneA.d) / (coneA.depth - coneA.d);
+            t = std::clamp(t, 0.0, 1.0);
+
+            double half_width_A = (coneA.p_max - coneA.p_min) * 0.5;
+            double half_width_eff = (1.0 - t) * half_width_A;
+            double min_eff = coneA.angle - half_width_eff;
+            double max_eff = coneA.angle + half_width_eff;
+
             bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= kConeHeight;
             bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
 
-            if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max) && in_depth) occluded[j] = true;
+            if (!(coneB.p_max < min_eff || coneB.p_min > max_eff) && z_ray) occluded[j] = true;
         }
         if (!occluded[i]) perception_cloud.push_back(cones[i].p);
     }
