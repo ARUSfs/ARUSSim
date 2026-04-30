@@ -117,6 +117,9 @@ Simulator::Simulator() : Node("simulator")
     ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
         "/arussim_interface/EBS", 1, std::bind(&Simulator::ebs_callback, this, std::placeholders::_1));
 
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+        std::bind(&Simulator::reset_callback, this, std::placeholders::_1));
+
     noisy_ax_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
     noisy_ay_sub_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -852,8 +855,8 @@ void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     if (msg->data)
     {
-        input_acc_ = 0.0;
-        input_delta_ = 0.0;
+        can_acc_ = 0.0;
+        can_delta_ = 0.0;
         torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
         vehicle_dynamics_.vx_ = 0.0;
         vehicle_dynamics_.vy_ = 0.0;
@@ -873,6 +876,15 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 
     as_status_ = 0x02;
     vehicle_dynamics_ = VehicleDynamics();
+
+    try {
+        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
 
     started_acc_ = false;
     if (prev_circuit_ != track_name_)
