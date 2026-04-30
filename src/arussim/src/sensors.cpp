@@ -217,7 +217,7 @@ Sensors::Sensors() : Node("sensors")
         {0x161, 2, {
             {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
             {"dv_driving", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan0
+            }, Sensors::CanBus::kCan1
         },
         {0x221, 1, {
             {"enable_flag", {0, 7, false, 1.0, 0.0}}
@@ -509,7 +509,6 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
                                      bit_len,
                                      sig.is_signed);
 
-        // Inserción bit a bit (formato Intel / little-endian)
         for (int i = 0; i < bit_len; ++i) {
             int bit_pos = sig.bit_in + i;
             int byte_idx = bit_pos / 8;
@@ -523,7 +522,8 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
 
     if (frame.can_bus == CanBus::kCan0) {
         if (can0_socket_ < 0) {
-            RCLCPP_ERROR(this->get_logger(), "can0_socket_ not initialized for frame 0x%X", frame.id);
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can0_socket_ not initialized for frame 0x%X", frame.id);
+            can0_socket_ = setup_can_socket("can0");
             return;
         }
         write(can0_socket_, &canMsg_, sizeof(canMsg_)); 
@@ -532,7 +532,8 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
     
     if (frame.can_bus == CanBus::kCan1) {
         if (can1_socket_ < 0) {
-            RCLCPP_ERROR(this->get_logger(), "can1_socket_ not initialized for frame 0x%X", frame.id);
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can1_socket_ not initialized for frame 0x%X", frame.id);
+            can1_socket_ = setup_can_socket("can1");
             return;
         }
         write(can1_socket_, &canMsg_, sizeof(canMsg_));
@@ -541,7 +542,8 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
   
     if (frame.can_bus == CanBus::kCan2) {
         if (can2_socket_ < 0) {
-            RCLCPP_ERROR(this->get_logger(), "can2_socket_ not initialized for frame 0x%X", frame.id);
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can2_socket_ not initialized for frame 0x%X", frame.id);
+            can2_socket_ = setup_can_socket("can2");
             return;
         }
         write(can2_socket_, &canMsg_, sizeof(canMsg_));

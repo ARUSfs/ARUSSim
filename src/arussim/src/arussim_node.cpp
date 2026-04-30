@@ -9,13 +9,13 @@
 /**
  * @class Simulator
  * @brief Simulator class for the ARUS Team (ARUSsim).
- * 
- * This class simulates the behavior of a vehicle in a racing environment, 
+ *
+ * This class simulates the behavior of a vehicle in a racing environment,
  * handling the simulation of state updates, sensor data generation, and broadcasting
  * transforms to visualize the vehicle and track in RViz.
  */
 Simulator::Simulator() : Node("simulator")
-{   
+{
     this->declare_parameter<std::string>("track", "FSG");
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
@@ -105,28 +105,27 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/tire_load", 10);
 
     slow_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kSensorRate)), 
+        std::chrono::milliseconds((int)(1000 / kSensorRate)),
         std::bind(&Simulator::on_slow_timer, this));
     fast_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kStateUpdateRate)), 
+        std::chrono::milliseconds((int)(1000 / kStateUpdateRate)),
         std::bind(&Simulator::on_fast_timer, this));
-    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
-        std::bind(&Simulator::load_track, this, std::placeholders::_1));
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1,
+                                                                    std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
     ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
         "/arussim_interface/EBS", 1, std::bind(&Simulator::ebs_callback, this, std::placeholders::_1));
 
-    
     noisy_ax_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/ax", 10, std::bind(&Simulator::noisy_ax_callback, this, std::placeholders::_1));
     noisy_ay_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/ay", 10, std::bind(&Simulator::noisy_ay_callback, this, std::placeholders::_1));
     noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/yaw_rate", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
-        
+
     noisy_ws_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/wheel_speed", 10, std::bind(&Simulator::noisy_ws_callback, this, std::placeholders::_1));
+        "/arussim/motor_speed", 10, std::bind(&Simulator::noisy_ws_callback, this, std::placeholders::_1));
     noisy_vx_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/gss/vx", 10, std::bind(&Simulator::noisy_vx_callback, this, std::placeholders::_1));
     noisy_vy_sub_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -145,50 +144,53 @@ Simulator::Simulator() : Node("simulator")
     marker_.scale.x = 0.001;
     marker_.scale.y = 0.001;
     marker_.scale.z = 0.001;
-    marker_.color.r = 60.0/255.0;
-    marker_.color.g = 55.0/255.0;
-    marker_.color.b = 70.0/255.0;
+    marker_.color.r = 60.0 / 255.0;
+    marker_.color.g = 55.0 / 255.0;
+    marker_.color.b = 70.0 / 255.0;
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
-    
-    //Thread for CAN reception
-        init_can_sockets();
-        
-        std::thread thread_0_(&Simulator::receive_can_0, this);
-        thread_0_.detach();
 
-        std::thread thread_1_(&Simulator::receive_can_1, this);
-        thread_1_.detach();
+    // Thread for CAN reception
+    init_can_sockets();
 
-        std::thread thread_2_(&Simulator::receive_can_2, this);
-        thread_2_.detach();
+    std::thread thread_0_(&Simulator::receive_can_0, this);
+    thread_0_.detach();
 
-        launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1, 
-        std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
+    std::thread thread_1_(&Simulator::receive_can_1, this);
+    thread_1_.detach();
 
-        // Initialize torque variable 
-        torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    std::thread thread_2_(&Simulator::receive_can_2, this);
+    thread_2_.detach();
 
-    if (kSimulationMode == "default") {
+    launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1,
+    std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
+
+    // Initialize torque variable
+    torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+
+    if (kSimulationMode == "default")
+    {
         control_init(); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds((int)(1000/kControllerRate)),
-        std::bind(&Simulator::on_controller_sim_timer, this));
+            std::chrono::milliseconds((int)(1000 / kControllerRate)),
+            std::bind(&Simulator::on_controller_sim_timer, this));
 
-        cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1, 
+        cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1,
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
-    } else {
+    }
+    else
+    {
         RCLCPP_WARN(this->get_logger(), "HIL control simulation enabled.");
-
-
     }
 
     // Set CSV file
-    if (kCSVState) {
+    if (kCSVState)
+    {
         csv_generator_state_ = std::make_shared<CSVGenerator>("state");
     }
-    if (kCSVVehicleDynamics) {
+    if (kCSVVehicleDynamics)
+    {
         auto csv_gen = std::make_shared<CSVGenerator>("vehicle_dynamics");
         vehicle_dynamics_.set_csv_generator(csv_gen);
     }
@@ -200,22 +202,26 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 
-    try {
+    try
+    {
         this->simulation_car_csv_ = this->select_csv(kSimulationCar);
         std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
         this->parameters_map_ = this->load_car_parameters(csv_path);
         this->vehicle_dynamics_.set_parameters(this->parameters_map_);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
     }
 }
 
 /**
  * @brief Determines if the vehicle is above, below, or on the line formed by the two cones.
- * 
+ *
  * @param tpl_cones_ Vector of two points (cones), where each point is represented as a pair (x, y).
  */
-void Simulator::check_lap() {
+void Simulator::check_lap()
+{
     double x = vehicle_dynamics_.x_;
     double y = vehicle_dynamics_.y_;
 
@@ -225,73 +231,76 @@ void Simulator::check_lap() {
     // Calculate the distance from the vehicle to the midpoint between the TPLs
     double d = std::sqrt(std::pow(x - mid_tpl_x_, 2) + std::pow(y - mid_tpl_y_, 2));
 
-    if (dist_to_tpl * prev_dist_to_tpl_ < 0 and d < 5) {
+    if (dist_to_tpl * prev_dist_to_tpl_ < 0 and d < 5)
+    {
         // Publish the result
         std_msgs::msg::Bool msg;
         msg.data = true;
         lap_signal_pub_->publish(msg);
-    } 
+    }
     prev_dist_to_tpl_ = dist_to_tpl;
 }
 
 /**
  * @brief Checks if car has started acc event
- * 
+ *
  */
-void Simulator::check_acc_start(){
+void Simulator::check_acc_start()
+{
     double vx = vehicle_dynamics_.vx_;
 
-    if (vx > 0  && !started_acc_){
+    if (vx > 0 && !started_acc_)
+    {
         std_msgs::msg::Bool msg;
         msg.data = true;
         lap_signal_pub_->publish(msg);
         started_acc_ = true;
-
     }
 }
 
 /**
  * @brief Creates, configures and links POSIX sockets for the CAN bus
  */
-void Simulator::init_can_sockets() {
+void Simulator::init_can_sockets()
+{
 
-    if (kSimulationMode == "default" || kSimulationMode == "raspi_simulation") {
+    if (kSimulationMode == "default" || kSimulationMode == "raspi_simulation")
+    {
 
         // Virtual can
         RCLCPP_INFO(this->get_logger(), "Rising virtual CAN interfaces (vcan0, vcan1 and vcan2)...");
 
-        std::system("sudo modprobe vcan");
+        std::system("modprobe vcan");
 
-        std::system("ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan");
-        std::system("sudo ip link set up can0");
+        std::system("ip link show can0 >/dev/null 2>&1 || ip link add dev can0 type vcan");
+        std::system("ip link set up can0");
 
-        std::system("ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan");
-        std::system("sudo ip link set up can1");
+        std::system("ip link show can1 >/dev/null 2>&1 || ip link add dev can1 type vcan");
+        std::system("ip link set up can1");
 
-        std::system("ip link show can2 >/dev/null 2>&1 || sudo ip link add dev can2 type vcan");
-        std::system("sudo ip link set up can2");
+        std::system("ip link show can2 >/dev/null 2>&1 || ip link add dev can2 type vcan");
+        std::system("ip link set up can2");
+    }
+    else if (kSimulationMode == "hil_simulation")
+    {
 
-    } 
-    else if (kSimulationMode == "hil_simulation") {
-        
         // Hardware CAN
         RCLCPP_INFO(this->get_logger(), "Rising hardware CAN interfaces (can0, can1 and can2)...");
 
-        std::system("ip link show can0 >/dev/null 2>&1 && sudo ip link set can0 down"); // La apagamos primero por si acaso
-        std::system("sudo ip link set can0 type can bitrate 500000"); // Asignamos velocidad
-        std::system("sudo ip link set up can0"); // La encendemos
+        std::system("ip link show can0 >/dev/null 2>&1 && ip link set can0 down"); 
+        std::system("ip link set can0 type can bitrate 1000000");                  
+        std::system("ip link set up can0");                                        
 
-        std::system("ip link show can1 >/dev/null 2>&1 && sudo ip link set can1 down");
-        std::system("sudo ip link set can1 type can bitrate 500000");
-        std::system("sudo ip link set up can1");
+        std::system("ip link show can1 >/dev/null 2>&1 && ip link set can1 down");
+        std::system("ip link set can1 type can bitrate 1000000");
+        std::system("ip link set up can1");
 
-        std::system("ip link show can2 >/dev/null 2>&1 && sudo ip link set can2 down");
-        std::system("sudo ip link set can2 type can bitrate 500000");
-        std::system("sudo ip link set up can2");
-        
-    } 
-    else {
-        // Salvaguarda arquitectónica
+        std::system("ip link show can2 >/dev/null 2>&1 && ip link set can2 down");
+        std::system("ip link set can2 type can bitrate 500000");
+        std::system("ip link set up can2");
+    }
+    else
+    {
         RCLCPP_ERROR(this->get_logger(), "Error: Unknown simulation mode ('%s'). Aborting init_can.", kSimulationMode.c_str());
         return;
     }
@@ -319,18 +328,18 @@ void Simulator::init_can_sockets() {
     addr_2_.can_family = AF_CAN;
     addr_2_.can_ifindex = ifr_2_.ifr_ifindex;
     bind(can_socket_2_, (struct sockaddr *)&addr_2_, sizeof(addr_2_));
-    
+
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 }
 
 /**
  * @brief Slow timer callback for sensor data updates.
- * 
- * This method updates the sensor data by publishing the track and generating 
+ *
+ * This method updates the sensor data by publishing the track and generating
  * random noise to simulate sensor inaccuracy. It also publishes the perception data.
  */
 void Simulator::on_slow_timer()
-{   
+{
     double x = vehicle_dynamics_.x_;
     double y = vehicle_dynamics_.y_;
     double yaw = vehicle_dynamics_.yaw_;
@@ -339,23 +348,23 @@ void Simulator::on_slow_timer()
     sensor_msgs::msg::PointCloud2 track_msg;
     pcl::toROSMsg(track_, track_msg);
     track_msg.header.stamp = clock_->now();
-    track_msg.header.frame_id="arussim/world";
+    track_msg.header.frame_id = "arussim/world";
     track_pub_->publish(track_msg);
 
     fixed_trajectory_pub_->publish(fixed_trajectory_msg_);
 
     // Random noise generation for position (lidar)
-    std::random_device rd_p; 
+    std::random_device rd_p;
     std::mt19937 gen_p(rd_p());
     std::normal_distribution<> dist_p(0.0, kNoiseLidarPosPerception);
 
     // Random noise generation for visualization (lidar)
-    std::random_device rd_v; 
+    std::random_device rd_v;
     std::mt19937 gen_v(rd_v());
-    std::uniform_real_distribution<double> dist_v(0.0, kNoiseLidarProbPerception);  
+    std::uniform_real_distribution<double> dist_v(0.0, kNoiseLidarProbPerception);
 
     // Random noise generation for color (lidar)
-    std::random_device rd_c; 
+    std::random_device rd_c;
     std::mt19937 gen_c(rd_c());
     std::uniform_real_distribution<double> dist_c(0.0, kNoiseLidarColor);
 
@@ -367,34 +376,44 @@ void Simulator::on_slow_timer()
         double dy = point.y - (y + kPosLidarX * std::sin(yaw));
         double d = std::sqrt(dx * dx + dy * dy);
         double angle_to_cone = std::atan2(dy, dx) - yaw;
-        while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
-        while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
+        while (angle_to_cone > M_PI)
+            angle_to_cone -= 2.0 * M_PI;
+        while (angle_to_cone < -M_PI)
+            angle_to_cone += 2.0 * M_PI;
 
         if (d < kMaxLidarDistance)
         {
             PointXYZProbColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
-            p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
+            p.x = (point.x - x) * std::cos(yaw) + (point.y - y) * std::sin(yaw) + dist_p(gen_p);
+            p.y = -(point.x - x) * std::sin(yaw) + (point.y - y) * std::cos(yaw) + dist_p(gen_p);
             p.z = 0.0;
-            double p_r = std::exp(-0.005 * d);  // Exponential decay for color
-            double a = std::log(2.0) / kMaxLidarDistance; // Calculate 'a' paramater for exponential decay based on max distance
+            double p_r = std::exp(-0.005 * d);             // Exponential decay for color
+            double a = std::log(2.0) / kMaxLidarDistance;  // Calculate 'a' paramater for exponential decay based on max distance
             double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
-            if (point.color == 0) {
+            if (point.color == 0)
+            {
                 p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
                 p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
-            } else if (point.color == 1) {
+            }
+            else if (point.color == 1)
+            {
                 p.prob_yellow = (point.color - dist_c(gen_c)) * p_r;
                 p.prob_blue = (1 - point.color + dist_c(gen_c)) * p_r;
-            } else {
+            }
+            else
+            {
                 p.prob_yellow = 0.0 + dist_c(gen_c);
                 p.prob_blue = 0.0 + dist_c(gen_c);
             }
             p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
-            p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
+            p.prob_blue = std::clamp(p.prob_blue, 0.0, 1.0);
             p.score = 1.0;
-            if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
+            if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance)
+            {
                 perception_cloud.push_back(p);
-            } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
+            }
+            if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
+            {
                 arussim_msgs::msg::PointXY msg;
                 msg.x = point.x;
                 msg.y = point.y;
@@ -406,17 +425,16 @@ void Simulator::on_slow_timer()
     sensor_msgs::msg::PointCloud2 perception_msg;
     pcl::toROSMsg(perception_cloud, perception_msg);
     perception_msg.header.stamp = clock_->now();
-    perception_msg.header.frame_id="arussim/vehicle_cog";
+    perception_msg.header.frame_id = "arussim/vehicle_cog";
     lidar_perception_pub_->publish(perception_msg);
 
-
     // Random noise generation for position (camera)
-    std::random_device rd_pc; 
+    std::random_device rd_pc;
     std::mt19937 gen_pc(rd_pc());
     std::normal_distribution<> dist_pc(0.0, kNoiseCameraPerception);
 
     // Random noise generation for color (camera)
-    std::random_device rd_cc; 
+    std::random_device rd_cc;
     std::mt19937 gen_cc(rd_cc());
     std::uniform_real_distribution<double> dist_cc(0.0, kNoiseCameraColor);
 
@@ -424,28 +442,33 @@ void Simulator::on_slow_timer()
     auto camera_perception_cloud = pcl::PointCloud<ConeXYZColorScore>();
     for (auto &point : track_.points)
     {
-        double d = std::sqrt(std::pow(point.x - (x + kPosCameraX*std::cos(yaw)), 2) + std::pow(point.y - (y + kPosCameraX*std::sin(yaw)), 2));
+        double d = std::sqrt(std::pow(point.x - (x + kPosCameraX * std::cos(yaw)), 2) + std::pow(point.y - (y + kPosCameraX * std::sin(yaw)), 2));
         if (d < kCameraFOV)
         {
             ConeXYZColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_pc(gen_pc);
-            p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_pc(gen_pc);
+            p.x = (point.x - x) * std::cos(yaw) + (point.y - y) * std::sin(yaw) + dist_pc(gen_pc);
+            p.y = -(point.x - x) * std::sin(yaw) + (point.y - y) * std::cos(yaw) + dist_pc(gen_pc);
             p.z = 0.0;
-            if (point.color == 0) {
+            if (point.color == 0)
+            {
                 p.color = point.color;
                 p.score = (kCameraColorProbability - dist_cc(gen_cc));
-            } else if (point.color == 1) {
+            }
+            else if (point.color == 1)
+            {
                 p.color = point.color;
                 p.score = (kCameraColorProbability - dist_cc(gen_cc));
-            } else {
+            }
+            else
+            {
                 p.color = -1;
                 p.score = kCameraColorProbability - dist_cc(gen_cc);
             }
             p.score = std::clamp(p.score, 0.0f, 1.0f);
-            if (p.x > kPosCameraX) {
+            if (p.x > kPosCameraX)
+            {
                 camera_perception_cloud.push_back(p);
             }
-
         }
     }
 
@@ -458,108 +481,124 @@ void Simulator::on_slow_timer()
     cone_visualization();
 }
 
-void Simulator::on_controller_sim_timer() {
+void Simulator::on_controller_sim_timer()
+{
     // Update sensor data in CON-VehicleControl
-    SensorData current_sensors{}; 
+    SensorData current_sensors{};
     DV current_dv{};
 
     current_sensors.acceleration_x = noisy_ax_;
     current_sensors.acceleration_y = noisy_ay_;
-    current_sensors.angular_z = noisy_r_; 
-    current_sensors.steering_angle = noisy_delta_; 
+    current_sensors.angular_z = noisy_r_;
+    current_sensors.steering_angle = noisy_delta_;
     current_sensors.speed_x = noisy_vx_;
     current_sensors.speed_y = noisy_vy_;
 
-    current_sensors.motor_speed[0] = noisy_ws_fl_ * kGearRatio;
-    current_sensors.motor_speed[1] = noisy_ws_fr_ * kGearRatio;
-    current_sensors.motor_speed[2] = noisy_ws_rl_ * kGearRatio;
-    current_sensors.motor_speed[3] = noisy_ws_rr_ * kGearRatio;
+    current_sensors.motor_speed[0] = noisy_ws_fl_;
+    current_sensors.motor_speed[1] = noisy_ws_fr_;
+    current_sensors.motor_speed[2] = noisy_ws_rl_;
+    current_sensors.motor_speed[3] = noisy_ws_rr_;
 
     current_sensors.V_soc = 500;
 
-    // State parameters 
+    // State parameters
     current_dv.autonomous = 1; // 1 -> DV mode
-    current_dv.driving = 1; // 1 -> Car is driving
-    current_dv.acc = input_acc_;
-    current_dv.target_r = target_r_;
+    current_dv.driving = 1;    // 1 -> Car is driving
+    current_dv.acc = can_acc_;
+    current_dv.target_r = can_target_r_;
 
     // Save controller output
     float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3];
-
     control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out);
 
     torque_cmd_ = {
-        static_cast<double>(kGearRatio*torque_cmd_out[0]), 
-        static_cast<double>(kGearRatio*torque_cmd_out[1]), 
-        static_cast<double>(kGearRatio*torque_cmd_out[2]), 
-        static_cast<double>(kGearRatio*torque_cmd_out[3])
-    };
-        
+        static_cast<double>(torque_cmd_out[0] * kGearRatio),
+        static_cast<double>(torque_cmd_out[1] * kGearRatio),
+        static_cast<double>(torque_cmd_out[2] * kGearRatio),
+        static_cast<double>(torque_cmd_out[3] * kGearRatio)};
+
     std_msgs::msg::Float32 control_vx_msg;
     control_vx_msg.data = state_out[0];
     control_vx_pub_->publish(control_vx_msg);
 
     std_msgs::msg::Float32 control_vy_msg;
     control_vy_msg.data = state_out[1];
-    control_vy_pub_->publish(control_vy_msg);   
+    control_vy_pub_->publish(control_vy_msg);
 
-    std_msgs::msg::Float32 control_r_msg;   
+    std_msgs::msg::Float32 control_r_msg;
     control_r_msg.data = state_out[2];
     control_r_pub_->publish(control_r_msg);
+
+    int16_t vx_scaled = static_cast<int16_t>(control_vx_msg.data * 100);
+    int16_t vy_scaled = static_cast<int16_t>(control_vy_msg.data * 100);
+    int16_t yaw_rate_scaled = static_cast<int16_t>(control_r_msg.data * 1000);
+    struct can_frame frame;
+    frame.can_id = 0x122;
+    frame.can_dlc = 6;
+    frame.data[0] = vx_scaled & 0xFF;
+    frame.data[1] = (vx_scaled >> 8) & 0xFF;
+    frame.data[2] = vy_scaled & 0xFF;
+    frame.data[3] = (vy_scaled >> 8) & 0xFF;
+    frame.data[4] = yaw_rate_scaled & 0xFF;
+    frame.data[5] = (yaw_rate_scaled >> 8) & 0xFF;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
 }
 
 /**
  * @brief Fast timer callback for state updates.
- * 
- * This method handles vehicle state updates, broadcasting the transform 
+ *
+ * This method handles vehicle state updates, broadcasting the transform
  * and updating the vehicle marker in RViz.
  */
 void Simulator::on_fast_timer()
-{   
+{
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
-    if(kSimulationMode == "default"){
-        if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0) {
-        can_acc_ = 0;
-    }
-        if (as_status_ != 0x03) {
- 
-        // Trigger EBS
-        vehicle_dynamics_.torque_cmd_.fl_ = 0.;
-        vehicle_dynamics_.torque_cmd_.fr_ = 0.;
-        vehicle_dynamics_.torque_cmd_.rl_ = 0.;
-        vehicle_dynamics_.torque_cmd_.rr_ = 0.;
-        vehicle_dynamics_.vx_ = 0.0;
-        vehicle_dynamics_.vy_ = 0.0;
-        vehicle_dynamics_.r_ = 0.0;
-    
-    } else {
-    
-        double dt = 1.0 / kStateUpdateRate;
-        vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
-    
-    }
-    }
-    else{
-        if((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
+    if (kSimulationMode == "default")
     {
-        input_acc_ = 0;
+        if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
+        {
+            input_acc_ = 0;
+        }
+        if (as_status_ != 0x03)
+        {
+            // Trigger EBS
+            vehicle_dynamics_.torque_cmd_.fl_ = 0.;
+            vehicle_dynamics_.torque_cmd_.fr_ = 0.;
+            vehicle_dynamics_.torque_cmd_.rl_ = 0.;
+            vehicle_dynamics_.torque_cmd_.rr_ = 0.;
+            vehicle_dynamics_.vx_ = 0.0;
+            vehicle_dynamics_.vy_ = 0.0;
+            vehicle_dynamics_.r_ = 0.0;
+        }
+        else
+        {
+            double dt = 1.0 / kStateUpdateRate;
+            vehicle_dynamics_.update_simulation(can_delta_, torque_cmd_, dt);
+        }
+    }
+    else
+    {
+        if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
+        {
+            can_acc_ = 0;
+        }
+
+        double dt = 1.0 / kStateUpdateRate;
+
+        vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
     }
 
-    double dt = 1.0 / kStateUpdateRate;
-
-    vehicle_dynamics_.update_simulation(input_delta_, torque_cmd_, dt);
-
-    }
-    
-    if(use_tpl_){
+    if (use_tpl_)
+    {
         check_lap();
     }
 
-    if ((kTrackName == "acceleration" && !started_acc_) || (track_name_ == "acceleration" && !started_acc_)){
+    if ((kTrackName == "acceleration" && !started_acc_) || (track_name_ == "acceleration" && !started_acc_))
+    {
         check_acc_start();
     }
-    
+
     auto message = arussim_msgs::msg::State();
     message.x = vehicle_dynamics_.x_;
     message.y = vehicle_dynamics_.y_;
@@ -585,7 +624,8 @@ void Simulator::on_fast_timer()
     torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
     message.torque = torque;
 
-    if (kCSVState){
+    if (kCSVState)
+    {
         std::vector<std::string> row_values;
         row_values.push_back(std::to_string(vehicle_dynamics_.x_));
         row_values.push_back(std::to_string(vehicle_dynamics_.y_));
@@ -598,12 +638,12 @@ void Simulator::on_fast_timer()
         row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
         csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
     }
-    if (kCSVVehicleDynamics){
+    if (kCSVVehicleDynamics)
+    {
         vehicle_dynamics_.write_csv_row();
     }
-    
-    state_pub_->publish(message);
 
+    state_pub_->publish(message);
 
     auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
     slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
@@ -626,9 +666,8 @@ void Simulator::on_fast_timer()
     tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
     tire_load_pub_->publish(tire_load_msg);
 
-
     broadcast_transform();
-    
+
     // Update vehicle marker
     marker_.header.stamp = clock_->now();
     marker_pub_->publish(marker_);
@@ -638,14 +677,29 @@ void Simulator::receive_can_0()
 {
     int flags = fcntl(can_socket_0_, F_GETFL, 0);
     fcntl(can_socket_0_, F_SETFL, flags | O_NONBLOCK);
-    while (rclcpp::ok()) {
+    while (rclcpp::ok())
+    {
         int nbytes = read(can_socket_0_, &frame_0_, sizeof(struct can_frame));
-        if (nbytes < 0) {
+        if (nbytes < 0)
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
-        if (frame_0_.can_id == 0x222) { 
+        if (frame_0_.can_id == 0x122)
+        {
+            int16_t state_0_raw = static_cast<int16_t>((frame_0_.data[1] << 8) | frame_0_.data[0]);
+            int16_t state_1_raw = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
+            int16_t state_2_raw = static_cast<int16_t>((frame_0_.data[5] << 8) | frame_0_.data[4]);
+
+            double can_state_0 = static_cast<double>(state_0_raw) / 100.0;
+            double can_state_1 = static_cast<double>(state_1_raw) / 100.0;
+            double can_state_2 = static_cast<double>(state_2_raw) / 1000.0;
+
+        }
+
+        else if (frame_0_.can_id == 0x222)
+        {
             int16_t acc_scaled = static_cast<int16_t>((frame_0_.data[1] << 8) | frame_0_.data[0]);
             int16_t yaw_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
             int16_t delta_scaled = static_cast<int16_t>((frame_0_.data[5] << 8) | frame_0_.data[4]);
@@ -653,14 +707,15 @@ void Simulator::receive_can_0()
             can_acc_ = static_cast<float>(acc_scaled) / 100.0f;
             can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f;
             can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
-            time_last_cmd_ = clock_->now();  
+            time_last_cmd_ = clock_->now();
         }
-        
+
         else if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
-                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209) {
+                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209)
+        {
             int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
             int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
-            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio; 
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio;
         }
     }
 }
@@ -669,14 +724,17 @@ void Simulator::receive_can_1()
 {
     int flags = fcntl(can_socket_1_, F_GETFL, 0);
     fcntl(can_socket_1_, F_SETFL, flags | O_NONBLOCK);
-    while (rclcpp::ok()) {
+    while (rclcpp::ok())
+    {
         int nbytes = read(can_socket_1_, &frame_1_, sizeof(struct can_frame));
-        if (nbytes < 0) {
+        if (nbytes < 0)
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
-        if (frame_1_.can_id == 0x261) {
+        if (frame_1_.can_id == 0x161)
+        {
             as_status_ = frame_1_.data[1];
         }
     }
@@ -686,14 +744,17 @@ void Simulator::receive_can_2()
 {
     int flags = fcntl(can_socket_2_, F_GETFL, 0);
     fcntl(can_socket_2_, F_SETFL, flags | O_NONBLOCK);
-    while (rclcpp::ok()) {
+    while (rclcpp::ok())
+    {
         int nbytes = read(can_socket_2_, &frame_2_, sizeof(struct can_frame));
-        if (nbytes < 0) {
+        if (nbytes < 0)
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
-        if (frame_2_.can_id == 0x261) {
+        if (frame_2_.can_id == 0x161)
+        {
             as_status_ = frame_2_.data[1];
         }
     }
@@ -701,13 +762,13 @@ void Simulator::receive_can_2()
 
 void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if (as_status_ == 0x02) as_status_ = 0x03;
+    if (as_status_ == 0x02)
+        as_status_ = 0x03;
 }
-
 
 /**
  * @brief Callback for receiving noisy x_acceleration data.
- * 
+ *
  * This method updates the noisy acceleration value based on incoming messages.
  * @param msg Incoming message containing the noisy x_acceleration data.
  */
@@ -718,7 +779,7 @@ void Simulator::noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg)
 
 /**
  * @brief Callback for receiving noisy y_acceleration data.
- * 
+ *
  * This method updates the noisy acceleration value based on incoming messages.
  * @param msg Incoming message containing the noisy y_acceleration data.
  */
@@ -729,7 +790,7 @@ void Simulator::noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg)
 
 /**
  * @brief Callback for receiving noisy angular velocity data.
- * 
+ *
  * This method updates the noisy angular velocity value based on incoming messages.
  * @param msg Incoming message containing the noisy angular velocity data.
  */
@@ -740,7 +801,7 @@ void Simulator::noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg)
 
 /**
  * @brief Callback for receiving noisy front left wheel speed data.
- * 
+ *
  * This method updates the noisy front left wheel speed value based on incoming messages.
  * @param msg Incoming message containing the noisy front left wheel speed data.
  */
@@ -754,26 +815,29 @@ void Simulator::noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::Share
 
 /**
  * @brief Callbacks for receiving noisy groundspeed data.
- * 
+ *
  */
-void Simulator::noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+void Simulator::noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
     noisy_vx_ = msg->data;
 }
 
-void Simulator::noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+void Simulator::noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
     noisy_vy_ = msg->data;
 }
 
-void Simulator::noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg) {
+void Simulator::noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg)
+{
     noisy_delta_ = msg->data;
 }
 
 /**
  * @brief Callback for receiving control commands.
- * 
- * This method updates the vehicle's acceleration and steering angle based on 
+ *
+ * This method updates the vehicle's acceleration and steering angle based on
  * incoming commands.
- * 
+ *
  * @param msg Incoming control command message.
  */
 void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
@@ -786,7 +850,8 @@ void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
 
 void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if (msg->data) {
+    if (msg->data)
+    {
         input_acc_ = 0.0;
         input_delta_ = 0.0;
         torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
@@ -810,7 +875,8 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     vehicle_dynamics_ = VehicleDynamics();
 
     started_acc_ = false;
-    if (prev_circuit_ != track_name_){
+    if (prev_circuit_ != track_name_)
+    {
         fixed_trajectory_msg_.points.clear();
         fixed_trajectory_msg_.s.clear();
         fixed_trajectory_msg_.k.clear();
@@ -825,7 +891,8 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     visualization_msgs::msg::MarkerArray empty_markers;
     cone_marker_pub_->publish(empty_markers);
 
-    for (auto &marker : current_cone_markers_.markers) {
+    for (auto &marker : current_cone_markers_.markers)
+    {
         marker.action = visualization_msgs::msg::Marker::DELETE;
     }
     cone_marker_pub_->publish(current_cone_markers_);
@@ -834,9 +901,9 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 
 /**
  * @brief Callback for receiving RViz teleportation commands.
- * 
+ *
  * This method teleports the vehicle to a new pose based on incoming RViz commands.
- * 
+ *
  * @param msg Incoming pose message from RViz.
  */
 void Simulator::rviz_telep_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
@@ -857,7 +924,7 @@ void Simulator::rviz_telep_callback(const geometry_msgs::msg::PoseWithCovariance
 
 /**
  * @brief Broadcasts the transform of the vehicle to the TF tree.
- * 
+ *
  * This method sends the current pose of the vehicle to the ROS TF system
  * to be visualized in RViz or used in other nodes.
  */
@@ -890,15 +957,16 @@ void Simulator::broadcast_transform()
 
 /**
  * @brief Filters the track point cloud to extract the TPLs.
- * 
- * @param track 
+ *
+ * @param track
  */
 void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
-{   
+{
     // Extract and remove the ".pcd" suffix if present
     track_name_ = track_msg->data;
-    if(track_name_.size() >= 4 && track_name_.substr(track_name_.size()-4) == ".pcd"){
-        track_name_.resize(track_name_.size()-4);
+    if (track_name_.size() >= 4 && track_name_.substr(track_name_.size() - 4) == ".pcd")
+    {
+        track_name_.resize(track_name_.size() - 4);
     }
 
     // Load the track point cloud using the .pcd extension
@@ -909,14 +977,14 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't read file %s", filename.c_str());
         return;
     }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s", 
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded %ld data points from %s",
                 track_.points.size(), filename.c_str());
 
     // Clear previous TPL cones
     tpl_cones_.clear();
 
     // Extract the TPLs
-    for (const auto& point : track_.points)
+    for (const auto &point : track_.points)
     {
         if (point.color == 4)
         {
@@ -925,11 +993,14 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPLs: %ld", tpl_cones_.size());
 
-    if (tpl_cones_.size() != 2) {
+    if (tpl_cones_.size() != 2)
+    {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tpl_cones_ does not contain exactly 2 points.");
         use_tpl_ = false;
-    } else {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPL1: (%f, %f), TPL2: (%f, %f)", 
+    }
+    else
+    {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TPL1: (%f, %f), TPL2: (%f, %f)",
                     tpl_cones_[0].first, tpl_cones_[0].second, tpl_cones_[1].first, tpl_cones_[1].second);
         use_tpl_ = true;
 
@@ -940,7 +1011,7 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
         double y2 = tpl_cones_[1].second;
 
         // Calculate slope (a) and y-intercept (b)
-        tpl_coef_a_ = (y2 - y1) / (x2 - x1 + 0.000001);  // Avoid division by zero
+        tpl_coef_a_ = (y2 - y1) / (x2 - x1 + 0.000001); // Avoid division by zero
         tpl_coef_b_ = y1 - tpl_coef_a_ * x1;
 
         // Calculate midpoint between the two cones
@@ -951,7 +1022,8 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
     // Extract the fixed trajectory using the .json extension
     std::string json_filename = package_path + "/resources/tracks/" + track_name_ + ".json";
     std::ifstream tray_json(json_filename);
-    if (!tray_json.is_open()) {
+    if (!tray_json.is_open())
+    {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Couldn't open JSON trajectory file %s", json_filename.c_str());
         return;
     }
@@ -967,8 +1039,10 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
     std::vector<float> traj_speed_profile = tray_data["speed_profile"].get<std::vector<float>>();
     std::vector<float> traj_acc_profile = tray_data["acc_profile"].get<std::vector<float>>();
 
-    if (traj_x.size() == traj_y.size() && traj_x.size() > 0) {
-        for (size_t i = 0; i < traj_x.size(); i++) {
+    if (traj_x.size() == traj_y.size() && traj_x.size() > 0)
+    {
+        for (size_t i = 0; i < traj_x.size(); i++)
+        {
             arussim_msgs::msg::PointXY point;
             point.x = traj_x[i];
             point.y = traj_y[i];
@@ -976,52 +1050,70 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
         }
     }
 
-    if (traj_s.size() == traj_k.size() && traj_s.size() > 0) {
-        for (size_t i = 0; i < traj_s.size(); i++) {
+    if (traj_s.size() == traj_k.size() && traj_s.size() > 0)
+    {
+        for (size_t i = 0; i < traj_s.size(); i++)
+        {
             fixed_trajectory_msg_.s.push_back(traj_s[i]);
             fixed_trajectory_msg_.k.push_back(traj_k[i]);
         }
     }
 
-    if (traj_speed_profile.size() > 0) {
-        for (size_t i = 0; i < traj_speed_profile.size(); i++) {
+    if (traj_speed_profile.size() > 0)
+    {
+        for (size_t i = 0; i < traj_speed_profile.size(); i++)
+        {
             fixed_trajectory_msg_.speed_profile.push_back(traj_speed_profile[i]);
         }
     }
 
-    if (traj_acc_profile.size() > 0) {
-        for (size_t i = 0; i < traj_acc_profile.size(); i++) {
+    if (traj_acc_profile.size() > 0)
+    {
+        for (size_t i = 0; i < traj_acc_profile.size(); i++)
+        {
             fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
         }
     }
-
 }
 
 /**
  * @brief Select the CSV file based on simulation_car
  */
-std::string Simulator::select_csv(const std::string& simulation_car) {
+std::string Simulator::select_csv(const std::string &simulation_car)
+{
     std::string csv_filename;
     if (simulation_car == "ART25D_2WD_DV")
-     {csv_filename = "ART_25D_2WD_DV.csv"; }
+    {
+        csv_filename = "ART_25D_2WD_DV.csv";
+    }
     else if (simulation_car == "ART25D_2WD")
-     {csv_filename = "ART_25D_2WD.csv"; }
+    {
+        csv_filename = "ART_25D_2WD.csv";
+    }
     else if (simulation_car == "ART25D_4WD_DV")
-    { csv_filename = "ART_25D_4WD_DV.csv"; }
+    {
+        csv_filename = "ART_25D_4WD_DV.csv";
+    }
     else if (simulation_car == "ART25D_4WD")
-     {csv_filename = "ART_25D_4WD.csv"; }
+    {
+        csv_filename = "ART_25D_4WD.csv";
+    }
     else if (simulation_car == "ART26D_DV")
-     {csv_filename = "ART_26D_DV.csv"; } 
-    else {
+    {
+        csv_filename = "ART_26D_DV.csv";
+    }
+    else
+    {
         throw std::invalid_argument("Error simulating: " + simulation_car);
     }
     return csv_filename;
 }
 
 /**
- * @brief Get the path to the CSV file based on simulation_car 
+ * @brief Get the path to the CSV file based on simulation_car
  */
-std::string Simulator::get_csv_path(const std::string& csv_filename) {
+std::string Simulator::get_csv_path(const std::string &csv_filename)
+{
     // Implementation for loading car parameters based on simulation_car
     std::string parameters_directory = ament_index_cpp::get_package_share_directory("arussim") + "/resources/parameters/";
     std::string parameters_path = parameters_directory + csv_filename;
@@ -1032,15 +1124,16 @@ std::string Simulator::get_csv_path(const std::string& csv_filename) {
  * @brief Load car parameters from a CSV file and return them as a map.
  * @param filepath The path to the CSV file containing the car parameters.
  */
-std::map<std::string, double> Simulator::load_car_parameters(const std::string &filepath) {
+std::map<std::string, double> Simulator::load_car_parameters(const std::string &filepath)
+{
     std::map<std::string, double> parameters_map;
     std::ifstream file(filepath);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         RCLCPP_ERROR(
-            this->get_logger(), 
-            "Could not open CSV parameter file: %s", 
-            filepath.c_str()
-        );
+            this->get_logger(),
+            "Could not open CSV parameter file: %s",
+            filepath.c_str());
         return parameters_map;
     }
 
@@ -1049,47 +1142,50 @@ std::map<std::string, double> Simulator::load_car_parameters(const std::string &
     // Skip the first line (header)
     std::getline(file, line);
 
-     // Read the file line by line
-    while (std::getline(file, line)) {
+    // Read the file line by line
+    while (std::getline(file, line))
+    {
         std::stringstream ss(line);
         std::string key;
         std::string value_str;
 
         // Separate the line by commas
-        if (std::getline(ss, key, ',') && std::getline(ss, value_str, ',')) {
-            try {
+        if (std::getline(ss, key, ',') && std::getline(ss, value_str, ','))
+        {
+            try
+            {
                 double value = std::stod(value_str);
                 parameters_map[key] = value;
-            }  
-            catch (const std::invalid_argument& e) {
+            }
+            catch (const std::invalid_argument &e)
+            {
                 RCLCPP_WARN(
-                    this->get_logger(), 
-                    "Warning: Parameter '%s' is not a number: '%s'", 
-                    key.c_str(), value_str.c_str()
-                );
+                    this->get_logger(),
+                    "Warning: Parameter '%s' is not a number: '%s'",
+                    key.c_str(), value_str.c_str());
             }
         }
-
     }
 
     file.close();
     return parameters_map;
 }
 
-
 /**
  * @brief Make a MarkerArray of all cones of the track
- * 
+ *
  */
-void Simulator::cone_visualization(){
+void Simulator::cone_visualization()
+{
     visualization_msgs::msg::MarkerArray cone_markers;
     int id_counter = 0;
 
-    for (const auto& point : track_.points) {
+    for (const auto &point : track_.points)
+    {
         visualization_msgs::msg::Marker cone_marker;
         cone_marker.header.frame_id = "arussim/world";
         cone_marker.ns = "arussim/cones";
-        cone_marker.id = id_counter++;  // unique ID for each cone
+        cone_marker.id = id_counter++; // unique ID for each cone
         cone_marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
         cone_marker.mesh_resource = "package://arussim/resources/meshes/cone.stl";
         cone_marker.action = visualization_msgs::msg::Marker::ADD;
@@ -1099,23 +1195,32 @@ void Simulator::cone_visualization(){
         cone_marker.scale.x = 0.001;
         cone_marker.scale.y = 0.001;
         cone_marker.scale.z = 0.001;
-        if (point.color == 0) {
+        if (point.color == 0)
+        {
             cone_marker.color.r = 0.0;
             cone_marker.color.g = 0.0;
             cone_marker.color.b = 1.0;
-        } else if (point.color == 1){
+        }
+        else if (point.color == 1)
+        {
             cone_marker.color.r = 1.0;
             cone_marker.color.g = 1.0;
             cone_marker.color.b = 0.0;
-        } else if (point.color == 2){
+        }
+        else if (point.color == 2)
+        {
             cone_marker.color.r = 1.0;
             cone_marker.color.g = 0.65;
             cone_marker.color.b = 0.0;
-        } else if (point.color == 3){
+        }
+        else if (point.color == 3)
+        {
             cone_marker.color.r = 1.0;
             cone_marker.color.g = 0.65;
             cone_marker.color.b = 0.0;
-        } else if (point.color == 4){
+        }
+        else if (point.color == 4)
+        {
             cone_marker.color.r = 0.0;
             cone_marker.color.g = 0.5;
             cone_marker.color.b = 0.0;
@@ -1132,20 +1237,19 @@ void Simulator::cone_visualization(){
     current_cone_markers_ = cone_markers;
 }
 
-
 /**
  * @brief Main entry point for the simulator node.
- * 
+ *
  * This initializes the ROS 2 system and starts spinning the Simulator node.
- * 
+ *
  * @param argc Number of command line arguments.
  * @param argv Array of command line arguments.
  * @return int Exit status of the application.
  */
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Simulator>());
-  rclcpp::shutdown();
-  return 0;
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<Simulator>());
+    rclcpp::shutdown();
+    return 0;
 }
