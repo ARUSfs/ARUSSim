@@ -122,7 +122,7 @@ class Simulator : public rclcpp::Node
 
     //Cones geometry
     double kConeHeight = 0.325;
-    double kConeWeight = 0.228;
+    double kConeWidth = 0.228;
 
     //Car boundaries
     double kCOGFrontDist;
