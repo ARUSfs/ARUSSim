@@ -67,11 +67,36 @@ StatsInterface::StatsInterface(QWidget* parent) : Panel(parent)
     telemetry_labels_grid->setSpacing(grid_margin_);
     telemetry_labels_grid->setAlignment(Qt::AlignTop);
 
+    active_vertices_label_ = new QLabel("Active Vertices: 0", this);
+    QFont font = active_vertices_label_->font();
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
+    active_vertices_label_->setFont(font);
+    telemetry_labels_grid->addWidget(active_vertices_label_, 0, 0);
+
+    active_edges_label_ = new QLabel("Active Edges: 0", this);
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
+    active_edges_label_->setFont(font);
+    telemetry_labels_grid->addWidget(active_edges_label_, 1, 0);
+
+    observed_landmarks_label_ = new QLabel("Observed Landmarks: 0", this);
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
+    observed_landmarks_label_->setFont(font);
+    telemetry_labels_grid->addWidget(observed_landmarks_label_, 2, 0);
+
+    unmatched_landmarks_label_ = new QLabel("Unmatched Landmarks: 0", this);
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
+    unmatched_landmarks_label_->setFont(font);
+    telemetry_labels_grid->addWidget(unmatched_landmarks_label_, 3, 0);
+
     optimization_time_label_ = new QLabel("Optimization Time: 0", this);
-    QFont font = optimization_time_label_->font();
     font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
     optimization_time_label_->setFont(font);
-    telemetry_labels_grid->addWidget(optimization_time_label_, 0, 0);
+    telemetry_labels_grid->addWidget(optimization_time_label_, 4, 0);
+
+    data_association_time_label_ = new QLabel("Data Association Time: 0", this);
+    font.setPointSize(std::min(rviz_height_ * 0.015, 10.0));
+    data_association_time_label_->setFont(font);
+    telemetry_labels_grid->addWidget(data_association_time_label_, 5, 0);
 
     main_grid->addLayout(telemetry_labels_grid, 3, 0);
 
@@ -103,7 +128,8 @@ void StatsInterface::onInitialize()
         "/slam/stats", 1, 
         [this](const common_msgs::msg::SlamStats::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                stats_callback(msg->optimization_time);
+                stats_callback(msg->active_vertices, msg->active_edges, msg->observed_landmarks,
+                                msg->unmatched_landmarks,msg->optimization_time, msg->data_association_time);
             }, Qt::QueuedConnection);
         }
     );
@@ -170,9 +196,15 @@ void StatsInterface::zoom_out_gg_graph()
  * 
  * @param optimization_time_ 
  */
-void StatsInterface::stats_callback(double optimization_time)
+void StatsInterface::stats_callback(double active_vertices, double active_edges, double observed_landmarks, double unmatched_landmarks, 
+    double optimization_time, double data_association_time)
 {
+    active_vertices_ = active_vertices;
+    active_edges_ = active_edges;
+    observed_landmarks_ = observed_landmarks;
+    unmatched_landmarks_ = unmatched_landmarks;
     optimization_time_ = optimization_time;
+    data_association_time_ = data_association_time;
     update_telemetry_labels();
     update_optimizer_time_graph();
 }
@@ -281,7 +313,12 @@ void StatsInterface::update_optimizer_time_graph()
 
 void StatsInterface::update_telemetry_labels()
 {
+    active_vertices_label_->setText("Active Vertices: " + QString::number(active_vertices_, 'f', 0));
+    active_edges_label_->setText("Active Edges: " + QString::number(active_edges_, 'f', 0));
+    observed_landmarks_label_->setText("Observed Landmarks: " + QString::number(observed_landmarks_, 'f', 0));
+    unmatched_landmarks_label_->setText("Unmatched Landmarks: " + QString::number(unmatched_landmarks_, 'f', 0));
     optimization_time_label_->setText("Optimization Time: " + QString::number(optimization_time_, 'f', 5));
+    data_association_time_label_->setText("Data Association Time: " + QString::number(data_association_time_, 'f', 5));
 }
 
 /**
@@ -293,7 +330,13 @@ void StatsInterface::reset_callback()
     // reset graphs
     optimization_time_history_.clear();
     slam_graph_label_->clear();
+    active_vertices_label_->setText("Active Vertices: " + QString::number(0.0, 'f', 0));
+    active_edges_label_->setText("Active Edges: " + QString::number(0.0, 'f', 0));
+    observed_landmarks_label_->setText("Observed Landmarks: " + QString::number(0.0, 'f', 0));
+    unmatched_landmarks_label_->setText("Unmatched Landmarks: " + QString::number(0.0, 'f', 0));
     optimization_time_label_->setText("Optimization Time: " + QString::number(0.0, 'f', 5));
+    data_association_time_label_->setText("Data Association Time: " + QString::number(0.0, 'f', 5));
+    
 }
 
 }  // namespace stats_interface

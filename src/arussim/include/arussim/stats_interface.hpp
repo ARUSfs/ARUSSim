@@ -75,10 +75,12 @@ protected:
   QVector<QPair<double, double>> target_speed_history_;
   QLabel* slam_graph_label_ = nullptr;
 
-  QVector<std::tuple<double, double, double>> gg_vector_; // (ay, ax, vx)
-  QLabel* gg_graph_label_ = nullptr;
-
+  QLabel* active_vertices_label_;
+  QLabel* active_edges_label_;
+  QLabel* observed_landmarks_label_;
+  QLabel* unmatched_landmarks_label_;
   QLabel* optimization_time_label_;
+  QLabel* data_association_time_label_;
 
   QSize screen_size_;
 
@@ -92,11 +94,9 @@ protected:
 private Q_SLOTS:
   void launch_button_clicked();
   void reset_callback();
-  void update_telemetry_bar(double fr_param_, double fl_param_, double rr_param_, double rl_param_);
   void update_optimizer_time_graph();
-  void update_gg_graph();
   void update_telemetry_labels();
-  void stats_callback(double optimization_time);
+  void stats_callback(double active_vertices, double active_edges, double observed_landmarks, double unmatched_landmarks,double optimization_time, double data_association_time);
   void zoom_in_slam_graph();
   void zoom_out_slam_graph();
   void zoom_in_gg_graph();
@@ -116,7 +116,12 @@ private:
   int hit_cones_counter_ = 0;
   int lap_counter_ = 0;
 
+  double active_vertices_ = 0.0;
+  double active_edges_ = 0.0;
+  double observed_landmarks_ = 0.0;
+  double unmatched_landmarks_ = 0.0;
   double optimization_time_ = 0.0;
+  double data_association_time_ = 0.0;
 
   double bar_size_;
   double max_torque_value_ = 21*12.48;
