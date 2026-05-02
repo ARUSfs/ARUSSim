@@ -24,7 +24,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
     this->declare_parameter<double>("cone.height", 0.325);
-    this->declare_parameter<double>("cone.weight", 0.228);
+    this->declare_parameter<double>("cone.width", 0.228);
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
     this->declare_parameter<double>("sensor.lidar_height", 0.64);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
@@ -57,7 +57,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
     this->get_parameter("cone.height", kConeHeight);
-    this->get_parameter("cone.weight", kConeWeight);
+    this->get_parameter("cone.width", kConeWidth);
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
     this->get_parameter("sensor.lidar_height", kLidarHeight);
     this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
@@ -320,7 +320,7 @@ void Simulator::on_slow_timer()
         double angle_to_cone = std::atan2(dy, dx) - yaw;
         while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
         while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
-        double delta = std::atan2(kConeWeight/2.0, d);
+        double delta = std::atan2(kConeWidth/2.0, d);
 
         PointXYZProbColorScore p;
         p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
@@ -387,7 +387,7 @@ void Simulator::on_slow_timer()
             double max_eff = coneA.angle + half_width_eff;
 
             bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= kConeHeight;
-            bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
+            //bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
 
             if (!(coneB.p_max < min_eff || coneB.p_min > max_eff) && z_ray) occluded[j] = true;
         }
