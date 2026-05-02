@@ -182,9 +182,17 @@ Simulator::Simulator() : Node("simulator")
         cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1,
         std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     }
-    else
+    else if(kSimulationMode == "raspi_sim")
+    {
+        RCLCPP_WARN(this->get_logger(), "Raspi control simulation enabled.");
+    }
+    else if(kSimulationMode == "hil")
     {
         RCLCPP_WARN(this->get_logger(), "HIL control simulation enabled.");
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "Unknown simulation mode '%s'. No control simulation will be enabled.", kSimulationMode.c_str());
     }
 
     // Set CSV file
@@ -267,7 +275,7 @@ void Simulator::check_acc_start()
 void Simulator::init_can_sockets()
 {
 
-    if (kSimulationMode == "default" || kSimulationMode == "raspi_simulation")
+    if (kSimulationMode == "default" || kSimulationMode == "raspi_sim")
     {
 
         // Virtual can
@@ -284,7 +292,7 @@ void Simulator::init_can_sockets()
         std::system("ip link show can2 >/dev/null 2>&1 || ip link add dev can2 type vcan");
         std::system("ip link set up can2");
     }
-    else if (kSimulationMode == "hil_simulation")
+    else if (kSimulationMode == "hil")
     {
 
         // Hardware CAN

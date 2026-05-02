@@ -26,3 +26,10 @@ Cmnd_Alias VCAN_CMDS = \
 <your-username> ALL=(ALL) NOPASSWD: VCAN_CMDS
 ```
 
+## 2. Give execution privilegies to arussim node
+
+Run: 
+
+```bash
+chmod +x ws/src/ARUSSim/src/arussim/src/arussim_node.cpp
+```
