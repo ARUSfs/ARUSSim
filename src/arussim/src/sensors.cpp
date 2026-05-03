@@ -86,6 +86,12 @@ Sensors::Sensors() : Node("sensors")
 
     this->get_parameter("as.as_frequency", kASFrequency);
     
+    launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1,
+    std::bind(&Sensors::launch_callback, this, std::placeholders::_1));
+
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+    std::bind(&Sensors::reset_callback, this, std::placeholders::_1));
+
     //CAN Socket setup
     can0_socket_ = setup_can_socket("can0");
     can1_socket_ = setup_can_socket("can1");
@@ -483,7 +489,7 @@ void Sensors::bms_timer() {
 void Sensors::as_timer() {
 
     std::map<std::string,double> values = { {"dv_autonomous", 1.0}, 
-        {"dv_driving", 3.0}, {"enable_flag", 1.0} }; 
+        {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
 
     for (auto &frame : frames) { 
         if (frame.id == 0x161 || frame.id == 0x221)  { 
@@ -549,6 +555,24 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
         write(can2_socket_, &canMsg_, sizeof(canMsg_));
         return;
     }
+}
+
+void Sensors::launch_callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    if (msg && msg->data) 
+    {
+        RCLCPP_INFO(this->get_logger(), "[SENSORS] Launch recibido. Estado anterior: %f", as_status_);
+        if (as_status_ == 2.0 || as_status_ == 0x02) 
+        {
+            as_status_ = 3.0;
+            RCLCPP_INFO(this->get_logger(), "[SENSORS] Estado actualizado a 3.0");
+        }
+    }
+}
+
+void Sensors::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    as_status_ = 0x02;
 }
 
 /**

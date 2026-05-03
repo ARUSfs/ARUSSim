@@ -6,6 +6,7 @@
  * @date 2024-10-16 
  */
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include "arussim_msgs/msg/state.hpp"
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -72,6 +73,8 @@ private:
     arussim_msgs::msg::FourWheelDrive wheel_speed_msg_;
     arussim_msgs::msg::FourWheelDrive torque_cmd_msg_;
 
+    double as_status_ = 2.0;
+
     struct {
         double fl_ = 0;
         double fr_ = 0;
@@ -119,6 +122,23 @@ private:
     double kNoiseBatteryVoltage;
 
     double kASFrequency;
+
+    /**
+     * @brief Callback for receiving reset commands.
+     * 
+     * This method resets the as_status_ = 0x02.
+     * 
+     * @param msg The reset command message.
+     */
+    void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
+     * @brief Callback for receiving launch commands.
+     * 
+     * This method sets the as_status_ = 0x01, which indicates that the vehicle is launched.
+     * 
+     */
+    void launch_callback(const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * @brief Callback function for the state subscriber
@@ -176,6 +196,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ax_pub_; // ax publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr ay_pub_; // ay publisher
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr motor_speed_pub_; // Motor speed publisher

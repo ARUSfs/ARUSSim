@@ -494,6 +494,7 @@ void Simulator::on_slow_timer()
 
 void Simulator::on_controller_sim_timer()
 {
+    std::cout << "as_status: " << as_status_ << std::endl;
     // Update sensor data in CON-VehicleControl
     SensorData current_sensors{};
     DV current_dv{};
