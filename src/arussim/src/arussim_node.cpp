@@ -23,7 +23,10 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
+    this->declare_parameter<double>("cone.height", 0.325);
+    this->declare_parameter<double>("cone.width", 0.228);
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
+    this->declare_parameter<double>("sensor.lidar_height", 0.64);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
     this->declare_parameter<double>("sensor.lidar_max_dist", 3.0);
     this->declare_parameter<double>("sensor.lidar_mu_time", 2.3156);
@@ -53,7 +56,10 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
+    this->get_parameter("cone.height", kConeHeight);
+    this->get_parameter("cone.width", kConeWidth);
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
+    this->get_parameter("sensor.lidar_height", kLidarHeight);
     this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
     this->get_parameter("sensor.lidar_max_dist", kMaxLidarDistance);
     this->get_parameter("sensor.lidar_mu_time", kLidarMuTime);
@@ -291,47 +297,101 @@ void Simulator::on_slow_timer()
     std::uniform_real_distribution<double> dist_c(0.0, kNoiseLidarColor);
 
     // Lidar perception simulation
+    struct ConeData {
+        PointXYZProbColorScore p;
+        double d;
+        double angle;
+        double p_min;
+        double p_max;
+        double depth;
+    };
+
+    std::vector<ConeData> cones;
     auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
-    for (auto &point : track_.points)
-    {
+
+    for (auto &point : track_.points){
+
         double dx = point.x - (x + kPosLidarX * std::cos(yaw));
         double dy = point.y - (y + kPosLidarX * std::sin(yaw));
         double d = std::sqrt(dx * dx + dy * dy);
+
+        if (d >= kMaxLidarDistance) continue;
+
         double angle_to_cone = std::atan2(dy, dx) - yaw;
         while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
         while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
+        double delta = std::atan2(kConeWidth/2.0, d);
 
-        if (d < kMaxLidarDistance)
-        {
-            PointXYZProbColorScore p;
-            p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
-            p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
-            p.z = 0.0;
-            double p_r = std::exp(-0.005 * d);  // Exponential decay for color
-            double a = std::log(2.0) / kMaxLidarDistance; // Calculate 'a' paramater for exponential decay based on max distance
-            double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
-            if (point.color == 0) {
-                p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
-                p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
-            } else if (point.color == 1) {
-                p.prob_yellow = (point.color - dist_c(gen_c)) * p_r;
-                p.prob_blue = (1 - point.color + dist_c(gen_c)) * p_r;
-            } else {
-                p.prob_yellow = 0.0 + dist_c(gen_c);
-                p.prob_blue = 0.0 + dist_c(gen_c);
-            }
-            p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
-            p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
-            p.score = 1.0;
-            if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
-                perception_cloud.push_back(p);
-            } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
-                arussim_msgs::msg::PointXY msg;
-                msg.x = point.x;
-                msg.y = point.y;
-                hit_cones_pub_->publish(msg);
-            }
+        PointXYZProbColorScore p;
+        p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
+        p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
+        p.z = 0.0;
+        double p_r = std::exp(-0.005 * d);  // Exponential decay for color
+        double a = std::log(2.0) / kMaxLidarDistance; // Calculate 'a' paramater for exponential decay based on max distance
+        double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
+        if (point.color == 0) {
+            p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
+            p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
+        } else if (point.color == 1) {
+            p.prob_yellow = (point.color - dist_c(gen_c)) * p_r;
+            p.prob_blue = (1 - point.color + dist_c(gen_c)) * p_r;
+        } else {
+            p.prob_yellow = 0.0 + dist_c(gen_c);
+            p.prob_blue = 0.0 + dist_c(gen_c);
         }
+        p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
+        p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
+        p.score = 1.0;
+        if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
+            ConeData c;
+            c.p = p;
+            c.d = d;
+            c.angle = angle_to_cone;
+            c.p_min = angle_to_cone - delta;
+            c.p_max = angle_to_cone + delta;
+            c.depth = d * (kLidarHeight / (kLidarHeight - kConeHeight));
+
+            cones.push_back(c);
+        } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
+            arussim_msgs::msg::PointXY msg;
+            msg.x = point.x;
+            msg.y = point.y;
+            hit_cones_pub_->publish(msg);
+        }
+    }
+    
+    std::sort(cones.begin(), cones.end(),
+          [](const auto &a, const auto &b){ return a.d < b.d; });
+    
+    std::vector<bool> occluded(cones.size(), false);
+    bool infinite_shadow = kLidarHeight <= kConeHeight;
+    
+    for (size_t i = 0; i < cones.size(); ++i) {
+        const auto &coneA = cones[i];
+
+        for (size_t j = i+1; j < cones.size(); ++j) { 
+            const auto &coneB = cones[j];
+            if (i == j || coneA.d >= coneB.d) continue;
+
+            if (infinite_shadow) {
+                if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max)) occluded[j] = true;
+                continue;
+            }
+
+            double t = (coneB.d - coneA.d) / (coneA.depth - coneA.d);
+            t = std::clamp(t, 0.0, 1.0);
+
+            double half_width_A = (coneA.p_max - coneA.p_min) * 0.5;
+            double half_width_eff = (1.0 - t) * half_width_A;
+            double min_eff = coneA.angle - half_width_eff;
+            double max_eff = coneA.angle + half_width_eff;
+
+            bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= kConeHeight;
+            //bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
+
+            if (!(coneB.p_max < min_eff || coneB.p_min > max_eff) && z_ray) occluded[j] = true;
+        }
+        if (!occluded[i]) perception_cloud.push_back(cones[i].p);
     }
 
     sensor_msgs::msg::PointCloud2 perception_msg;

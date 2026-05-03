@@ -78,6 +78,7 @@ class Simulator : public rclcpp::Node
     bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
+    double kLidarHeight;
     double kMinLidarDistance;
     double kMaxLidarDistance;
     double kCameraFOV;
@@ -118,6 +119,10 @@ class Simulator : public rclcpp::Node
     double noisy_vx_ = 0.0;
     double noisy_vy_ = 0.0;
     double noisy_delta_ = 0.0;
+
+    //Cones geometry
+    double kConeHeight = 0.325;
+    double kConeWidth = 0.228;
 
     //Car boundaries
     double kCOGFrontDist;
