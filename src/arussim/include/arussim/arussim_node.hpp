@@ -15,6 +15,7 @@
 #include "arussim_msgs/msg/point_xy.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
+#include "arussim/control_raspi.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -134,6 +135,9 @@ class Simulator : public rclcpp::Node
     float can_delta_;
     std::vector<double> can_torque_cmd_;
     uint16_t as_status_ = 0x02;
+
+    //raspi_sim
+    control_raspi::ControlRaspi control_raspi_manager_;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
