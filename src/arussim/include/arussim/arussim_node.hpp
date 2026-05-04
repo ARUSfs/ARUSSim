@@ -121,6 +121,7 @@ class Simulator : public rclcpp::Node
     // Car parameters
     std::string simulation_car_csv_;
     std::map<std::string, double> parameters_map_;
+    CarParams car_parameters_;
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
@@ -281,6 +282,12 @@ class Simulator : public rclcpp::Node
      * @brief Load parameters from de according CSV file
      */
     std::map<std::string, double> load_car_parameters(const std::string &filepath);
+
+    /**
+     * @brief Loads control parameters from the CSV file to initializa the CarParameters 
+     * struct used in CON-VehicleControl.
+     */
+    void load_control_parameters();
 
     /**
      * @brief Detects if the vehicle is between two TPLs.

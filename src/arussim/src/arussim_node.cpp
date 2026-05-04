@@ -171,9 +171,22 @@ Simulator::Simulator() : Node("simulator")
     // Initialize torque variable
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
+    try
+    {
+        this->simulation_car_csv_ = kSimulationCar + ".csv";
+        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = this->load_car_parameters(csv_path);
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    }
+    catch (const std::exception &e)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
+
     if (kSimulationMode == "default")
     {
-        control_init(); // Initialize CON-VehicleControl
+        this->load_control_parameters();
+        control_init(&car_parameters_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
@@ -213,17 +226,6 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 
-    try
-    {
-        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
-        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
-        this->parameters_map_ = this->load_car_parameters(csv_path);
-        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
-    }
-    catch (const std::exception &e)
-    {
-        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
-    }
 }
 
 /**
@@ -519,8 +521,9 @@ void Simulator::on_controller_sim_timer()
     current_dv.target_r = can_target_r_;
 
     // Save controller output
-    float tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3];
-    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out);
+    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4];
+    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
+                   fx_obj_tc, t_ff_tc, sr_tc);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * kGearRatio),
@@ -772,7 +775,7 @@ void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::Shar
     if (as_status_ == 0x02)
         as_status_ = 0x03;
 
-    if (msg && msg->data) 
+    if (msg && msg->data && (kSimulationMode == "raspi_sim"))
     {
         control_raspi_manager_.start_control_rasp(this->get_logger());
     }
@@ -875,7 +878,7 @@ void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if (msg && msg->data) 
+    if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {
         control_raspi_manager_.stop_control_rasp(this->get_logger());
     }
@@ -892,7 +895,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     vehicle_dynamics_ = VehicleDynamics();
 
     try {
-        this->simulation_car_csv_ = this->select_csv(kSimulationCar);
+        this->simulation_car_csv_ = kSimulationCar + ".csv";
         std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
         this->parameters_map_ = this->load_car_parameters(csv_path);
         this->vehicle_dynamics_.set_parameters(this->parameters_map_);
@@ -1103,39 +1106,6 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
 }
 
 /**
- * @brief Select the CSV file based on simulation_car
- */
-std::string Simulator::select_csv(const std::string &simulation_car)
-{
-    std::string csv_filename;
-    if (simulation_car == "ART25D_2WD_DV")
-    {
-        csv_filename = "ART_25D_2WD_DV.csv";
-    }
-    else if (simulation_car == "ART25D_2WD")
-    {
-        csv_filename = "ART_25D_2WD.csv";
-    }
-    else if (simulation_car == "ART25D_4WD_DV")
-    {
-        csv_filename = "ART_25D_4WD_DV.csv";
-    }
-    else if (simulation_car == "ART25D_4WD")
-    {
-        csv_filename = "ART_25D_4WD.csv";
-    }
-    else if (simulation_car == "ART26D_DV")
-    {
-        csv_filename = "ART_26D_DV.csv";
-    }
-    else
-    {
-        throw std::invalid_argument("Error simulating: " + simulation_car);
-    }
-    return csv_filename;
-}
-
-/**
  * @brief Get the path to the CSV file based on simulation_car
  */
 std::string Simulator::get_csv_path(const std::string &csv_filename)
@@ -1195,6 +1165,146 @@ std::map<std::string, double> Simulator::load_car_parameters(const std::string &
 
     file.close();
     return parameters_map;
+}
+
+void Simulator::load_control_parameters()
+{
+    // Car data - Distances
+    car_parameters_.trackwidthF = parameters_map_["trackwidthF"];
+    car_parameters_.trackwidthR = parameters_map_["trackwidthR"];
+    car_parameters_.wheelbase = parameters_map_["wheelbase"];
+    car_parameters_.r_cdg = parameters_map_["r_cdg"];
+    car_parameters_.x_cdg = car_parameters_.wheelbase * car_parameters_.r_cdg;
+    car_parameters_.lf = car_parameters_.wheelbase * car_parameters_.r_cdg;
+    car_parameters_.lr = car_parameters_.wheelbase * (1.0 - car_parameters_.r_cdg);
+    
+    // Mass and inertia
+    car_parameters_.Iz = parameters_map_["Iz"];
+    car_parameters_.Ixx_F = parameters_map_["Ixx_F"];
+    car_parameters_.Ixx_R = parameters_map_["Ixx_R"];
+    car_parameters_.Iyy = parameters_map_["Iyy"];
+    car_parameters_.nsm_f = parameters_map_["nsm_f"];
+    car_parameters_.nsm_r = parameters_map_["nsm_r"];
+    car_parameters_.sm = parameters_map_["sm"];
+    car_parameters_.sm_f = car_parameters_.sm * (1.0 - car_parameters_.r_cdg);
+    car_parameters_.sm_r = car_parameters_.sm * car_parameters_.r_cdg;
+    car_parameters_.mass = car_parameters_.sm + car_parameters_.nsm_f + car_parameters_.nsm_r;
+    
+    car_parameters_.h_cdg = parameters_map_["h_cdg"];
+    car_parameters_.h_cdg_nsm_f = parameters_map_["h_cdg_nsm_f"];
+    car_parameters_.h_cdg_nsm_r = parameters_map_["h_cdg_nsm_r"];
+    car_parameters_.h_cdg_sm = ((car_parameters_.mass * car_parameters_.h_cdg) - (car_parameters_.nsm_f * car_parameters_.h_cdg_nsm_f) 
+        - (car_parameters_.nsm_r * car_parameters_.h_cdg_nsm_r)) / car_parameters_.sm;
+    
+    car_parameters_.h_RC_f = parameters_map_["h_RC_f"];
+    car_parameters_.h_RC_r = parameters_map_["h_RC_r"];
+    car_parameters_.h_RA = car_parameters_.h_RC_f + (car_parameters_.h_RC_r - car_parameters_.h_RC_f) * car_parameters_.lf / car_parameters_.wheelbase;
+    
+    // Stiffness
+    // car_parameters_.K_tire = parameters_map_["K_tire_FL"];
+    car_parameters_.k_F = parameters_map_["k_F"];
+    car_parameters_.k_R = parameters_map_["k_R"];
+    car_parameters_.k_ARB_F = parameters_map_["k_ARB_F"];
+    car_parameters_.k_ARB_R = parameters_map_["k_ARB_R"];
+    car_parameters_.K_tors = parameters_map_["K_tors"];
+    car_parameters_.d_f = parameters_map_["d_f"];
+    car_parameters_.d_r = parameters_map_["d_r"];
+    car_parameters_.K_tire_FL = parameters_map_["K_tire_FL"];
+    car_parameters_.K_tire_FR = parameters_map_["K_tire_FR"];
+    car_parameters_.K_tire_RL = parameters_map_["K_tire_RL"];
+    car_parameters_.K_tire_RR = parameters_map_["K_tire_RR"];
+    car_parameters_.d_tire_FL = parameters_map_["d_tire_FL"];
+    car_parameters_.d_tire_FR = parameters_map_["d_tire_FR"];
+    car_parameters_.d_tire_RL = parameters_map_["d_tire_RL"];
+    car_parameters_.d_tire_RR = parameters_map_["d_tire_RR"];
+    car_parameters_.pressure_F = parameters_map_["pressure_F"];
+    car_parameters_.pressure_R = parameters_map_["pressure_R"];
+    
+    // Motion Ratios
+    car_parameters_.MR_F = parameters_map_["MR_F"];
+    car_parameters_.MR_R = parameters_map_["MR_R"];
+    car_parameters_.MR_ARB_F = parameters_map_["MR_ARB_F"];
+    car_parameters_.MR_ARB_R = parameters_map_["MR_ARB_R"];
+    double WR_f = car_parameters_.k_F / (car_parameters_.MR_F * car_parameters_.MR_F);
+    double WR_r = car_parameters_.k_R / (car_parameters_.MR_R * car_parameters_.MR_R);
+    
+    if (car_parameters_.MR_ARB_F == 0) {
+        car_parameters_.RS_f = 0.5 * car_parameters_.trackwidthF * car_parameters_.trackwidthF * WR_f;
+    } else {
+        car_parameters_.RS_f = 0.5 * car_parameters_.trackwidthF * car_parameters_.trackwidthF 
+            * (WR_f + car_parameters_.k_ARB_F / (car_parameters_.MR_ARB_F * car_parameters_.MR_ARB_F));
+    }
+    
+    if (car_parameters_.MR_ARB_R == 0) {
+        car_parameters_.RS_r = 0.5 * car_parameters_.trackwidthR * car_parameters_.trackwidthR * WR_r;
+    } else {
+        car_parameters_.RS_r = 0.5 * car_parameters_.trackwidthR * car_parameters_.trackwidthR 
+            * (WR_r + car_parameters_.k_ARB_R / (car_parameters_.MR_ARB_R * car_parameters_.MR_ARB_R));
+    }
+    
+    car_parameters_.RS = car_parameters_.RS_f + car_parameters_.RS_r;
+    
+    car_parameters_.gear_ratio = parameters_map_["gear_ratio"];
+    car_parameters_.rdyn = parameters_map_["rdyn"];
+    car_parameters_.I_wheel_F = parameters_map_["I_wheel_F"];
+    car_parameters_.I_wheel_R = parameters_map_["I_wheel_R"];
+    
+    // Torque limits
+    double torque_max = parameters_map_["torque_limit_positive"];
+    double torque_min = parameters_map_["torque_limit_negative"];
+    for (int i = 0; i < 4; i++) {
+        car_parameters_.torque_limit_positive[i] = torque_max;
+        car_parameters_.torque_limit_negative[i] = torque_min;
+    }
+    
+    // 2WD mode adjustment
+    car_parameters_.mode_2wd = (int)parameters_map_["mode_2wd"];
+    if (car_parameters_.mode_2wd) {
+        car_parameters_.torque_limit_positive[0] = 0;
+        car_parameters_.torque_limit_positive[1] = 0;
+        car_parameters_.torque_limit_negative[0] = 0;
+        car_parameters_.torque_limit_negative[1] = 0;
+    }
+    
+    // Ackermann
+    car_parameters_.ackermann[0] = parameters_map_["ackermann0"];
+    car_parameters_.ackermann[1] = parameters_map_["ackermann1"];
+    
+    // Steering
+    car_parameters_.toe_FL = parameters_map_["toe_FL"];
+    car_parameters_.toe_FR = parameters_map_["toe_FR"];
+    car_parameters_.toe_RL = parameters_map_["toe_RL"];
+    car_parameters_.toe_RR = parameters_map_["toe_RR"];
+    car_parameters_.camber_FL = parameters_map_["camber_FL"];
+    car_parameters_.camber_FR = parameters_map_["camber_FR"];
+    car_parameters_.camber_RL = parameters_map_["camber_RL"];
+    car_parameters_.camber_RR = parameters_map_["camber_RR"];
+    car_parameters_.delta_max_FL = parameters_map_["delta_max_FL"];
+    car_parameters_.delta_max_FR = parameters_map_["delta_max_FR"];
+    car_parameters_.r_steer = parameters_map_["r_steer"];
+    
+    // Aero
+    car_parameters_.rho = parameters_map_["rho"];
+    car_parameters_.CDA = parameters_map_["CDA"];
+    car_parameters_.CLA = parameters_map_["CLA"];
+    car_parameters_.r_cdp = parameters_map_["r_cdp"];
+    car_parameters_.h_cdp = parameters_map_["h_cdp"];
+    car_parameters_.x_cdp = parameters_map_["x_cdp"];
+    
+    // Electrical / power
+    car_parameters_.P_max_powerunit = parameters_map_["P_max_powerunit"];
+    car_parameters_.P_loss_offset = parameters_map_["P_loss_offset"];
+    car_parameters_.P_inverter_loss = parameters_map_["P_inverter_loss"];
+    car_parameters_.R_wire_F = parameters_map_["R_wire_F"];
+    car_parameters_.R_wire_R = parameters_map_["R_wire_R"];
+    car_parameters_.R_battery = parameters_map_["R_battery"];
+    car_parameters_.cell_capacity = parameters_map_["cell_capacity"];
+    car_parameters_.cell_voltage_max = parameters_map_["cell_voltage_max"];
+    car_parameters_.cell_voltage_min = parameters_map_["cell_voltage_min"];
+    car_parameters_.n_cells_series = (int)parameters_map_["n_cells_series"];
+    car_parameters_.n_cells_parallel = (int)parameters_map_["n_cells_parallel"];
+    car_parameters_.V_max = car_parameters_.cell_voltage_max * car_parameters_.n_cells_series;
+    car_parameters_.V_min = car_parameters_.cell_voltage_min * car_parameters_.n_cells_series;
 }
 
 /**
