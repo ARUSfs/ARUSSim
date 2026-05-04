@@ -494,7 +494,6 @@ void Simulator::on_slow_timer()
 
 void Simulator::on_controller_sim_timer()
 {
-    std::cout << "as_status: " << as_status_ << std::endl;
     // Update sensor data in CON-VehicleControl
     SensorData current_sensors{};
     DV current_dv{};
@@ -722,12 +721,9 @@ void Simulator::receive_can_0()
             time_last_cmd_ = clock_->now();
         }
 
-        else if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
-                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209)
+        else if (frame_0_.can_id == 0x161)
         {
-            int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
-            int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
-            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio;
+            as_status_ = frame_0_.data[1];
         }
     }
 }
@@ -745,10 +741,6 @@ void Simulator::receive_can_1()
             continue;
         }
 
-        if (frame_1_.can_id == 0x161)
-        {
-            as_status_ = frame_1_.data[1];
-        }
     }
 }
 
@@ -765,9 +757,12 @@ void Simulator::receive_can_2()
             continue;
         }
 
-        if (frame_2_.can_id == 0x161)
+        if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
+                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209)
         {
-            as_status_ = frame_2_.data[1];
+            int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
+            int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio;
         }
     }
 }

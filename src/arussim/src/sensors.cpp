@@ -223,7 +223,7 @@ Sensors::Sensors() : Node("sensors")
         {0x161, 2, {
             {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
             {"dv_driving", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan1
+            }, Sensors::CanBus::kCan0
         },
         {0x221, 1, {
             {"enable_flag", {0, 7, false, 1.0, 0.0}}
