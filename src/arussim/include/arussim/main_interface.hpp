@@ -96,6 +96,7 @@ protected:
   QComboBox* launch_select_ = nullptr;
 
 private:
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr launch_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr circuit_pub_;
 

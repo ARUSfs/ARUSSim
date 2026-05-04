@@ -143,6 +143,7 @@ void MainInterface::onInitialize()
     rclcpp::Node::SharedPtr node = node_ptr_->get_raw_node();
 
     // Publishers
+    launch_pub_ = node->create_publisher<std_msgs::msg::Bool>("/arussim/launch", 1);
     reset_pub_ = node->create_publisher<std_msgs::msg::Bool>("/arussim/reset", 1);
     circuit_pub_ = node->create_publisher<std_msgs::msg::String>("/arussim/circuit", 1);
 
@@ -199,6 +200,11 @@ void MainInterface::update_lap_time_labels(double lap_time_)
  */
 void MainInterface::launch_button_clicked()
 {
+    
+    auto msg = std_msgs::msg::Bool();
+    msg.data = true;
+    launch_pub_->publish(msg);
+
     if (simulation_process_ == nullptr) {
         simulation_process_ = new QProcess(this);
         // Merge standard output and error

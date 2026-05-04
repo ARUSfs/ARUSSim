@@ -559,6 +559,7 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
 
 void Sensors::launch_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
+    
     if (msg && msg->data) 
     {
         RCLCPP_INFO(this->get_logger(), "[SENSORS] Launch recibido. Estado anterior: %f", as_status_);
