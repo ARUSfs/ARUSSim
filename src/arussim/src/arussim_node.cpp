@@ -1170,6 +1170,7 @@ std::map<std::string, double> Simulator::load_car_parameters(const std::string &
 void Simulator::load_control_parameters()
 {
     // Car data - Distances
+    car_parameters_.g = parameters_map_["g"];
     car_parameters_.trackwidthF = parameters_map_["trackwidthF"];
     car_parameters_.trackwidthR = parameters_map_["trackwidthR"];
     car_parameters_.wheelbase = parameters_map_["wheelbase"];
