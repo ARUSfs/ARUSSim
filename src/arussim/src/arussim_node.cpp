@@ -285,13 +285,13 @@ void Simulator::init_can_sockets()
 
         std::system("sudo modprobe vcan");
 
-        std::system("sudo ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan");
+        std::system("ip link show can0 >/dev/null 2>&1 || sudo ip link add dev can0 type vcan");
         std::system("sudo ip link set up can0");
 
-        std::system("sudo ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan");
+        std::system("ip link show can1 >/dev/null 2>&1 || sudo ip link add dev can1 type vcan");
         std::system("sudo ip link set up can1");
 
-        std::system("sudo ip link show can2 >/dev/null 2>&1 || sudo ip link add dev can2 type vcan");
+        std::system("ip link show can2 >/dev/null 2>&1 || sudo ip link add dev can2 type vcan");
         std::system("sudo ip link set up can2");
     }
     else if (kSimulationMode == "hil")
@@ -300,15 +300,15 @@ void Simulator::init_can_sockets()
         // Hardware CAN
         RCLCPP_INFO(this->get_logger(), "Rising hardware CAN interfaces (can0, can1 and can2)...");
 
-        std::system("sudo ip link show can0 >/dev/null 2>&1 && sudo ip link set can0 down"); 
+        std::system("ip link show can0 >/dev/null 2>&1 && sudo ip link set can0 down"); 
         std::system("sudo ip link set can0 type can bitrate 1000000");                  
         std::system("sudo ip link set up can0");                                        
 
-        std::system("sudo ip link show can1 >/dev/null 2>&1 && sudo ip link set can1 down");
+        std::system("ip link show can1 >/dev/null 2>&1 && sudo ip link set can1 down");
         std::system("sudo ip link set can1 type can bitrate 1000000");
         std::system("sudo ip link set up can1");
 
-        std::system("sudo ip link show can2 >/dev/null 2>&1 && sudo ip link set can2 down");
+        std::system("ip link show can2 >/dev/null 2>&1 && sudo ip link set can2 down");
         std::system("sudo ip link set can2 type can bitrate 500000");
         std::system("sudo ip link set up can2");
     }
