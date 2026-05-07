@@ -21,7 +21,10 @@ Cmnd_Alias VCAN_CMDS = \
     /usr/sbin/ip link set down can0, \
     /usr/sbin/ip link add dev can1 type vcan, \
     /usr/sbin/ip link set up can1, \
-    /usr/sbin/ip link set down can1
+    /usr/sbin/ip link set down can1 \
+    /usr/sbin/ip link add dev can2 type vcan, \
+    /usr/sbin/ip link set up can2, \
+    /usr/sbin/ip link set down can2
 
 <your-username> ALL=(ALL) NOPASSWD: VCAN_CMDS
 ```
