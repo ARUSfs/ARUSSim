@@ -106,7 +106,6 @@ class Simulator : public rclcpp::Node
     double kDelaySigma;
     double kSimulationSpeedMultiplier;
     bool kDebug;
-    double kGearRatio = 12.48;
     
     struct DelayedMsg {
       sensor_msgs::msg::PointCloud2 msg;
@@ -146,8 +145,6 @@ class Simulator : public rclcpp::Node
 
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
-    double input_acc_;
-    double input_delta_;
     double target_r_;
     std::vector<double> torque_cmd_;
 
@@ -227,16 +224,6 @@ class Simulator : public rclcpp::Node
     void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
-
-    /**
-     * @brief Callback for receiving control commands.
-     * 
-     * This method processes incoming control commands (acceleration and steering angle) 
-     * to update the vehicle's dynamics.
-     * 
-     * @param msg The control command message.
-     */
-    void cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg);
     
     /**
      * @brief Callback for receiving teleportation commands from RViz.
