@@ -109,22 +109,51 @@ class VehicleDynamics
         double kGearRatio;
 
         struct {
-            double Dlat = -1.3323;
-            double Clat = 1.7230;
-            double Blat = 12.7;
-            double Elat = 0.4035;
+            // Normal load
+            double Fz0;
 
-            double Dlon = 1.1976;
-            double Clon = 1.9503;
-            double Blon = 17.49;
-            double Elon = 0.999;
+            // Longitudinal coefficients
+            double D1_x;
+            double D2_x;
+            double Cx;
+            double Bx;
+            double Ex;
 
-            double Gx1 = 25000;
-            double bx = 0.2367;
-            double a = 937330;
-            double c = 0.1689;
-            double Gy1 = 38.21;
-            double by = 0.5365;
+            // Lateral coefficients
+            double D1_y;
+            double D2_y;
+            double Cy;
+            double By;
+            double Ey;
+
+            // Shifts
+            double SH;
+            double SV;
+
+            // Combined slip longitudinal
+            double rB1_x;
+            double rB2_x;
+            double rC1_x;
+            double rE1_x;
+
+            // Combined slip lateral
+            double rB1_y;
+            double rB2_y;
+            double rC1_y;
+            double rSh;
+
+            // Scaling / weighting factors
+            double rGx1;
+            double rBx;
+            double rAx;
+            double rCx;
+
+            double rGy1;
+            double rBy;
+
+            // Model selector
+            int comb_model;
+
         } pac_param_;
 
         double kRollingResistance;

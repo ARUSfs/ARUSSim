@@ -1306,6 +1306,44 @@ void Simulator::load_control_parameters()
     car_parameters_.n_cells_parallel = (int)parameters_map_["n_cells_parallel"];
     car_parameters_.V_max = car_parameters_.cell_voltage_max * car_parameters_.n_cells_series;
     car_parameters_.V_min = car_parameters_.cell_voltage_min * car_parameters_.n_cells_series;
+
+    // Pacejka parameters
+    car_parameters_.Fz0 = parameters_map_["Fz0"];
+
+    car_parameters_.D1_x = parameters_map_["D1_x"];
+    car_parameters_.D2_x = parameters_map_["D2_x"];
+    car_parameters_.Cx   = parameters_map_["Cx"];
+    car_parameters_.Bx   = parameters_map_["Bx"];
+    car_parameters_.Ex   = parameters_map_["Ex"];
+
+    car_parameters_.D1_y = parameters_map_["D1_y"];
+    car_parameters_.D2_y = parameters_map_["D2_y"];
+    car_parameters_.Cy   = parameters_map_["Cy"];
+    car_parameters_.By   = parameters_map_["By"];
+    car_parameters_.Ey   = parameters_map_["Ey"];
+
+    car_parameters_.SH = parameters_map_["SH"];
+    car_parameters_.SV = parameters_map_["SV"];
+
+    car_parameters_.rB1_x = parameters_map_["rB1_x"];
+    car_parameters_.rB2_x = parameters_map_["rB2_x"];
+    car_parameters_.rC1_x = parameters_map_["rC1_x"];
+    car_parameters_.rE1_x = parameters_map_["rE1_x"];
+
+    car_parameters_.rB1_y = parameters_map_["rB1_y"];
+    car_parameters_.rB2_y = parameters_map_["rB2_y"];
+    car_parameters_.rC1_y = parameters_map_["rC1_y"];
+    car_parameters_.rSh   = parameters_map_["rSh"];
+
+    car_parameters_.rGx1 = parameters_map_["rGx1"];
+    car_parameters_.rBx  = parameters_map_["rBx"];
+    car_parameters_.rAx  = parameters_map_["rAx"];
+    car_parameters_.rCx  = parameters_map_["rCx"];
+
+    car_parameters_.rGy1 = parameters_map_["rGy1"];
+    car_parameters_.rBy  = parameters_map_["rBy"];
+
+    car_parameters_.comb_model = (int)parameters_map_["comb_model"];
 }
 
 /**
