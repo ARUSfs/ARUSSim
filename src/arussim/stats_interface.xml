@@ -1,0 +1,5 @@
+<library path="stats_interface_exec">
+  <class type="stats_interface::StatsInterface" base_class_type="rviz_common::Panel">
+    <description>ARUSsim stats interface</description>
+  </class>
+</library>

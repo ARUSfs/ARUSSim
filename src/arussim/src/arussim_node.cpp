@@ -25,9 +25,14 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
     this->declare_parameter<double>("vehicle.COG_back_dist", -1.0);
     this->declare_parameter<double>("vehicle.car_width", 0.8);
+    this->declare_parameter<double>("cone.height", 0.325);
+    this->declare_parameter<double>("cone.width", 0.228);
     this->declare_parameter<double>("sensor.lidar_fov", 120.0);
+    this->declare_parameter<double>("sensor.lidar_height", 0.64);
     this->declare_parameter<double>("sensor.lidar_min_dist", 30.0);
     this->declare_parameter<double>("sensor.lidar_max_dist", 3.0);
+    this->declare_parameter<double>("sensor.lidar_mu_time", 2.3156);
+    this->declare_parameter<double>("sensor.lidar_sigma_time", 0.3460);
     this->declare_parameter<double>("sensor.camera_fov", 10);
     this->declare_parameter<double>("sensor.pub_rate", 10);
     this->declare_parameter<double>("sensor.noise_position_lidar_perception", 0.01);
@@ -39,6 +44,8 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<double>("sensor.position_lidar_x", 1.5);
     this->declare_parameter<double>("sensor.position_camera_x", 0.0);
     this->declare_parameter<double>("sensor.camera_color_probability", 0.85);
+    this->declare_parameter<double>("sensor.perception_delay_mu", 2.3156);
+    this->declare_parameter<double>("sensor.perception_delay_sigma", 0.3460);
     this->declare_parameter<bool>("csv_state", false);
     this->declare_parameter<bool>("csv_vehicle_dynamics", false);
     this->declare_parameter<bool>("debug", false);
@@ -52,9 +59,14 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
     this->get_parameter("vehicle.COG_back_dist", kCOGBackDist);
     this->get_parameter("vehicle.car_width", kCarWidth);
+    this->get_parameter("cone.height", kConeHeight);
+    this->get_parameter("cone.width", kConeWidth);
     this->get_parameter("sensor.lidar_fov", kLidarFOV);
+    this->get_parameter("sensor.lidar_height", kLidarHeight);
     this->get_parameter("sensor.lidar_min_dist", kMinLidarDistance);
     this->get_parameter("sensor.lidar_max_dist", kMaxLidarDistance);
+    this->get_parameter("sensor.lidar_mu_time", kLidarMuTime);
+    this->get_parameter("sensor.lidar_sigma_time", kLidarSigmaTime);
     this->get_parameter("sensor.camera_fov", kCameraFOV);
     this->get_parameter("sensor.pub_rate", kSensorRate);
     this->get_parameter("sensor.noise_position_lidar_perception", kNoiseLidarPosPerception);
@@ -66,6 +78,8 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("sensor.position_lidar_x", kPosLidarX);
     this->get_parameter("sensor.position_camera_x", kPosCameraX);
     this->get_parameter("sensor.camera_color_probability", kCameraColorProbability);
+    this->get_parameter("sensor.perception_delay_mu", kDelayMu);
+    this->get_parameter("sensor.perception_delay_sigma", kDelaySigma);
     this->get_parameter("csv_state", kCSVState);
     this->get_parameter("csv_vehicle_dynamics", kCSVVehicleDynamics);
     this->get_parameter("debug", kDebug);
@@ -110,8 +124,13 @@ Simulator::Simulator() : Node("simulator")
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kStateUpdateRate)),
         std::bind(&Simulator::on_fast_timer, this));
-    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1,
-                                                                    std::bind(&Simulator::load_track, this, std::placeholders::_1));
+
+    perception_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(1),
+        std::bind(&Simulator::process_perception_queue, this));
+
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
+        std::bind(&Simulator::load_track, this, std::placeholders::_1));
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
     ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
@@ -168,7 +187,11 @@ Simulator::Simulator() : Node("simulator")
     launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1,
     std::bind(&Simulator::launch_callback, this, std::placeholders::_1));
 
-    // Initialize torque variable
+    // Lognormal perception delay
+    perception_delay_gen = std::mt19937(std::random_device{}());
+    perception_delay_dist = std::lognormal_distribution<double>(kLidarMuTime, kLidarSigmaTime);
+
+    // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
     try
@@ -192,8 +215,6 @@ Simulator::Simulator() : Node("simulator")
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
             std::bind(&Simulator::on_controller_sim_timer, this));
 
-        cmd_sub_ = this->create_subscription<arussim_msgs::msg::Cmd>("/arussim/cmd", 1,
-        std::bind(&Simulator::cmd_callback, this, std::placeholders::_1));
     }
     else if(kSimulationMode == "raspi_sim")
     {
@@ -268,6 +289,15 @@ void Simulator::check_acc_start()
         msg.data = true;
         lap_signal_pub_->publish(msg);
         started_acc_ = true;
+    }
+}
+
+void Simulator::process_perception_queue()
+{
+    while (!perception_queue_.empty() && clock_->now() >= perception_queue_.front().publish_time)
+    {
+        lidar_perception_pub_->publish(perception_queue_.front().msg);
+        perception_queue_.pop();
     }
 }
 
@@ -382,64 +412,112 @@ void Simulator::on_slow_timer()
     std::uniform_real_distribution<double> dist_c(0.0, kNoiseLidarColor);
 
     // Lidar perception simulation
+    struct ConeData {
+        PointXYZProbColorScore p;
+        double d;
+        double angle;
+        double p_min;
+        double p_max;
+        double depth;
+    };
+
+    std::vector<ConeData> cones;
     auto perception_cloud = pcl::PointCloud<PointXYZProbColorScore>();
-    for (auto &point : track_.points)
-    {
+
+    for (auto &point : track_.points){
+
         double dx = point.x - (x + kPosLidarX * std::cos(yaw));
         double dy = point.y - (y + kPosLidarX * std::sin(yaw));
         double d = std::sqrt(dx * dx + dy * dy);
-        double angle_to_cone = std::atan2(dy, dx) - yaw;
-        while (angle_to_cone > M_PI)
-            angle_to_cone -= 2.0 * M_PI;
-        while (angle_to_cone < -M_PI)
-            angle_to_cone += 2.0 * M_PI;
 
-        if (d < kMaxLidarDistance)
-        {
-            PointXYZProbColorScore p;
-            p.x = (point.x - x) * std::cos(yaw) + (point.y - y) * std::sin(yaw) + dist_p(gen_p);
-            p.y = -(point.x - x) * std::sin(yaw) + (point.y - y) * std::cos(yaw) + dist_p(gen_p);
-            p.z = 0.0;
-            double p_r = std::exp(-0.005 * d);             // Exponential decay for color
-            double a = std::log(2.0) / kMaxLidarDistance;  // Calculate 'a' paramater for exponential decay based on max distance
-            double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
-            if (point.color == 0)
-            {
-                p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
-                p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
-            }
-            else if (point.color == 1)
-            {
-                p.prob_yellow = (point.color - dist_c(gen_c)) * p_r;
-                p.prob_blue = (1 - point.color + dist_c(gen_c)) * p_r;
-            }
-            else
-            {
-                p.prob_yellow = 0.0 + dist_c(gen_c);
-                p.prob_blue = 0.0 + dist_c(gen_c);
-            }
-            p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
-            p.prob_blue = std::clamp(p.prob_blue, 0.0, 1.0);
-            p.score = 1.0;
-            if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance)
-            {
-                perception_cloud.push_back(p);
-            }
-            if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth)
-            {
-                arussim_msgs::msg::PointXY msg;
-                msg.x = point.x;
-                msg.y = point.y;
-                hit_cones_pub_->publish(msg);
-            }
+        if (d >= kMaxLidarDistance) continue;
+
+        double angle_to_cone = std::atan2(dy, dx) - yaw;
+        while (angle_to_cone > M_PI) angle_to_cone -= 2.0 * M_PI;
+        while (angle_to_cone < -M_PI) angle_to_cone += 2.0 * M_PI;
+        double delta = std::atan2(kConeWidth/2.0, d);
+
+        PointXYZProbColorScore p;
+        p.x = (point.x - x)*std::cos(yaw) + (point.y - y)*std::sin(yaw) + dist_p(gen_p);
+        p.y = -(point.x - x)*std::sin(yaw) + (point.y - y)*std::cos(yaw) + dist_p(gen_p);
+        p.z = 0.0;
+        double p_r = std::exp(-0.005 * d);  // Exponential decay for color
+        double a = std::log(2.0) / kMaxLidarDistance; // Calculate 'a' paramater for exponential decay based on max distance
+        double p_v = std::exp(-a * d) - dist_v(gen_v); // Exponential decay for visualization
+        if (point.color == 0) {
+            p.prob_yellow = (point.color + dist_c(gen_c)) * p_r;
+            p.prob_blue = (1 - point.color - dist_c(gen_c)) * p_r;
+        } else if (point.color == 1) {
+            p.prob_yellow = (point.color - dist_c(gen_c)) * p_r;
+            p.prob_blue = (1 - point.color + dist_c(gen_c)) * p_r;
+        } else {
+            p.prob_yellow = 0.0 + dist_c(gen_c);
+            p.prob_blue = 0.0 + dist_c(gen_c);
         }
+        p.prob_yellow = std::clamp(p.prob_yellow, 0.0, 1.0);
+        p.prob_blue   = std::clamp(p.prob_blue, 0.0, 1.0);
+        p.score = 1.0;
+        if (std::abs(angle_to_cone) < (kLidarFOV * M_PI / 180.0) / 2.0 && p.x > kPosLidarX + kMinPerceptionX && p_v > 0.5 && d > kMinLidarDistance) {
+            ConeData c;
+            c.p = p;
+            c.d = d;
+            c.angle = angle_to_cone;
+            c.p_min = angle_to_cone - delta;
+            c.p_max = angle_to_cone + delta;
+            c.depth = d * (kLidarHeight / (kLidarHeight - kConeHeight));
+
+            cones.push_back(c);
+        } if (p.x >= kCOGBackDist && p.x <= kCOGFrontDist && p.y >= -kCarWidth && p.y <= kCarWidth) {
+            arussim_msgs::msg::PointXY msg;
+            msg.x = point.x;
+            msg.y = point.y;
+            hit_cones_pub_->publish(msg);
+        }
+    }
+    
+    std::sort(cones.begin(), cones.end(),
+          [](const auto &a, const auto &b){ return a.d < b.d; });
+    
+    std::vector<bool> occluded(cones.size(), false);
+    bool infinite_shadow = kLidarHeight <= kConeHeight;
+    
+    for (size_t i = 0; i < cones.size(); ++i) {
+        const auto &coneA = cones[i];
+
+        for (size_t j = i+1; j < cones.size(); ++j) { 
+            const auto &coneB = cones[j];
+            if (i == j || coneA.d >= coneB.d) continue;
+
+            if (infinite_shadow) {
+                if (!(coneB.p_max < coneA.p_min || coneB.p_min > coneA.p_max)) occluded[j] = true;
+                continue;
+            }
+
+            double t = (coneB.d - coneA.d) / (coneA.depth - coneA.d);
+            t = std::clamp(t, 0.0, 1.0);
+
+            double half_width_A = (coneA.p_max - coneA.p_min) * 0.5;
+            double half_width_eff = (1.0 - t) * half_width_A;
+            double min_eff = coneA.angle - half_width_eff;
+            double max_eff = coneA.angle + half_width_eff;
+
+            bool z_ray = kLidarHeight * (1.0 - coneA.d / coneB.d) <= kConeHeight;
+            //bool in_depth = (coneB.d >= coneA.d && coneB.d <= coneA.depth);
+
+            if (!(coneB.p_max < min_eff || coneB.p_min > max_eff) && z_ray) occluded[j] = true;
+        }
+        if (!occluded[i]) perception_cloud.push_back(cones[i].p);
     }
 
     sensor_msgs::msg::PointCloud2 perception_msg;
     pcl::toROSMsg(perception_cloud, perception_msg);
-    perception_msg.header.stamp = clock_->now();
-    perception_msg.header.frame_id = "arussim/vehicle_cog";
-    lidar_perception_pub_->publish(perception_msg);
+
+    perception_msg.header.stamp = clock_->now(); 
+    perception_msg.header.frame_id="arussim/vehicle_cog";
+
+    double delay_ms = perception_delay_dist(perception_delay_gen);
+    rclcpp::Time publish_time = clock_->now() + rclcpp::Duration::from_seconds(delay_ms / 1000.0);
+    perception_queue_.push({perception_msg, publish_time});
 
     // Random noise generation for position (camera)
     std::random_device rd_pc;
@@ -526,10 +604,10 @@ void Simulator::on_controller_sim_timer()
                    fx_obj_tc, t_ff_tc, sr_tc);
 
     torque_cmd_ = {
-        static_cast<double>(torque_cmd_out[0] * kGearRatio),
-        static_cast<double>(torque_cmd_out[1] * kGearRatio),
-        static_cast<double>(torque_cmd_out[2] * kGearRatio),
-        static_cast<double>(torque_cmd_out[3] * kGearRatio)};
+        static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
+        static_cast<double>(torque_cmd_out[1] * car_parameters_.gear_ratio),
+        static_cast<double>(torque_cmd_out[2] * car_parameters_.gear_ratio),
+        static_cast<double>(torque_cmd_out[3] * car_parameters_.gear_ratio)};
 
     std_msgs::msg::Float32 control_vx_msg;
     control_vx_msg.data = state_out[0];
@@ -568,38 +646,31 @@ void Simulator::on_fast_timer()
 {
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
+
+    if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
+    {
+        can_acc_ = 0;
+    }
+    if (as_status_ != 0x03)
+    {
+        // Trigger EBS
+        vehicle_dynamics_.torque_cmd_.fl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.fr_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rl_ = 0.;
+        vehicle_dynamics_.torque_cmd_.rr_ = 0.;
+        vehicle_dynamics_.vx_ = 0.0;
+        vehicle_dynamics_.vy_ = 0.0;
+        vehicle_dynamics_.r_ = 0.0;
+    }
+
+    double dt = 1.0 / kStateUpdateRate;
+
     if (kSimulationMode == "default")
     {
-        if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
-        {
-            input_acc_ = 0;
-        }
-        if (as_status_ != 0x03)
-        {
-            // Trigger EBS
-            vehicle_dynamics_.torque_cmd_.fl_ = 0.;
-            vehicle_dynamics_.torque_cmd_.fr_ = 0.;
-            vehicle_dynamics_.torque_cmd_.rl_ = 0.;
-            vehicle_dynamics_.torque_cmd_.rr_ = 0.;
-            vehicle_dynamics_.vx_ = 0.0;
-            vehicle_dynamics_.vy_ = 0.0;
-            vehicle_dynamics_.r_ = 0.0;
-        }
-        else
-        {
-            double dt = 1.0 / kStateUpdateRate;
-            vehicle_dynamics_.update_simulation(can_delta_, torque_cmd_, dt);
-        }
+        vehicle_dynamics_.update_simulation(can_delta_, torque_cmd_, dt);
     }
-    else
+    else 
     {
-        if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
-        {
-            can_acc_ = 0;
-        }
-
-        double dt = 1.0 / kStateUpdateRate;
-
         vehicle_dynamics_.update_simulation(can_delta_, can_torque_cmd_, dt);
     }
 
@@ -765,7 +836,7 @@ void Simulator::receive_can_2()
         {
             int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
             int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
-            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * kGearRatio;
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * car_parameters_.gear_ratio;
         }
     }
 }
@@ -847,22 +918,6 @@ void Simulator::noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg
     noisy_delta_ = msg->data;
 }
 
-/**
- * @brief Callback for receiving control commands.
- *
- * This method updates the vehicle's acceleration and steering angle based on
- * incoming commands.
- *
- * @param msg Incoming control command message.
- */
-void Simulator::cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg)
-{
-    input_acc_ = msg->acc;
-    input_delta_ = msg->delta;
-    target_r_ = msg->target_r;
-    time_last_cmd_ = clock_->now();
-}
-
 void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     if (msg->data)
@@ -883,8 +938,6 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
         control_raspi_manager_.stop_control_rasp(this->get_logger());
     }
 
-    input_acc_ = 0.0;
-    input_delta_ = 0.0;
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
     can_acc_ = 0.0;
     can_delta_ = 0.0;

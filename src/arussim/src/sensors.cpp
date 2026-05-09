@@ -32,6 +32,7 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("imu.noise_imu_ay", 0.01);
     this->declare_parameter<double>("imu.noise_imu_r", 0.01);
     this->declare_parameter<double>("imu.imu_frequency", 200.0);
+    this->declare_parameter<double>("imu.noise_imu_pose", 0.1);
 
     // Declare wheel speed parameters
     this->declare_parameter<double>("inverter.noise_motor_speed_front_right", 0.01);
@@ -67,6 +68,7 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
     this->get_parameter("imu.imu_frequency", kImuFrequency);
+    this->get_parameter("imu.noise_imu_pose", kNoiseImuPose);
 
     this->get_parameter("inverter.noise_motor_speed_front_right", kNoiseMotorSpeedFrontRight);
     this->get_parameter("inverter.noise_motor_speed_front_left", kNoiseMotorSpeedFrontLeft);
@@ -118,6 +120,8 @@ Sensors::Sensors() : Node("sensors")
     ax_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ax", 10);
     ay_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/ay", 10);
     r_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/yaw_rate", 10);
+    x_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/x", 10);
+    y_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/IMU/y", 10);
 
     imu_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000/kImuFrequency)),
@@ -314,11 +318,14 @@ void Sensors::imu_timer()
     std::normal_distribution<> dist_ax(0.0, kNoiseImuAx);
     std::normal_distribution<> dist_ay(0.0, kNoiseImuAy);
     std::normal_distribution<> dist_r(0.0, kNoiseImuR);
+    std::normal_distribution<> dist_pose(0.0, kNoiseImuPose);
 
     // Create IMU data messages
     auto msg_ax = std_msgs::msg::Float32();
     auto msg_ay = std_msgs::msg::Float32();
     auto msg_r = std_msgs::msg::Float32();
+    auto msg_x = std_msgs::msg::Float32();
+    auto msg_y = std_msgs::msg::Float32();
 
     // Yaw rate
     msg_r.data = r_ + dist_r(gen);  
@@ -326,6 +333,10 @@ void Sensors::imu_timer()
     // Linear acceleration
     msg_ax.data = ax_ + dist_ax(gen);  
     msg_ay.data = ay_ + dist_ay(gen);  
+
+    // Vehicle pose
+    msg_x.data = x_ + dist_pose(gen);
+    msg_y.data = y_ + dist_pose(gen);
 
     // Publish the IMU message
     ax_pub_->publish(msg_ax);
@@ -341,6 +352,8 @@ void Sensors::imu_timer()
         } 
         
     }
+    x_pub_->publish(msg_x);
+    y_pub_->publish(msg_y);
 }
 
 

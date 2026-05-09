@@ -1,5 +1,5 @@
 lap,cones,best_time
-11.5893,0,11.5893
+40.3207,0,40.3207
 ---PARAM_DUMP_BEGIN---
 /controller:
   ros__parameters:
@@ -118,9 +118,9 @@ lap,cones,best_time
     g: 9.81
     m: 270.0
     max_gap: 4.0
-    mu_brake: 0.75
-    mu_throttle: 0.75
-    mu_y: 0.75
+    mu_brake: 0.5
+    mu_throttle: 0.5
+    mu_y: 0.5
     n_iter: 3
     n_seg: 1000
     optimized_trajectory_topic: /trajectory_optimization/trajectory

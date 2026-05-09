@@ -103,6 +103,7 @@ private:
     double kNoiseImuAx;
     double kNoiseImuAy;
     double kNoiseImuR;
+    double kNoiseImuPose;
 
     double kInverterFrequency;
     double kNoiseMotorSpeedFrontRight;
@@ -198,6 +199,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr r_pub_; // r publisher
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr x_pub_; // x publisher
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr y_pub_; // y publisher
     rclcpp::TimerBase::SharedPtr imu_timer_; // IMU timer
 
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr motor_speed_pub_; // Motor speed publisher

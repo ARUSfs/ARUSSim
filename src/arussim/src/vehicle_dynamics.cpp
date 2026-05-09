@@ -19,6 +19,41 @@ VehicleDynamics::VehicleDynamics(){
     delta_fr_ = 0;
     delta_v_ = 0;
     dt_ = 0.001;
+
+    struct {
+        double fl_ = 0;
+        double fr_ = 0;
+        double rl_ = 0;
+        double rr_ = 0;
+    } wheel_speed;
+    
+    struct {
+        double fl_ = 0;
+        double fr_ = 0;
+        double rl_ = 0;
+        double rr_ = 0;
+    } torque_cmd;
+
+    struct {
+        double alpha_fl_ = 0;
+        double alpha_fr_ = 0;
+        double alpha_rl_ = 0;
+        double alpha_rr_ = 0;
+
+        double lambda_fl_ = 0;
+        double lambda_fr_ = 0;
+        double lambda_rl_ = 0;
+        double lambda_rr_ = 0;
+    } tire_slip;
+    
+    struct {
+        double fl_ = 0;
+        double fr_ = 0;
+        double rl_ = 0;
+        double rr_ = 0;
+    } tire_loads;
+
+    csv_generator_vehicle_dynamics_ = nullptr;
 }
 
 void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
