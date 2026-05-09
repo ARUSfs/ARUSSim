@@ -7,17 +7,24 @@
  * 
  */
 #include "arussim/sensors.hpp"
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
+std::vector<Sensors::CanFrame> Sensors::frames;
 
 /**
  * @class Sensors
  * @brief Sensors class for ARUSsim
- * This class simulates some sensors of the vehicle like the IMU, wheel speed sensors and extensometer.
+ * This class simulates some sensors of the vehicle like the IMU, inverters and extensometer.
  */
 Sensors::Sensors() : Node("sensors")
 {
     // Declare ground speed parameters
     this->declare_parameter<double>("gss.noise_gss_vx", 0.01);
     this->declare_parameter<double>("gss.noise_gss_vy", 0.01);
+    this->declare_parameter<double>("gss.noise_gss_ax", 0.01);
+    this->declare_parameter<double>("gss.noise_gss_ay", 0.01);
+    this->declare_parameter<double>("gss.noise_gss_r", 0.01);
     this->declare_parameter<double>("gss.gss_frequency", 200.0);
     
     // Declare and get noise parameters for each IMU variable
@@ -28,10 +35,10 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("imu.noise_imu_pose", 0.1);
 
     // Declare wheel speed parameters
-    this->declare_parameter<double>("inverter.noise_wheel_speed_front_right", 0.01);
-    this->declare_parameter<double>("inverter.noise_wheel_speed_front_left", 0.01);
-    this->declare_parameter<double>("inverter.noise_wheel_speed_rear_right", 0.01);
-    this->declare_parameter<double>("inverter.noise_wheel_speed_rear_left", 0.01);
+    this->declare_parameter<double>("inverter.noise_motor_speed_front_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_motor_speed_front_left", 0.01);
+    this->declare_parameter<double>("inverter.noise_motor_speed_rear_right", 0.01);
+    this->declare_parameter<double>("inverter.noise_motor_speed_rear_left", 0.01);
     this->declare_parameter<double>("inverter.noise_torque_front_right", 0.01);
     this->declare_parameter<double>("inverter.noise_torque_front_left", 0.01);
     this->declare_parameter<double>("inverter.noise_torque_rear_right", 0.01);
@@ -42,22 +49,31 @@ Sensors::Sensors() : Node("sensors")
     this->declare_parameter<double>("extensometer.extensometer_frequency", 100.0);
     this->declare_parameter<double>("extensometer.noise_extensometer", 0.01);
 
+    // Declare BMS parameters
+    this->declare_parameter<double>("bms.bms_frequency", 100.0);
+    this->declare_parameter<double>("bms.noise_battery_voltage", 0.1);
+
+    // Declare AS PCB parameters
+    this->declare_parameter<double>("as.as_frequency", 10.0);
 
     // Get parameters
+    this->get_parameter("gss.noise_gss_ax", kNoiseGssAx);
+    this->get_parameter("gss.noise_gss_ay", kNoiseGssAy);
+    this->get_parameter("gss.noise_gss_r", kNoiseGssR);
     this->get_parameter("gss.noise_gss_vx", kNoiseGssVx);
     this->get_parameter("gss.noise_gss_vy", kNoiseGssVy);
     this->get_parameter("gss.gss_frequency", kGssFrequency);
-    
+
     this->get_parameter("imu.noise_imu_ax", kNoiseImuAx);
     this->get_parameter("imu.noise_imu_ay", kNoiseImuAy);
     this->get_parameter("imu.noise_imu_r", kNoiseImuR);
     this->get_parameter("imu.imu_frequency", kImuFrequency);
     this->get_parameter("imu.noise_imu_pose", kNoiseImuPose);
 
-    this->get_parameter("inverter.noise_wheel_speed_front_right", kNoiseWheelSpeedFrontRight);
-    this->get_parameter("inverter.noise_wheel_speed_front_left", kNoiseWheelSpeedFrontLeft);
-    this->get_parameter("inverter.noise_wheel_speed_rear_right", kNoiseWheelSpeedRearRight);
-    this->get_parameter("inverter.noise_wheel_speed_rear_left", kNoiseWheelSpeedRearLeft);
+    this->get_parameter("inverter.noise_motor_speed_front_right", kNoiseMotorSpeedFrontRight);
+    this->get_parameter("inverter.noise_motor_speed_front_left", kNoiseMotorSpeedFrontLeft);
+    this->get_parameter("inverter.noise_motor_speed_rear_right", kNoiseMotorSpeedRearRight);
+    this->get_parameter("inverter.noise_motor_speed_rear_left", kNoiseMotorSpeedRearLeft);
     this->get_parameter("inverter.noise_torque_front_right", kNoiseTorqueFrontRight);
     this->get_parameter("inverter.noise_torque_front_left", kNoiseTorqueFrontLeft);
     this->get_parameter("inverter.noise_torque_rear_right", kNoiseTorqueRearRight);
@@ -67,6 +83,21 @@ Sensors::Sensors() : Node("sensors")
     this->get_parameter("extensometer.extensometer_frequency", kExtensometerFrequency);
     this->get_parameter("extensometer.noise_extensometer", kNoiseExtensometer);
 
+    this->get_parameter("bms.bms_frequency", kBMSFrequency);
+    this->get_parameter("bms.noise_battery_voltage", kNoiseBatteryVoltage);
+
+    this->get_parameter("as.as_frequency", kASFrequency);
+    
+    launch_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/launch", 1,
+    std::bind(&Sensors::launch_callback, this, std::placeholders::_1));
+
+    reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
+    std::bind(&Sensors::reset_callback, this, std::placeholders::_1));
+
+    //CAN Socket setup
+    can0_socket_ = setup_can_socket("can0");
+    can1_socket_ = setup_can_socket("can1");
+    can2_socket_ = setup_can_socket("can2");
 
     // State subscriber
     state_sub_ = this->create_subscription<arussim_msgs::msg::State>(
@@ -98,8 +129,8 @@ Sensors::Sensors() : Node("sensors")
     );
 
     // Inverter
-    ws_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/wheel_speed", 10);
+    motor_speed_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/motor_speed", 10);
     torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/torque4WD", 10);
         
@@ -117,13 +148,150 @@ Sensors::Sensors() : Node("sensors")
         std::bind(&Sensors::extensometer_timer, this)
     );
 
+    // BMS
+    bms_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000/kBMSFrequency)),
+        std::bind(&Sensors::bms_timer, this)
+    );
+
+    // AS PCB
+    as_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int) (1000/kASFrequency)),
+        std::bind(&Sensors::as_timer, this)
+    );
+
+    frames = {
+        {0x1A0, 4, {  // GSS speeds
+            {"GSS/vx", {0, 15, true, 0.02/3.6, 0.0}},
+            {"GSS/vy", {16, 31, true, 0.02/3.6, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x1A3, 4, { // GSS accelerations
+            {"GSS/ax", {0, 15, true, 0.02, 0.0}},
+            {"GSS/ay", {16, 31, true, 0.02, 0.0}},
+            }, Sensors::CanBus::kCan1
+        },
+        {0x1A4, 6, { // GSS rates
+            {"GSS/yaw_rate", {32, 47, true, 0.02*M_PI/180, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x1B0, 4, { // IMU accelerations
+            {"IMU/ax", {0, 15, true, 0.01, 0.0}},
+            {"IMU/ay", {16, 31, true, 0.01, 0.0}},
+            }, Sensors::CanBus::kCan1
+        },
+        {0x1B1, 6, { // IMU rates
+            {"IMU/yaw_rate", {32, 47, true, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x134, 2, { // Extensometer
+            {"extensometer", {0, 15, true, 0.000035, -0.482442}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x102, 6, { // Front Left inverter
+            {"fl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"fl_inv_torque", {32, 47, true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x106, 6, { // Front Right inverter
+            {"fr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"fr_inv_torque", {32, 47,  true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x110, 6, { // Rear Left inverter
+            {"rl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"rl_inv_torque", {32, 47,  true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x114, 6, { // Rear Right inverter
+            {"rr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
+            {"rr_inv_torque", {32, 47, true, 0.0098, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x100, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x104, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x108, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x112, 2, {
+            {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x161, 2, {
+            {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
+            {"dv_driving", {8, 15, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x221, 1, {
+            {"enable_flag", {0, 7, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
+        {0x192, 6, {
+            {"battery_voltage", {16, 47, true, 0.001, 0.0}}
+            }, Sensors::CanBus::kCan0
+        }
+    };
 }
 
-/**
- * @brief Callback function for the state subscriber
- * 
- * @param msg 
- */
+
+int Sensors::setup_can_socket(const char * interface_name)
+{
+    const int can_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (can_socket < 0) {
+        RCLCPP_ERROR(this->get_logger(), "socket(PF_CAN) failed for %s: %s", interface_name, std::strerror(errno));
+        return -1;
+    }
+
+    struct ifreq ifr = {};
+    std::strncpy(ifr.ifr_name, interface_name, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+
+    if (ioctl(can_socket, SIOCGIFINDEX, &ifr) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "ioctl(SIOCGIFINDEX) failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    struct sockaddr_can addr = {};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+
+    if (bind(can_socket, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) < 0) {
+        RCLCPP_ERROR(this->get_logger(), "bind() failed for %s: %s", interface_name, std::strerror(errno));
+        close(can_socket);
+        return -1;
+    }
+
+    return can_socket;
+}
+
+
+uint64_t Sensors::encode_signal(double value, double scale, double offset, int bit_len, bool is_signed) {
+    double raw_f = (value - offset) / scale;
+    int64_t raw_i = static_cast<int64_t>(std::llround(raw_f));
+
+    if (is_signed) {
+        int64_t min_val = -(1LL << (bit_len - 1));
+        int64_t max_val =  (1LL << (bit_len - 1)) - 1;
+        raw_i = std::clamp(raw_i, min_val, max_val);
+        return static_cast<uint64_t>(raw_i) &
+               ((1ULL << bit_len) - 1);
+    } else {
+        int64_t min_val = static_cast<int64_t>(0);
+        int64_t max_val = static_cast<int64_t>((1ULL << bit_len) - 1);
+        uint64_t raw_u = static_cast<uint64_t>(std::clamp(raw_i, min_val, max_val));
+        return raw_u;
+    }
+}
+
+
 void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
 {
     // Update state variables with incoming data
@@ -140,10 +308,7 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     torque_cmd_msg_ = msg->torque;
 }
 
-/**
- * @brief Timer function for the IMU
- * 
- */
+
 void Sensors::imu_timer()
 {
     // Random noise generation with different noise for each variable
@@ -177,14 +342,21 @@ void Sensors::imu_timer()
     ax_pub_->publish(msg_ax);
     ay_pub_->publish(msg_ay);
     r_pub_->publish(msg_r);
+
+    std::map<std::string,double> values = { {"IMU/ax", msg_ax.data}, 
+    {"IMU/ay", msg_ay.data}, {"IMU/yaw_rate", msg_r.data} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x1B0 || frame.id == 0x1B1)  { 
+            send_can_frame(frame, values); 
+        } 
+        
+    }
     x_pub_->publish(msg_x);
     y_pub_->publish(msg_y);
 }
 
-/**
- * @brief Timer function for the wheel speed sensors
- * 
- */
+
 void Sensors::inverter_timer()
 {
     // Random noise generation with different noise for each wheel
@@ -192,27 +364,27 @@ void Sensors::inverter_timer()
     std::mt19937 gen(rd());
 
     // ---------- Wheelspeed ------------
-    std::normal_distribution<> dist_front_right(0.0, kNoiseWheelSpeedFrontRight);
-    std::normal_distribution<> dist_front_left(0.0, kNoiseWheelSpeedFrontLeft);
-    std::normal_distribution<> dist_rear_right(0.0, kNoiseWheelSpeedRearRight);
-    std::normal_distribution<> dist_rear_left(0.0, kNoiseWheelSpeedRearLeft);
+    std::normal_distribution<> dist_front_right(0.0, kNoiseMotorSpeedFrontRight);
+    std::normal_distribution<> dist_front_left(0.0, kNoiseMotorSpeedFrontLeft);
+    std::normal_distribution<> dist_rear_right(0.0, kNoiseMotorSpeedRearRight);
+    std::normal_distribution<> dist_rear_left(0.0, kNoiseMotorSpeedRearLeft);
 
     // Apply noise to the state variables
-    wheel_speed_.fr_ = wheel_speed_msg_.front_right + dist_front_right(gen);
-    wheel_speed_.fl_ = wheel_speed_msg_.front_left + dist_front_left(gen);
-    wheel_speed_.rr_ = wheel_speed_msg_.rear_right + dist_rear_right(gen);
-    wheel_speed_.rl_ = wheel_speed_msg_.rear_left + dist_rear_left(gen);
+    motor_speed_.fr_ = wheel_speed_msg_.front_right*kGearRatio + dist_front_right(gen);
+    motor_speed_.fl_ = wheel_speed_msg_.front_left*kGearRatio + dist_front_left(gen);
+    motor_speed_.rr_ = wheel_speed_msg_.rear_right*kGearRatio + dist_rear_right(gen);
+    motor_speed_.rl_ = wheel_speed_msg_.rear_left*kGearRatio + dist_rear_left(gen);
 
     // Create the wheel speed message
-    auto message = arussim_msgs::msg::FourWheelDrive();
+    auto motor_speed_msg = arussim_msgs::msg::FourWheelDrive();
 
-    message.front_right = wheel_speed_.fr_;    
-    message.front_left = wheel_speed_.fl_;
-    message.rear_right = wheel_speed_.rr_;
-    message.rear_left = wheel_speed_.rl_;
+    motor_speed_msg.front_right = motor_speed_.fr_;    
+    motor_speed_msg.front_left = motor_speed_.fl_;
+    motor_speed_msg.rear_right = motor_speed_.rr_;
+    motor_speed_msg.rear_left = motor_speed_.rl_;
 
-    // Publish the torque message
-    ws_pub_->publish(message);
+    // Publish the wheel speed message
+    motor_speed_pub_->publish(motor_speed_msg);
 
     // ---------- Torque ------------
     std::normal_distribution<> dist_fr(0.0, kNoiseTorqueFrontRight);
@@ -221,25 +393,40 @@ void Sensors::inverter_timer()
     std::normal_distribution<> dist_rl(0.0, kNoiseTorqueRearLeft);
 
     // Apply noise to the state variables
-    torque_cmd_.fr_ = torque_cmd_msg_.front_right + dist_fr(gen);
-    torque_cmd_.fl_ = torque_cmd_msg_.front_left + dist_fl(gen);
-    torque_cmd_.rr_ = torque_cmd_msg_.rear_right + dist_rr(gen);
-    torque_cmd_.rl_ = torque_cmd_msg_.rear_left + dist_rl(gen);
+    torque_cmd_.fr_ = torque_cmd_msg_.front_right/kGearRatio + dist_fr(gen);
+    torque_cmd_.fl_ = torque_cmd_msg_.front_left/kGearRatio + dist_fl(gen);
+    torque_cmd_.rr_ = torque_cmd_msg_.rear_right/kGearRatio + dist_rr(gen);
+    torque_cmd_.rl_ = torque_cmd_msg_.rear_left/kGearRatio + dist_rl(gen);
 
     // Create the torque message
-    message.front_right = torque_cmd_.fr_;    
-    message.front_left = torque_cmd_.fl_;      
-    message.rear_right = torque_cmd_.rr_;     
-    message.rear_left = torque_cmd_.rl_;     
+    auto torque_msg = arussim_msgs::msg::FourWheelDrive();
+
+    torque_msg.front_right = torque_cmd_.fr_;    
+    torque_msg.front_left = torque_cmd_.fl_;      
+    torque_msg.rear_right = torque_cmd_.rr_;     
+    torque_msg.rear_left = torque_cmd_.rl_;     
 
     // Publish the torque message
-    torque_pub_->publish(message);
+    torque_pub_->publish(torque_msg);
+    
+    //Send Inverter CAN frames
+    std::map<std::string,double> values = {
+    {"fl_inv_speed", motor_speed_msg.front_left}, {"fl_inv_torque", torque_msg.front_left}, 
+    {"fr_inv_speed", motor_speed_msg.front_right}, {"fr_inv_torque", torque_msg.front_right}, 
+    {"rl_inv_speed", motor_speed_msg.rear_left}, {"rl_inv_torque", torque_msg.rear_left}, 
+    {"rr_inv_speed", motor_speed_msg.rear_right}, {"rr_inv_torque", torque_msg.rear_right},
+    {"enable_amk_status_byte1", 96.0}
+    }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || 
+        frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
+            send_can_frame(frame, values);
+        }
+    }
 }
 
-/**
- * @brief Timer function for the groundspeed 
- * 
- */
+
 void Sensors::groundspeed_timer()
 {
     // Random noise generation
@@ -247,6 +434,9 @@ void Sensors::groundspeed_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist_vx(0.0, kNoiseGssVx);
     std::normal_distribution<> dist_vy(0.0, kNoiseGssVy);
+    std::normal_distribution<> dist_ax(0.0, kNoiseGssAx);
+    std::normal_distribution<> dist_ay(0.0, kNoiseGssAy);
+    std::normal_distribution<> dist_r(0.0, kNoiseGssR);
 
     auto msg_vx = std_msgs::msg::Float32();
     auto msg_vy = std_msgs::msg::Float32();
@@ -256,12 +446,20 @@ void Sensors::groundspeed_timer()
 
     gss_vx_pub_->publish(msg_vx);
     gss_vy_pub_->publish(msg_vy);
+    
+    std::map<std::string,double> values = { {"GSS/ax", ax_ + dist_ax(gen)}, 
+    {"GSS/ay", ay_ + dist_ay(gen)}, {"GSS/yaw_rate", r_ + dist_r(gen)}, 
+    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0)  { 
+            send_can_frame(frame, values); 
+        } 
+        
+    }
 }
 
-/**
- * @brief Timer function for the extensometer
- * 
- */
+
 void Sensors::extensometer_timer()
 {
     // Random noise generation
@@ -269,10 +467,126 @@ void Sensors::extensometer_timer()
     std::mt19937 gen(rd());
     std::normal_distribution<> dist(0.0, kNoiseExtensometer);
 
-
     auto message = std_msgs::msg::Float32();
     message.data = delta_ + dist(gen);
     ext_pub_->publish(message);
+
+    //Send CAN frame for extensometer
+    std::map<std::string,double> values = { {"extensometer", delta_ + dist(gen)} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x134) { 
+            send_can_frame(frame, values);  
+        }
+    }
+}
+
+
+void Sensors::bms_timer() {
+    // Random noise generation with different noise for each variable
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::normal_distribution<> dist_voltage(0.0, kNoiseBatteryVoltage);
+    // TODO: add battery voltage simulation
+    std::map<std::string,double> values = { {"battery_voltage", 500 + dist_voltage(gen)} };
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x192)  { 
+            send_can_frame(frame, values); 
+        } 
+    }
+}
+
+
+void Sensors::as_timer() {
+
+    std::map<std::string,double> values = { {"dv_autonomous", 1.0}, 
+        {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
+
+    for (auto &frame : frames) { 
+        if (frame.id == 0x161 || frame.id == 0x221)  { 
+            send_can_frame(frame, values); 
+        } 
+    }
+}
+
+
+void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values) { 
+    canMsg_.can_id = frame.id; 
+    canMsg_.can_dlc = frame.size; 
+    std::memset(canMsg_.data, 0, sizeof(canMsg_.data)); 
+    
+    for (const auto &sig_pair : frame.signals) {
+        const auto &topic = sig_pair.first;
+        const auto &sig = sig_pair.second;
+
+        int bit_len = sig.bit_fin - sig.bit_in + 1;
+        uint64_t raw = encode_signal(values.at(topic),
+                                     sig.scale,
+                                     sig.offset,
+                                     bit_len,
+                                     sig.is_signed);
+
+        for (int i = 0; i < bit_len; ++i) {
+            int bit_pos = sig.bit_in + i;
+            int byte_idx = bit_pos / 8;
+            int bit_offset = bit_pos % 8;
+
+            if (raw & (1ULL << i)) {
+                canMsg_.data[byte_idx] |= (1U << bit_offset);
+            }
+        }
+    }
+
+    if (frame.can_bus == CanBus::kCan0) {
+        if (can0_socket_ < 0) {
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can0_socket_ not initialized for frame 0x%X", frame.id);
+            can0_socket_ = setup_can_socket("can0");
+            return;
+        }
+        write(can0_socket_, &canMsg_, sizeof(canMsg_)); 
+        return;
+    }
+    
+    if (frame.can_bus == CanBus::kCan1) {
+        if (can1_socket_ < 0) {
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can1_socket_ not initialized for frame 0x%X", frame.id);
+            can1_socket_ = setup_can_socket("can1");
+            return;
+        }
+        write(can1_socket_, &canMsg_, sizeof(canMsg_));
+        return;
+    }
+  
+    if (frame.can_bus == CanBus::kCan2) {
+        if (can2_socket_ < 0) {
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(),1000, "can2_socket_ not initialized for frame 0x%X", frame.id);
+            can2_socket_ = setup_can_socket("can2");
+            return;
+        }
+        write(can2_socket_, &canMsg_, sizeof(canMsg_));
+        return;
+    }
+}
+
+void Sensors::launch_callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    
+    if (msg && msg->data) 
+    {
+        RCLCPP_INFO(this->get_logger(), "[SENSORS] Launch recibido. Estado anterior: %f", as_status_);
+        if (as_status_ == 2.0 || as_status_ == 0x02) 
+        {
+            as_status_ = 3.0;
+            RCLCPP_INFO(this->get_logger(), "[SENSORS] Estado actualizado a 3.0");
+        }
+    }
+}
+
+void Sensors::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
+{
+    as_status_ = 0x02;
 }
 
 /**
