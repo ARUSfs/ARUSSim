@@ -212,8 +212,7 @@ Sensors::Sensors() : Node("sensors")
             }, Sensors::CanBus::kCan2
         },
         {0x161, 2, {
-            {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
-            {"dv_driving", {8, 15, false, 1.0, 0.0}}
+            {"dv_driving", {0, 7, false, 1.0, 0.0}},
             }, Sensors::CanBus::kCan0
         },
         {0x221, 1, {
@@ -487,8 +486,7 @@ void Sensors::bms_timer() {
 
 void Sensors::as_timer() {
 
-    std::map<std::string,double> values = { {"dv_autonomous", 1.0}, 
-        {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
+    std::map<std::string,double> values = { {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
 
     for (auto &frame : frames) { 
         if (frame.id == 0x161 || frame.id == 0x221)  { 
