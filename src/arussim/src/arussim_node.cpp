@@ -797,7 +797,7 @@ void Simulator::receive_can_0()
 
         else if (frame_0_.can_id == 0x161)
         {
-            as_status_ = frame_0_.data[1];
+            as_status_ = frame_0_.data[0];
         }
     }
 }

@@ -188,24 +188,11 @@ Sensors::Sensors() : Node("sensors")
             {"extensometer", {0, 15, true, 0.000035, -0.482442}}
             }, Sensors::CanBus::kCan0
         },
-        {0x102, 6, { // Front Left inverter
-            {"fl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
-            {"fl_inv_torque", {32, 47, true, 0.0098, 0.0}}
-            }, Sensors::CanBus::kCan2
-        },
-        {0x106, 6, { // Front Right inverter
-            {"fr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
-            {"fr_inv_torque", {32, 47,  true, 0.0098, 0.0}}
-            }, Sensors::CanBus::kCan2
-        },
-        {0x110, 6, { // Rear Left inverter
-            {"rl_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
-            {"rl_inv_torque", {32, 47,  true, 0.0098, 0.0}}
-            }, Sensors::CanBus::kCan2
-        },
-        {0x114, 6, { // Rear Right inverter
-            {"rr_inv_speed", {0, 31, true, 0.0001*2*M_PI/60, 0.0}},
-            {"rr_inv_torque", {32, 47, true, 0.0098, 0.0}}
+        {0x123, 6, {
+            {"fl_inv_speed", {0, 31, true, 0.01, 0.0}}, // Front Left inverter
+            {"fr_inv_speed", {32, 63, true, 0.01, 0.0}}, // Front Right inverter
+            {"rl_inv_speed", {64, 95, true, 0.01, 0.0}}, // Rear Left inverter
+            {"rr_inv_speed", {96, 127, true, 0.01, 0.0}}, // Rear Right inverter
             }, Sensors::CanBus::kCan2
         },
         {0x100, 2, {
@@ -225,8 +212,7 @@ Sensors::Sensors() : Node("sensors")
             }, Sensors::CanBus::kCan2
         },
         {0x161, 2, {
-            {"dv_autonomous", {0, 7, false, 1.0, 0.0}},
-            {"dv_driving", {8, 15, false, 1.0, 0.0}}
+            {"dv_driving", {0, 7, false, 1.0, 0.0}},
             }, Sensors::CanBus::kCan0
         },
         {0x221, 1, {
@@ -411,16 +397,15 @@ void Sensors::inverter_timer()
     
     //Send Inverter CAN frames
     std::map<std::string,double> values = {
-    {"fl_inv_speed", motor_speed_msg.front_left}, {"fl_inv_torque", torque_msg.front_left}, 
-    {"fr_inv_speed", motor_speed_msg.front_right}, {"fr_inv_torque", torque_msg.front_right}, 
-    {"rl_inv_speed", motor_speed_msg.rear_left}, {"rl_inv_torque", torque_msg.rear_left}, 
-    {"rr_inv_speed", motor_speed_msg.rear_right}, {"rr_inv_torque", torque_msg.rear_right},
+    {"fl_inv_speed", motor_speed_msg.front_left}, 
+    {"fr_inv_speed", motor_speed_msg.front_right}, 
+    {"rl_inv_speed", motor_speed_msg.rear_left}, 
+    {"rr_inv_speed", motor_speed_msg.rear_right},
     {"enable_amk_status_byte1", 96.0}
     }; 
 
     for (auto &frame : frames) { 
-        if (frame.id == 0x102 || frame.id == 0x106 || frame.id == 0x110 || frame.id == 0x114 || 
-        frame.id == 0x100 || frame.id == 0x104 || frame.id == 0x108 || frame.id == 0x112) { 
+        if (frame.id == 0x123) { 
             send_can_frame(frame, values);
         }
     }
@@ -501,8 +486,7 @@ void Sensors::bms_timer() {
 
 void Sensors::as_timer() {
 
-    std::map<std::string,double> values = { {"dv_autonomous", 1.0}, 
-        {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
+    std::map<std::string,double> values = { {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
 
     for (auto &frame : frames) { 
         if (frame.id == 0x161 || frame.id == 0x221)  { 
