@@ -1,8 +1,8 @@
 /**
  * @file supervisor.cpp
- * @author Rafael Guil (rafaguilvalero@gmail.com)
- * @version 0.1
- * @date 2024-10-19
+ * @author Rafael Guil (rafaguilvalero@gmail.com) and Santiago Miranda (santimirandacaballero@gmail.com)
+ * @version 0.2
+ * @date 2026-02-06
  * 
  * 
  */
@@ -33,6 +33,9 @@ Supervisor::Supervisor() : Node("Supervisor")
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Bool>("/arussim/reset", 1, 
         std::bind(&Supervisor::reset_callback, this, std::placeholders::_1));
+
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
+        std::bind(&Supervisor::track_name, this, std::placeholders::_1));
 
     lap_time_pub_ = this->create_publisher<std_msgs::msg::Float32>("/arussim/lap_time", 1);
 
@@ -69,6 +72,7 @@ void Supervisor::reset_callback([[maybe_unused]]const std_msgs::msg::Bool::Share
     hit_cones_lap_.clear();
     speed_multiplier_list_.clear();
     started_ = false;
+    first_lap_ = true;
 }
 
 /**
@@ -80,14 +84,64 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
 {
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
+        prev_time_ = this->get_clock()->now().seconds();
+        parameters_dump_ = get_config_params();
+        auto ws_path = std::filesystem::canonical("/proc/self/exe");
+        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
+        file_path_ = ws_path / "src/ARUSSim/src/arussim/laptimes" / (circuit_ + ".csv");
+
+        // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
+        {
+            std::ifstream file(file_path_);
+
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not open CSV file");
+            }
+            std::string line;
+            std::string last_line;
+
+            std::getline(file, line);
+
+            while (std::getline(file, line)) {
+                if (!line.empty()){
+                    last_line = line;
+                    break;
+                }
+            }
+
+                file.close();
+
+            if (!last_line.empty()) {
+                std::stringstream ss(last_line);
+                std::string lap, cones, time;
+                std::getline(ss, lap, ',');
+                std::getline(ss, cones, ',');
+                std::getline(ss, time, ',');
+
+                current_best_time_ = std::stod(time);
+            }
+        }
+        if(circuit_ == "skidpad") time_cone_penalty_ = 0.2;
+        else time_cone_penalty_ = 2.0;
         started_ = true;
     }
     else{
         time_list_.push_back((this->get_clock()->now().seconds() - prev_time_) * mean_);
+        prev_time_ = this->get_clock()->now().seconds();
 
         std_msgs::msg::Float32 lap_time_msg;
         lap_time_msg.data = time_list_.back();
         lap_time_pub_->publish(lap_time_msg);
+
+        real_lap_time_ = time_list_.back() + time_cone_penalty_ * hit_cones_lap_.size();
+        if(real_lap_time_ < best_time_ || first_lap_)
+        {
+        best_time_ = real_lap_time_;
+        cones_hitted_ = hit_cones_lap_.size();
+        lap_time_ = time_list_.back();
+        first_lap_ = false;
+        }
 
         // Detect hit cones in this lap and add to total
         list_total_hit_cones_.push_back(hit_cones_lap_);
@@ -111,8 +165,32 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             row_values.push_back(std::to_string(n_total_cones_hit_));
             csv_generator_->write_row("lap_time,total_hit_cones", row_values);
         }
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
+        {
+            if(current_best_time_ > best_time_){
+                std::ofstream file(file_path_);
+                file << "lap,cones,best_time\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                file << "---PARAM_DUMP_BEGIN---\n";
+                file << parameters_dump_ << "\n";
+                file << "---PARAM_DUMP_END---\n";
+                file.close();
+            }
+        }
+        else // Creates a .csv file and adds the time done in simulation.
+        {
+            std::ofstream file(file_path_, std::ios::out);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not create CSV file");
+            }
+            file << "lap,cones,best_time\n";
+            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+            file << "---PARAM_DUMP_BEGIN---\n";
+            file << parameters_dump_ << "\n";
+            file << "---PARAM_DUMP_END---\n";
+            current_best_time_ = best_time_;
+        }
     }
-    prev_time_ = this->get_clock()->now().seconds();
     speed_multiplier_list_.clear();
 }
 
@@ -125,7 +203,8 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
 {
     auto cone_position = std::make_pair(static_cast<double>(msg->x), static_cast<double>(msg->y));
 
-    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end()) {
+    if (std::find(hit_cones_lap_.begin(), hit_cones_lap_.end(), cone_position) == hit_cones_lap_.end())
+    {
         hit_cones_lap_.push_back(cone_position);
         RCLCPP_INFO(this->get_logger(), "%sHit cones: %zu%s", 
         yellow.c_str(), hit_cones_lap_.size(), reset.c_str());
@@ -134,6 +213,66 @@ void Supervisor::hit_cones_callback(const arussim_msgs::msg::PointXY::SharedPtr 
         hit_cones_msg.data = true;
         hit_cones_pub_->publish(hit_cones_msg);
     }
+}
+
+/**
+ * @brief Callback to store the track name that is selected.
+ * 
+ * @param msg 
+ */
+void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
+{
+    circuit_ = msg->data;
+    const std::string ext = ".pcd";
+    if (circuit_.size() >= ext.size() &&
+        circuit_.compare(
+            circuit_.size() - ext.size(),
+            ext.size(),
+            ext) == 0)
+    {
+        circuit_.erase(circuit_.size() - ext.size());
+    }
+}
+
+/**
+ * @brief Function to return a string with config params.
+ * 
+ * @return std::string
+ */
+std::string Supervisor::get_config_params()
+{
+    std::array<char, 256> buffer;
+    std::string result;
+    std::string node1 = "controller";
+    std::string node2, node3;
+
+    if (circuit_ == "skidpad"){
+        node2 = "skidpad_planning";
+    }
+    else if (circuit_ == "acceleration"){
+        node2 = "acc_planning";
+    }
+    else {
+        node2 = "path_planning";
+        node3 = "trajectory_optimization";
+    }
+
+    std::vector<std::string> nodes_to_print = {node1, node2};
+    if (!node3.empty()) nodes_to_print.push_back(node3);
+
+    // Execute the command on bash to get the controller parameters and stores it in a string.
+    for (const auto& node : nodes_to_print){
+        std::string cmd = "ros2 param dump " + node;
+        FILE* pipe = popen(cmd.c_str(), "r");
+        if (!pipe)
+            return "Error executing the command.";
+
+        while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
+            result += buffer.data();
+
+        pclose(pipe);
+    }
+    return result;
 }
 
 /**

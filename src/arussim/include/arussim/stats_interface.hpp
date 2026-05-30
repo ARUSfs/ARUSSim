@@ -20,33 +20,29 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QScreen>
-#include <QTextEdit>
-#include <QRegularExpression>
+#include <QWheelEvent>
+#include <QMouseEvent>
+#include <QScrollArea>
+
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "arussim_msgs/msg/state.hpp"
+#include "common_msgs/msg/slam_stats.hpp"
 
 
-namespace main_interface
+namespace stats_interface
 {
-class MainInterface : public rviz_common::Panel
+class StatsInterface : public rviz_common::Panel
 {
   Q_OBJECT
 public:
-  explicit MainInterface(QWidget * parent = 0);
-  ~MainInterface() override;
+  explicit StatsInterface(QWidget * parent = 0);
+  ~StatsInterface() override;
 
   void onInitialize() override;
-
-private Q_SLOTS:
-  void launch_button_clicked();
-  void stop_button_clicked();
-  void reset_button_clicked();
-  void update_lap_time_labels(double lap_time_);
-  void process_output();
 
 protected:
   std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -72,35 +68,45 @@ protected:
   QWidget* telemetry_bar_rr_;
 
   QProcess* simulation_process_ = nullptr;
-  QTextEdit* process_output_text_edit_;
 
   QElapsedTimer timer_;
-  QVector<QPair<double, double>> vx_history_;
+  QElapsedTimer timer_gg_;
+  QVector<QPair<double, double>> optimization_time_history_;
   QVector<QPair<double, double>> target_speed_history_;
-  QLabel* speed_graph_label_ = nullptr;
+  QLabel* slam_graph_label_ = nullptr;
 
-  QVector<QPair<double, double>> gg_vector_;
-  QLabel* gg_graph_label_ = nullptr;
-
-  QLabel* vx_label_;
-  QLabel* vy_label_;
-  QLabel* r_label_;
-  QLabel* ax_label_;
-  QLabel* ay_label_;  
-  QLabel* delta_label_;
+  QLabel* active_vertices_label_;
+  QLabel* active_edges_label_;
+  QLabel* observed_landmarks_label_;
+  QLabel* unmatched_landmarks_label_;
+  QLabel* optimization_time_label_;
+  QLabel* data_association_time_label_;
 
   QSize screen_size_;
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
 
-private:
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr launch_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr reset_pub_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr circuit_pub_;
+  QPoint gg_last_mouse_pos_;
 
+  QLabel* gg_legend_label_;
+
+private Q_SLOTS:
+  void launch_button_clicked();
+  void reset_callback();
+  void update_optimizer_time_graph();
+  void update_telemetry_labels();
+  void stats_callback(double active_vertices, double active_edges, double observed_landmarks, double unmatched_landmarks,double optimization_time, double data_association_time);
+  void zoom_in_slam_graph();
+  void zoom_out_slam_graph();
+  void zoom_in_gg_graph();
+  void zoom_out_gg_graph();
+
+private:
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
+  rclcpp::Subscription<common_msgs::msg::SlamStats>::SharedPtr stats_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;
@@ -110,8 +116,15 @@ private:
   int hit_cones_counter_ = 0;
   int lap_counter_ = 0;
 
+  double active_vertices_ = 0.0;
+  double active_edges_ = 0.0;
+  double observed_landmarks_ = 0.0;
+  double unmatched_landmarks_ = 0.0;
+  double optimization_time_ = 0.0;
+  double data_association_time_ = 0.0;
+
   double bar_size_;
-  double max_torque_value_ = 90.0;
+  double max_torque_value_ = 21*12.48;
   double scale_factor_;
   double center_y_;
 
@@ -123,11 +136,18 @@ private:
   double graph_grid_width_;
   double pen_size_;
 
-  double min_vx_ = 0.0;
-  double max_vx_ = 20.0;
+  double min_optimization_time_ = 0.0;
+  double max_optimization_time_ = 15.0;
 
   double target_speed_;
 
+  double gg_zoom_factor_ = 1.0;
+  double gg_center_x_ = 0.0;
+  double gg_center_y_ = 0.0;
+  bool timer_gg_started_ = false;
+
+
+  bool eventFilter(QObject* obj, QEvent* event) override;
 
   //Loginfo colors
   const std::string red = "\033[1;31m";
@@ -138,4 +158,4 @@ private:
   const std::string cyan = "\033[1;36m";
   const std::string reset = "\033[0m";
 };
-}  // namespace main_interface
+}  // namespace stats_interface

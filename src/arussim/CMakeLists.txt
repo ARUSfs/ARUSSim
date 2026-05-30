@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(arussim)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -13,6 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(arussim_msgs REQUIRED)
+find_package(common_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(PCL REQUIRED)
@@ -29,6 +32,10 @@ qt5_wrap_cpp(MAIN_MOC_FILES
 )
 qt5_wrap_cpp(PLOT_MOC_FILES
   include/arussim/plot_interface.hpp
+)
+
+qt5_wrap_cpp(STATS_MOC_FILES
+  include/arussim/stats_interface.hpp
 )
 
 include_directories(
@@ -53,6 +60,15 @@ target_include_directories(plot_interface_exec PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+add_library(stats_interface_exec
+  src/stats_interface.cpp
+  ${STATS_MOC_FILES}
+)
+target_include_directories(stats_interface_exec PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 ament_target_dependencies(main_interface_exec
   pluginlib
   rviz_common
@@ -63,6 +79,12 @@ ament_target_dependencies(plot_interface_exec
   rviz_common
   arussim_msgs
 )
+ament_target_dependencies(stats_interface_exec
+  pluginlib
+  rviz_common
+  arussim_msgs
+  common_msgs
+)
 install(TARGETS main_interface_exec
         EXPORT export_main_interface
         ARCHIVE DESTINATION lib
@@ -70,6 +92,12 @@ install(TARGETS main_interface_exec
         RUNTIME DESTINATION bin
 )
 install(TARGETS plot_interface_exec
+        EXPORT export_main_interface
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+install(TARGETS stats_interface_exec
         EXPORT export_main_interface
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
@@ -84,20 +112,43 @@ install(FILES main_interface.xml
 install(FILES plot_interface.xml
         DESTINATION share/${PROJECT_NAME}
 )
+install(FILES stats_interface.xml
+        DESTINATION share/${PROJECT_NAME}
+)
 
 # generate executable for arussim_node.cpp
-add_executable(arussim_exec src/arussim_node.cpp src/vehicle_dynamics.cpp)
-ament_target_dependencies(arussim_exec rclcpp 
-                            std_msgs 
-                            geometry_msgs 
-                            sensor_msgs 
-                            visualization_msgs 
-                            arussim_msgs 
-                            tf2_ros
-                            tf2
-                            PCL
-                            pcl_conversions
-                            nlohmann_json)
+add_executable(arussim_exec 
+  src/arussim_node.cpp 
+  src/vehicle_dynamics.cpp
+  include/CON-VehicleControl/src/control.c
+  include/CON-VehicleControl/src/aux_functions.c
+  include/CON-VehicleControl/src/estimation.c
+  include/CON-VehicleControl/src/Parameters.c
+  include/CON-VehicleControl/src/power_control.c
+  include/CON-VehicleControl/src/torque_vectoring.c
+  include/CON-VehicleControl/src/traction_control.c
+)
+
+# Le indicamos a CMake dónde están los .h del controlador
+target_include_directories(arussim_exec PRIVATE 
+  include/CON-VehicleControl/include
+  include
+)
+
+ament_target_dependencies(arussim_exec 
+  rclcpp 
+  std_msgs 
+  geometry_msgs 
+  sensor_msgs 
+  visualization_msgs 
+  arussim_msgs 
+  common_msgs
+  tf2_ros
+  tf2
+  PCL
+  pcl_conversions
+  nlohmann_json
+)
 
 # generate executable for sensors.cpp
 add_executable(sensors_exec src/sensors.cpp)
@@ -137,5 +188,6 @@ ament_export_include_directories(include)
 ament_export_targets(export_main_interface)
 pluginlib_export_plugin_description_file(rviz_common main_interface.xml)
 pluginlib_export_plugin_description_file(rviz_common plot_interface.xml)
+pluginlib_export_plugin_description_file(rviz_common stats_interface.xml)
 
 ament_package()

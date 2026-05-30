@@ -15,6 +15,7 @@
 #include "arussim_msgs/msg/point_xy.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
+#include "arussim/control_raspi.hpp"
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -31,6 +32,10 @@
 #include <iostream>
 #include "ConeXYZColorScore.h"
 #include "PointXYZProbColorScore.h"
+#include <random>
+#include <thread>
+#include <queue>
+#include <chrono>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
@@ -41,11 +46,15 @@
 #include <nlohmann/json.hpp>
 #include "std_msgs/msg/string.hpp"
 
-#include "controller_sim/controller_sim.hpp"
-#include "controller_sim/estimation.hpp"
-#include "controller_sim/power_limitation.hpp"
-#include "controller_sim/traction_control.hpp"
-#include "controller_sim/torque_vectoring.hpp"
+#include <linux/can.h>       
+#include <linux/can/raw.h>   
+#include <net/if.h>          
+#include <sys/ioctl.h>       
+#include <sys/socket.h>    
+#include <fcntl.h>
+#include <thread> 
+
+#include "control.h"
 
 /**
  * @class Simulator
@@ -70,14 +79,18 @@ class Simulator : public rclcpp::Node
 
   private:
     VehicleDynamics vehicle_dynamics_;
-    ControllerSim controller_sim_;
 
     std::string kTrackName;
+    std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate; 
+    std::string kSimulationMode;
     bool kUseGSS;
     double kWheelBase;
     double kLidarFOV;
+    double kLidarHeight;
+    double kMinLidarDistance;
+    double kMaxLidarDistance;
     double kCameraFOV;
     double kPosLidarX;
     double kPosCameraX;
@@ -89,21 +102,61 @@ class Simulator : public rclcpp::Node
     double kNoiseCameraPerception;
     double kNoiseCameraColor;
     double kMinPerceptionX;
+    double kDelayMu;
+    double kDelaySigma;
     double kSimulationSpeedMultiplier;
-    bool kTorqueVectoring;
     bool kDebug;
     
+    struct DelayedMsg {
+      sensor_msgs::msg::PointCloud2 msg;
+      rclcpp::Time publish_time;
+    };
+    std::queue<DelayedMsg> perception_queue_;
+    rclcpp::TimerBase::SharedPtr publisher_timer_;
+    std::mt19937 perception_delay_gen;
+    std::lognormal_distribution<double> perception_delay_dist;
+    double kLidarMuTime;
+    double kLidarSigmaTime;
+    // Sensor data with noise
+    double noisy_ax_ = 0.0;
+    double noisy_ay_ = 0.0;
+    double noisy_r_ = 0.0;
+    double noisy_ws_fl_ = 0.0;
+    double noisy_ws_fr_ = 0.0;
+    double noisy_ws_rl_ = 0.0;
+    double noisy_ws_rr_ = 0.0;
+    double noisy_vx_ = 0.0;
+    double noisy_vy_ = 0.0;
+    double noisy_delta_ = 0.0;
+
+    //Cones geometry
+    double kConeHeight = 0.325;
+    double kConeWidth = 0.228;
+
     //Car boundaries
     double kCOGFrontDist;
     double kCOGBackDist;
     double kCarWidth;
 
+    // Car parameters
+    std::string simulation_car_csv_;
+    std::map<std::string, double> parameters_map_;
+    CarParams car_parameters_;
+
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
-    double input_acc_;
-    double input_delta_;
     double target_r_;
     std::vector<double> torque_cmd_;
+
+    //Can
+    float can_acc_;
+    float can_target_r_;
+    float can_delta_;
+    std::vector<double> can_torque_cmd_;
+    uint16_t as_status_ = 0x02;
+
+    //raspi_sim
+    control_raspi::ControlRaspi control_raspi_manager_;
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
@@ -133,6 +186,10 @@ class Simulator : public rclcpp::Node
     visualization_msgs::msg::MarkerArray current_cone_markers_;
 
     /**
+    * @brief Configures and links POSIX sockets for the CAN bus
+    */
+    void init_can_sockets();
+    /**
      * @brief Callback function for the slow timer.
      * 
      * This method is called at regular intervals to update and publish sensor data, 
@@ -157,14 +214,16 @@ class Simulator : public rclcpp::Node
     void on_fast_timer();
 
     /**
-     * @brief Callback for receiving control commands.
+     * @brief Callback functions for receiving noisy sensor data.
      * 
-     * This method processes incoming control commands (acceleration and steering angle) 
-     * to update the vehicle's dynamics.
-     * 
-     * @param msg The control command message.
      */
-    void cmd_callback(const arussim_msgs::msg::Cmd::SharedPtr msg);
+    void noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
+    void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
+    void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
     
     /**
      * @brief Callback for receiving teleportation commands from RViz.
@@ -194,6 +253,14 @@ class Simulator : public rclcpp::Node
     void reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
+     * @brief Callback for receiving launch commands.
+     * 
+     * This method is needed for the HIL control, to start the simulation when the real Raspberry Pi starts sending commands.
+     * 
+     */
+    void launch_callback(const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
      * 
      * This method sends the vehicle's transform to the TF tree so that other nodes 
@@ -209,6 +276,28 @@ class Simulator : public rclcpp::Node
     void load_track(const std_msgs::msg::String::SharedPtr track_msg);
 
     /**
+     * @brief Loads the car parameters from resources.
+     * 
+     */
+    std::string select_csv(const std::string& kSimulationCar);
+
+    /**
+     * @brief Resolves the CSV file path based on the simulation_car 
+     */
+    std::string get_csv_path(const std::string& csv_filename);
+
+    /**
+     * @brief Load parameters from de according CSV file
+     */
+    std::map<std::string, double> load_car_parameters(const std::string &filepath);
+
+    /**
+     * @brief Loads control parameters from the CSV file to initializa the CarParameters 
+     * struct used in CON-VehicleControl.
+     */
+    void load_control_parameters();
+
+    /**
      * @brief Detects if the vehicle is between two TPLs.
      */
     void check_lap();
@@ -220,18 +309,43 @@ class Simulator : public rclcpp::Node
     void check_acc_start();
 
     /**
+     * @brief Checks every milisecond if there is a new perception message to publish
+     */
+    void process_perception_queue();
+
+    /**
      * @brief Make a MarkerArray of all cones of the track
      * 
      */
     void cone_visualization();
 
+    /**
+     * @brief Can reception functions for both CAN interfaces
+     */
+    void receive_can_0();
+    void receive_can_1();
+    void receive_can_2();
+
+
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ws_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
+    rclcpp::TimerBase::SharedPtr perception_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
+
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_angle_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tire_load_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
@@ -245,6 +359,26 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
+
+    //CAN Communication
+    int can_socket_0_;
+    struct ifreq ifr_0_{};
+    struct sockaddr_can addr_0_{};
+    struct can_frame frame_0_;
+    std::thread thread_0_;
+
+    int can_socket_1_;
+    struct ifreq ifr_1_{};
+    struct sockaddr_can addr_1_{};
+    struct can_frame frame_1_;
+    std::thread thread_1_;
+
+    int can_socket_2_;
+    struct ifreq ifr_2_{};
+    struct sockaddr_can addr_2_{};
+    struct can_frame frame_2_;
+    std::thread thread_2_;
     
 };

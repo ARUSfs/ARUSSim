@@ -210,7 +210,7 @@ void PlotInterface::onInitialize()
         "/arussim/torque4WD", 1, 
         [this](const arussim_msgs::msg::FourWheelDrive::SharedPtr msg) { 
             QMetaObject::invokeMethod(this, [this, msg]() {
-                update_telemetry_bar(msg->front_right, msg->front_left, msg->rear_right, msg->rear_left);
+                update_telemetry_bar(12.48*msg->front_right, 12.48*msg->front_left, 12.48*msg->rear_right, 12.48*msg->rear_left);
             }, Qt::QueuedConnection);
         }
     );

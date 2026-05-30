@@ -1,8 +1,10 @@
 arussim:
   ros__parameters:
+    simulation_car: 'ART_26D_DV_old_tires'   # str    Simulation car model
+    simulation_mode: 'default'             # str   default/raspi_sim/hil 
     track: "FSG"
     state_update_rate: 1000.0      # Hz
-    controller_rate:   400.0       # Hz
+    controller_rate:   200.0       # Hz
     use_gss: true
     csv_state: false               # bool   Save data to CSV file
     csv_vehicle_dynamics: false    # bool   Save data to CSV file
@@ -13,8 +15,13 @@ arussim:
       car_width:          0.8     # m
 
     sensor:
-      lidar_fov:         25.0                   # m   Perception circular range
-      camera_fov:        30.0                   # m   Perception circular range
+      lidar_fov:         120.0                  # º   LiDAR circular range
+      lidar_height:      0.9                    # m   LiDAR height from the ground
+      lidar_min_dist:    3.0                    # m   LiDAR min range
+      lidar_max_dist:    40.0                   # m   LiDAR max range
+      lidar_mu_time:     2.3156                 #     LiDAR distribution processing time
+      lidar_sigma_time:  0.3460                 #     LiDAR distribution processing time
+      camera_fov:        30.0                   # m   Camera circular range
       pub_rate:           10.0                  # Hz  Publish rate
       noise_position_lidar_perception:   0.01   # m   Noise standard deviation
       noise_prob_lidar_perception: 0.1          # %   Noise standard deviation for probability of perception
@@ -22,7 +29,7 @@ arussim:
       noise_camera_perception: 0.1             # m   Noise standard deviation for camera perception
       noise_camera_color:       0.15            # m   Noise standard deviation for camera
       cut_cones_below_x:  -1.0                  # m   Cut cones that are further than this distance in x car axis
-      position_lidar_x:   1.5                   # m   Position of the lidar in x car axis
+      position_lidar_x:   0.0                   # m   Position of the lidar in x car axis
       position_camera_x:  0.0                   # m   Position of the camera in x car axis
       camera_color_probability: 0.98            # Probability of a cone being colored by the camera
 
