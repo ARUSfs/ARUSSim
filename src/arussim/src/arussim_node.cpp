@@ -89,6 +89,8 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
+    ground_truth_pub_ = this->create_publisher<common_msgs::msg::State>(
+        "/arussim/ground_truth", 10);
     control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
         "/arussim/control_vx", 10);
     control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
@@ -729,6 +731,19 @@ void Simulator::on_fast_timer()
     }
 
     state_pub_->publish(message);
+
+    auto ground_truth_msg = common_msgs::msg::State();
+    ground_truth_msg.x = vehicle_dynamics_.x_;
+    ground_truth_msg.y = vehicle_dynamics_.y_;
+    ground_truth_msg.yaw = vehicle_dynamics_.yaw_;
+    ground_truth_msg.vx = vehicle_dynamics_.vx_;
+    ground_truth_msg.vy = vehicle_dynamics_.vy_;
+    ground_truth_msg.r = vehicle_dynamics_.r_;
+    ground_truth_msg.ax = vehicle_dynamics_.ax_;
+    ground_truth_msg.ay = vehicle_dynamics_.ay_;
+    ground_truth_msg.delta = vehicle_dynamics_.delta_;
+
+    ground_truth_pub_->publish(ground_truth_msg);
 
     auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
     slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;

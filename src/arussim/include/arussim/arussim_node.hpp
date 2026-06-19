@@ -13,6 +13,7 @@
 #include "arussim_msgs/msg/cmd.hpp"
 #include "arussim_msgs/msg/trajectory.hpp"
 #include "arussim_msgs/msg/point_xy.hpp"
+#include "common_msgs/msg/state.hpp"
 
 #include "arussim/vehicle_dynamics.hpp"
 #include "arussim/control_raspi.hpp"
@@ -343,6 +344,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;
 
     rclcpp::Publisher<arussim_msgs::msg::State>::SharedPtr state_pub_;
+    rclcpp::Publisher<common_msgs::msg::State>::SharedPtr ground_truth_pub_;
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_pub_;
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_angle_pub_;
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tire_load_pub_;
