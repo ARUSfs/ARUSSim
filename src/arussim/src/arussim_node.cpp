@@ -791,13 +791,19 @@ void Simulator::receive_can_0()
 
             can_acc_ = static_cast<float>(acc_scaled) / 100.0f;
             can_target_r_ = static_cast<float>(yaw_scaled) / 1000.0f;
-            can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
+            // can_delta_ = static_cast<float>(delta_scaled) / 100.0f;
             time_last_cmd_ = clock_->now();
         }
 
         else if (frame_0_.can_id == 0x161)
         {
             as_status_ = frame_0_.data[0];
+        }
+
+        else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x601)
+        {
+            int32_t delta_scaled = static_cast<int32_t>((frame_0_.data[0] << 24) | (frame_0_.data[1] << 16) | (frame_0_.data[2] << 8) | frame_0_.data[3]);
+            can_delta_ = static_cast<float>(delta_scaled) / 10000.0f * M_PI / 180.0f / 4.279f;
         }
     }
 }
