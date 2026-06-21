@@ -251,7 +251,8 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
 
     double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
 
-    double longitudinal_force = longitudinal_tire_force - aero_drag - kRollingResistance;
+    double longitudinal_force = longitudinal_tire_force - aero_drag;
+    if(abs(longitudinal_force) >= kRollingResistance) longitudinal_force -= sign(longitudinal_force)*kRollingResistance;
 
     return longitudinal_force;
 }
