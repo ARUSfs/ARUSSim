@@ -956,7 +956,18 @@ void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
+    if (msg && msg->data && (kSimulationMode == "default")) 
+    {
+        sensors_.speed_x = 0.;
+        sensors_.speed_y = 0.;
+        sensors_.angular_z = 0.;
+        sensors_.acceleration_x = 0.;
+        sensors_.acceleration_y = 0.;
+        sensors_.steering_angle = 0.;
+
+        control_init(&sensors_, &car_parameters_);
+    }
+    else if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {
         control_raspi_manager_.stop_control_rasp(this->get_logger());
     }

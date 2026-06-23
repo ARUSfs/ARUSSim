@@ -1,19 +1,19 @@
 lap,cones,best_time
-28.4584,0,28.4584
+23.6921,0,23.6921
 ---PARAM_DUMP_BEGIN---
 /controller:
   ros__parameters:
     Crr: 0.01
-    KD: 0.01
-    KI: 0.05
-    KP: 5.0
+    KD: 0.0275
+    KI: 1.1
+    KP: 26.0
     auto_start: false
     braking_decc: 3.0
     braking_procedure_topic: /car_state/braking_procedure
     cmd_topic: /controller/cmd
     compensation_steps: 2
-    cornering_stiffness_front: -12745.5761
-    cornering_stiffness_rear: -65056.7889
+    cornering_stiffness_front: -33541.7
+    cornering_stiffness_rear: -36702.27
     cost_angular_error: 10.0
     cost_lateral_error: 10.0
     cost_steering_delta: 2000.0
@@ -31,6 +31,7 @@ lap,cones,best_time
     max_steer: 18.5
     min_cmd: -22.0
     min_look_ahead_distance: 4.0
+    mu: 1.0976
     optimized_look_ahead_distance: 8.0
     optimized_steer_control: MPC
     optimized_trajectory_topic: /trajectory_optimization/trajectory
@@ -67,6 +68,7 @@ lap,cones,best_time
     ax_max: 7.5
     ay_max: 7.5
     car_info_topic: /car_state/car_info
+    curvature_threshold: 0.025
     debug: false
     lap_count_topic: /slam/lap_count
     len_coeff: 0.3
@@ -74,6 +76,8 @@ lap,cones,best_time
     max_angle_diff: 1.0
     max_closure_angle: 3.14
     max_tri_len: 7.5
+    min_route_length_mult: 1.56
+    min_sector_length: 8.0
     min_tri_angle: 0.1
     min_tw: 2.5
     optimized_traj_topic: /trajectory_optimization/trajectory
@@ -86,7 +90,7 @@ lap,cones,best_time
           history: keep_last
           reliability: reliable
     route_back: 10
-    short_route_max_tri_len: 11.5
+    short_route_max_tri_len: 16.5
     smooth_coeff: 1.3
     smooth_iterations: 2
     spline_degree: 3
@@ -107,12 +111,16 @@ lap,cones,best_time
     d_min: 1.3
     debug: false
     first_lap_optimization_method: smoothing
+    grip: 1.0
+    grip_topic: /grip_estimation/grip_global
+    k_trust_lat: 0.6
+    k_trust_lon: 0.5
     max_gap: 4.0
     mu_brake: 0.75
     mu_throttle: 0.75
-    mu_y: 1.0
+    mu_y: 0.8
     n_iter: 3
-    n_transition_points: 20
+    n_transition_points: 40
     optimized_trajectory_topic: /trajectory_optimization/trajectory
     qos_overrides:
       /parameter_events:
@@ -126,8 +134,13 @@ lap,cones,best_time
     solver: qpmad
     track_limits_topic: /path_planning/track_limits
     trajectory_topic: /path_planning/trajectory
+    transition_method: smoothstep
+    use_ggv: true
+    use_grip_estimation: true
     use_sim_time: false
     v_max: 15.0
+    wB: 0.096
+    wH: 0.498
 
 
 ---PARAM_DUMP_END---
