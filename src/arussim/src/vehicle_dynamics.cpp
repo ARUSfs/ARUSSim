@@ -81,6 +81,9 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kCOPy = params["h_cdp"];
     kGearRatio = params["gear_ratio"];
 
+    kHCoGNsMassF = params["h_cdg_nsm_f"];
+    kHCoGNsMassR = params["h_cdg_nsm_r"];
+    kHCoGsMass = params["h_cdg_sm"];
 
     kSMassF = kSMass * (1-kMassDistributionRear);
     kSMassR = kSMass * kMassDistributionRear;
@@ -88,8 +91,8 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kLf = kWheelBase*kMassDistributionRear;
     kLr = kWheelBase*(1-kMassDistributionRear); 
 
-    kHRollCenterF = 0.033;  // TODO: añadir roll centers al csv
-    kHRollCenterR = 0.097;
+    kHRollCenterF = params["h_RC_f"];
+    kHRollCenterR = params["h_RC_r"];
     kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
 
     kWheelRateF = kSpringStiffnessF / std::pow(kMotionRatioF,2);
@@ -116,42 +119,143 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kSteeringVMax = 2.3;
 
 
-    pac_param_.Fz0 = params["Fz0"];
+// Parámetros generales y escalas básicas
+    pac_param_.LONGVL          = params["LONGVL"];
+    pac_param_.NOMPRES         = params["NOMPRES"];
+    pac_param_.FNOMIN          = params["FNOMIN"];
+    pac_param_.UNLOADED_RADIUS = params["UNLOADED_RADIUS"];
 
-    pac_param_.D1_x = params["D1_x"];
-    pac_param_.D2_x = params["D2_x"];
-    pac_param_.Cx   = params["Cx"];
-    pac_param_.Bx   = params["Bx"];
-    pac_param_.Ex   = params["Ex"];
+    // Factores de escala (Lámbitas)
+    pac_param_.LFZO   = params["LFZO"];
+    pac_param_.LMUX   = params["LMUX"];
+    pac_param_.LMUY   = params["LMUY"];
+    pac_param_.LKX    = params["LKX"];
+    pac_param_.LKY    = params["LKY"];
+    pac_param_.LKYC   = params["LKYC"];
+    pac_param_.LHY    = params["LHY"];
+    pac_param_.LTR    = params["LTR"];
+    pac_param_.LRES   = params["LRES"];
+    pac_param_.LKZC   = params["LKZC"];
+    pac_param_.LXAL   = params["LXAL"];
+    pac_param_.LYKA   = params["LYKA"];
+    pac_param_.LVYKA  = params["LVYKA"];
+    pac_param_.LS     = params["LS"];
 
-    pac_param_.D1_y = params["D1_y"];
-    pac_param_.D2_y = params["D2_y"];
-    pac_param_.Cy   = params["Cy"];
-    pac_param_.By   = params["By"];
-    pac_param_.Ey   = params["Ey"];
+    // Fuerza longitudinal pura (Fx0)
+    pac_param_.LCX  = params["LCX"];
+    pac_param_.LEX  = params["LEX"];
+    pac_param_.LHX  = params["LHX"];
+    pac_param_.LVX  = params["LVX"];
+    pac_param_.PCX1 = params["PCX1"];
+    pac_param_.PDX1 = params["PDX1"];
+    pac_param_.PDX2 = params["PDX2"];
+    pac_param_.PDX3 = params["PDX3"];
+    pac_param_.PEX1 = params["PEX1"];
+    pac_param_.PEX2 = params["PEX2"];
+    pac_param_.PEX3 = params["PEX3"];
+    pac_param_.PEX4 = params["PEX4"];
+    pac_param_.PKX1 = params["PKX1"];
+    pac_param_.PKX2 = params["PKX2"];
+    pac_param_.PKX3 = params["PKX3"];
+    pac_param_.PHX1 = params["PHX1"];
+    pac_param_.PHX2 = params["PHX2"];
+    pac_param_.PVX1 = params["PVX1"];
+    pac_param_.PVX2 = params["PVX2"];
+    pac_param_.PPX1 = params["PPX1"];
+    pac_param_.PPX2 = params["PPX2"];
+    pac_param_.PPX3 = params["PPX3"];
+    pac_param_.PPX4 = params["PPX4"];
 
-    pac_param_.SH = params["SH"];
-    pac_param_.SV = params["SV"];
+    // Fuerza lateral pura (Fy0)
+    pac_param_.LCY  = params["LCY"];
+    pac_param_.LEY  = params["LEY"];
+    pac_param_.LVY  = params["LVY"];
+    pac_param_.PCY1 = params["PCY1"];
+    pac_param_.PDY1 = params["PDY1"];
+    pac_param_.PDY2 = params["PDY2"];
+    pac_param_.PDY3 = params["PDY3"];
+    pac_param_.PEY1 = params["PEY1"];
+    pac_param_.PEY2 = params["PEY2"];
+    pac_param_.PEY3 = params["PEY3"];
+    pac_param_.PEY4 = params["PEY4"];
+    pac_param_.PEY5 = params["PEY5"];
+    pac_param_.PKY1 = params["PKY1"];
+    pac_param_.PKY2 = params["PKY2"];
+    pac_param_.PKY3 = params["PKY3"];
+    pac_param_.PKY4 = params["PKY4"];
+    pac_param_.PKY5 = params["PKY5"];
+    pac_param_.PHY1 = params["PHY1"];
+    pac_param_.PHY2 = params["PHY2"];
+    pac_param_.PHY3 = params["PHY3"];
+    pac_param_.PVY1 = params["PVY1"];
+    pac_param_.PVY2 = params["PVY2"];
+    pac_param_.PVY3 = params["PVY3"];
+    pac_param_.PVY4 = params["PVY4"];
+    pac_param_.PPY1 = params["PPY1"];
+    pac_param_.PPY2 = params["PPY2"];
+    pac_param_.PPY3 = params["PPY3"];
+    pac_param_.PPY4 = params["PPY4"];
 
-    pac_param_.rB1_x = params["rB1_x"];
-    pac_param_.rB2_x = params["rB2_x"];
-    pac_param_.rC1_x = params["rC1_x"];
-    pac_param_.rE1_x = params["rE1_x"];
+    // Momento de autoalineamiento puro (Mz0)
+    pac_param_.QBZ1  = params["QBZ1"];
+    pac_param_.QBZ2  = params["QBZ2"];
+    pac_param_.QBZ3  = params["QBZ3"];
+    pac_param_.QBZ4  = params["QBZ4"];
+    pac_param_.QBZ5  = params["QBZ5"];
+    pac_param_.QBZ9  = params["QBZ9"];
+    pac_param_.QBZ10 = params["QBZ10"];
+    pac_param_.QCZ1  = params["QCZ1"];
+    pac_param_.QDZ1  = params["QDZ1"];
+    pac_param_.QDZ2  = params["QDZ2"];
+    pac_param_.QDZ3  = params["QDZ3"];
+    pac_param_.QDZ4  = params["QDZ4"];
+    pac_param_.QDZ6  = params["QDZ6"];
+    pac_param_.QDZ7  = params["QDZ7"];
+    pac_param_.QDZ8  = params["QDZ8"];
+    pac_param_.QDZ9  = params["QDZ9"];
+    pac_param_.QDZ10 = params["QDZ10"];
+    pac_param_.QDZ11 = params["QDZ11"];
+    pac_param_.QEZ1  = params["QEZ1"];
+    pac_param_.QEZ2  = params["QEZ2"];
+    pac_param_.QEZ3  = params["QEZ3"];
+    pac_param_.QEZ4  = params["QEZ4"];
+    pac_param_.QEZ5  = params["QEZ5"];
+    pac_param_.QHZ1  = params["QHZ1"];
+    pac_param_.QHZ2  = params["QHZ2"];
+    pac_param_.QHZ3  = params["QHZ3"];
+    pac_param_.QHZ4  = params["QHZ4"];
+    pac_param_.PPZ1  = params["PPZ1"];
+    pac_param_.PPZ2  = params["PPZ2"];
+    pac_param_.SSZ1  = params["SSZ1"];
+    pac_param_.SSZ2  = params["SSZ2"];
+    pac_param_.SSZ3  = params["SSZ3"];
+    pac_param_.SSZ4  = params["SSZ4"];
 
-    pac_param_.rB1_y = params["rB1_y"];
-    pac_param_.rB2_y = params["rB2_y"];
-    pac_param_.rC1_y = params["rC1_y"];
-    pac_param_.rSh   = params["rSh"];
+    // Coeficientes de adherencia combinada longitudinal (Gxa)
+    pac_param_.RBX1 = params["RBX1"];
+    pac_param_.RBX2 = params["RBX2"];
+    pac_param_.RBX3 = params["RBX3"];
+    pac_param_.RCX1 = params["RCX1"];
+    pac_param_.REX1 = params["REX1"];
+    pac_param_.REX2 = params["REX2"];
+    pac_param_.RHX1 = params["RHX1"];
 
-    pac_param_.rGx1 = params["rGx1"];
-    pac_param_.rBx  = params["rBx"];
-    pac_param_.rAx  = params["rAx"];
-    pac_param_.rCx  = params["rCx"];
-
-    pac_param_.rGy1 = params["rGy1"];
-    pac_param_.rBy  = params["rBy"];
-
-    pac_param_.comb_model = params["comb_model"];
+    // Coeficientes de adherencia combinada lateral (Gyk)
+    pac_param_.RBY1 = params["RBY1"];
+    pac_param_.RBY2 = params["RBY2"];
+    pac_param_.RBY3 = params["RBY3"];
+    pac_param_.RBY4 = params["RBY4"];
+    pac_param_.RCY1 = params["RCY1"];
+    pac_param_.REY1 = params["REY1"];
+    pac_param_.REY2 = params["REY2"];
+    pac_param_.RHY1 = params["RHY1"];
+    pac_param_.RHY2 = params["RHY2"];
+    pac_param_.RVY1 = params["RVY1"];
+    pac_param_.RVY2 = params["RVY2"];
+    pac_param_.RVY3 = params["RVY3"];
+    pac_param_.RVY4 = params["RVY4"];
+    pac_param_.RVY5 = params["RVY5"];
+    pac_param_.RVY6 = params["RVY6"];
 }
 
 
@@ -176,10 +280,10 @@ void VehicleDynamics::calculate_dynamics(){
     calculate_tire_slip();
     calculate_tire_loads();
 
-    Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_slip_.lambda_fl_, tire_loads_.fl_);
-    Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_);
-    Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_);
-    Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_);
+    Tire_force force_fl = calculate_tire_forces(tire_slip_.alpha_fl_, tire_slip_.lambda_fl_, tire_loads_.fl_, 0, pac_param_.NOMPRES);
+    Tire_force force_fr = calculate_tire_forces(tire_slip_.alpha_fr_, tire_slip_.lambda_fr_, tire_loads_.fr_, 0, pac_param_.NOMPRES);
+    Tire_force force_rl = calculate_tire_forces(tire_slip_.alpha_rl_, tire_slip_.lambda_rl_, tire_loads_.rl_, 0, pac_param_.NOMPRES);
+    Tire_force force_rr = calculate_tire_forces(tire_slip_.alpha_rr_, tire_slip_.lambda_rr_, tire_loads_.rr_, 0, pac_param_.NOMPRES);
 
     double fy_front = force_fl.fy + force_fr.fy;
     double fy_rear = force_rl.fy + force_rr.fy;
@@ -203,6 +307,7 @@ void VehicleDynamics::calculate_dynamics(){
     mz_longitudinal += (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
 
     double total_mz = mz_lateral + mz_longitudinal;
+    total_mz += force_fl.mz + force_fr.mz + force_rl.mz + force_rr.mz;
 
     r_dot_ = total_mz / kIzz;
 
@@ -257,46 +362,162 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
 }
 
 void VehicleDynamics::calculate_tire_loads(){
+    double F_L = 0.5 * kAirDensity * kCLA * pow(vx_, 2);
+    double F_D = 0.5 * kAirDensity * kCDA * pow(vx_, 2);
 
-    // Lateral load transfer
-    // Nonsuspended
-    double lateral_ns_f = kNsMassF * ay_ * kHCogNsF / kTrackWidth;
-    double lateral_ns_r = kNsMassR * ay_ * kHCogNsR / kTrackWidth;
-    
-    // Suspended geometric
-    double lateral_s_g_f = kSMassF * ay_ * kHRollCenterF / kTrackWidth;
-    double lateral_s_g_r = kSMassR * ay_ * kHRollCenterR / kTrackWidth;
+    //LATERAL LOAD TRANSFER
+    //nonsuspended weight transfer
+    double y_WT_ns_f = kNsMassF * ay_ * kHCoGNsMassF / kTrackWidth;
+    double y_WT_ns_r = kNsMassR * ay_ * kHCoGNsMassR / kTrackWidth;
 
-    // Suspended elastic
-    double lateral_s_e_f = kSMass * ay_ * (kHCog - kHRollAxis) * kRollStiffnessF / kRollStiffness / kTrackWidth;
-    double lateral_s_e_r = kSMass * ay_ * (kHCog - kHRollAxis) * kRollStiffnessR / kRollStiffness / kTrackWidth;
+    //susoended geometric weight transfer
+    double y_WT_s_g_f = kSMassF * ay_ * kHRollCenterF / kTrackWidth;
+    double y_WT_s_g_r = kSMassR * ay_ * kHRollCenterR / kTrackWidth;
 
-    // Longitudinal load transfer 
-    double longitudinal_ns = (kNsMassF * kHCogNsF + kNsMassR * kHCogNsR) * ax_ / kWheelBase;
-    double longitudinal_s = kSMass * kHCog * ax_ / kWheelBase;
+    // susp. elastic WT
+    double y_WT_s_e_f = kSMass * ay_ * (kHCoGsMass - kHRollAxis) * kRollStiffnessF/kRollStiffness/kTrackWidth;
+    double y_WT_s_e_r = kSMass * ay_ * (kHCoGsMass - kHRollAxis) * kRollStiffnessR/kRollStiffness/kTrackWidth;
 
-    double lateral_load_transfer_front = lateral_ns_f + lateral_s_e_f + lateral_s_g_f;
-    double lateral_load_transfer_rear = lateral_ns_r + lateral_s_e_r + lateral_s_g_r;
-    double longitudinal_load_transfer = longitudinal_ns + longitudinal_s;
+    //LONG. LOAD TRANSFER
+    //long. nonsuspended wt
+    double x_WT_ns = (kNsMassF * ax_ * kHCoGNsMassF + kNsMassR * ax_ * kHCoGNsMassR) / kWheelBase;
 
-    tire_loads_.fl_ = kStaticLoadFront - lateral_load_transfer_front - longitudinal_load_transfer/2;
-    tire_loads_.fr_ = kStaticLoadFront + lateral_load_transfer_front - longitudinal_load_transfer/2;
-    tire_loads_.rl_ = kStaticLoadRear - lateral_load_transfer_rear + longitudinal_load_transfer/2;
-    tire_loads_.rr_ = kStaticLoadRear + lateral_load_transfer_rear + longitudinal_load_transfer/2;
+    //long suspended wt
+    double x_WT_s = kSMass * ax_ * kHCoGsMass / kWheelBase;
 
-    double aero_lift = 0.5 * kAirDensity * kCLA * vx_*vx_;
-    double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
+    //long. suspended elastic weight transfer
+    double x_WT_s_e_f = -x_WT_s * (ax_ < 0) - x_WT_s * (ax_ > 0); 
+    double x_WT_s_e_r = x_WT_s * (ax_ < 0) + x_WT_s * (ax_ > 0);
 
-    tire_loads_.fl_ += (1 - kCOPx) * aero_lift / 2 - kCOPy / kWheelBase * aero_drag / 2;
-    tire_loads_.fr_ += (1 - kCOPx) * aero_lift / 2 - kCOPy / kWheelBase * aero_drag / 2;
-    tire_loads_.rl_ += kCOPx * aero_lift / 2 + kCOPy / kWheelBase * aero_drag / 2;
-    tire_loads_.rr_ += kCOPx * aero_lift / 2 + kCOPy / kWheelBase * aero_drag / 2;
+    //TODO continuar a partir de wheel loads y mirar si hay que cambiar mas codigo (tema de mz que se calcula en forces)
+    tire_loads_.fl_ = 0.5 * kMass * kG * (1 - kMassDistributionRear) + 0.5 * (1 - kCOPx) * F_L - 0.5 * kCOPy/kWheelBase * F_D - y_WT_ns_f - y_WT_s_g_f - y_WT_s_e_f - 0.5 * (x_WT_ns + x_WT_s);
+    tire_loads_.fr_ = 0.5 * kMass * kG * (1 - kMassDistributionRear) + 0.5 * kCOPx * F_L - 0.5 * kCOPy/kWheelBase * F_D + y_WT_ns_f + y_WT_s_g_f + y_WT_s_e_f - 0.5 * (x_WT_ns + x_WT_s);
+    tire_loads_.rl_ = 0.5 * kMass * kG * kMassDistributionRear + 0.5 * kCOPx * F_L + 0.5 * kCOPy/kWheelBase * F_D - y_WT_ns_r - y_WT_s_g_r - y_WT_s_e_r + 0.5 * (x_WT_ns + x_WT_s);
+    tire_loads_.rr_ = 0.5 * kMass * kG * kMassDistributionRear + 0.5 * kCOPx * F_L + 0.5 * kCOPy/kWheelBase * F_D + y_WT_ns_r + y_WT_s_g_r + y_WT_s_e_r + 0.5 * (x_WT_ns + x_WT_s);
 
-    if(tire_loads_.fl_ < 0){tire_loads_.fl_ = 0;}
-    if(tire_loads_.fr_ < 0){tire_loads_.fr_ = 0;}
-    if(tire_loads_.rl_ < 0){tire_loads_.rl_ = 0;}
-    if(tire_loads_.rr_ < 0){tire_loads_.rr_ = 0;}
+    //Negative tire load recalculation
+    double tire_load [4] = {tire_loads_.fl_, tire_loads_.fr_, tire_loads_.rl_, tire_loads_.rr_};
+    double tire_loadneg [4] = {0.0, 0.0, 0.0, 0.0};
+    for (int i=0; i<4; i++) {
+        if (tire_load[i] < 0) {
+            tire_loadneg[i] = tire_load[i];
+            tire_load[i] = 0.0;
+        }
+    }
 
+    double tire_loadty[4] = {0.0, 0.0, 0.0, 0.0};
+    double tire_loadtx[4] = {0.0, 0.0, 0.0, 0.0};
+    double eps = 1e-9;
+
+    if((tire_loadneg[0] < 0 && tire_loadneg[1] < 0) || (tire_loadneg[2] < 0 && tire_loadneg[3] < 0)) {
+        tire_loadty[0] =  0.5 * (tire_loadneg[2] - tire_loadneg[3]);
+        tire_loadty[1] = -0.5 * (tire_loadneg[2] - tire_loadneg[3]);
+        tire_loadty[2] =  0.5 * (tire_loadneg[0] - tire_loadneg[1]);
+        tire_loadty[3] = -0.5 * (tire_loadneg[0] - tire_loadneg[1]);    
+
+        tire_loadtx[0] =  0.5 * (tire_loadneg[2] + tire_loadneg[3]);
+        tire_loadtx[1] =  0.5 * (tire_loadneg[2] + tire_loadneg[3]);
+        tire_loadtx[2] =  0.5 * (tire_loadneg[0] + tire_loadneg[1]);
+        tire_loadtx[3] =  0.5 * (tire_loadneg[0] + tire_loadneg[1]);
+
+        for(int i = 0; i < 4; ++i) {
+            tire_load[i] += tire_loadty[i] + tire_loadtx[i];
+        }
+    }
+    else if ((tire_loadneg[0] < 0 && tire_loadneg[2] < 0) || (tire_loadneg[1] < 0 && tire_loadneg[3] < 0)) {
+        tire_loadty[0] = 0.5 * (tire_loadneg[1] + tire_loadneg[3]);
+        tire_loadty[1] = 0.5 * (tire_loadneg[0] + tire_loadneg[2]);
+        tire_loadty[2] = 0.5 * (tire_loadneg[1] + tire_loadneg[3]);
+        tire_loadty[3] = 0.5 * (tire_loadneg[0] + tire_loadneg[2]);
+
+        tire_loadtx[0] =  0.5 * (tire_loadneg[1] - tire_loadneg[3]);
+        tire_loadtx[1] =  0.5 * (tire_loadneg[0] - tire_loadneg[2]);
+        tire_loadtx[2] = -0.5 * (tire_loadneg[1] - tire_loadneg[3]);
+        tire_loadtx[3] = -0.5 * (tire_loadneg[0] - tire_loadneg[2]);
+
+        for(int i = 0; i < 4; ++i) {
+            tire_load[i] += tire_loadty[i] + tire_loadtx[i];
+        }
+    }
+    else if (tire_loadneg[0] < 0 || tire_loadneg[1] < 0) 
+    {
+        double WT_x = 0.5 * (x_WT_ns + x_WT_s);
+        double WT_y = (y_WT_ns_f + y_WT_s_g_f + y_WT_s_e_f);
+        double sign_ay = (ay_ > 0) ? 1.0 : ((ay_ < 0) ? -1.0 : 0.0);
+
+        double factor_x = WT_x / (WT_x + std::abs(WT_y) + eps);
+        double factor_y = WT_y / (WT_x + std::abs(WT_y) + eps) * sign_ay;
+
+        for(int i = 0; i < 4; ++i) {
+            tire_loadtx[i] = factor_x * tire_loadneg[i];
+            tire_loadty[i] = factor_y * tire_loadneg[i];
+        }
+
+        tire_load[0] += tire_loadtx[1];
+        tire_load[1] += tire_loadtx[0];
+        tire_load[2] += tire_loadty[0];
+        tire_load[3] += tire_loadty[1];
+
+        // Recalcular si la transferencia provocó que el eje trasero ahora sea negativo
+        double tire_loadneg2[4] = {0.0, 0.0, 0.0, 0.0};
+        for(int i = 0; i < 4; ++i) {
+            if (tire_load[i] < 0) {
+                tire_loadneg2[i] = tire_load[i];
+                tire_load[i] = 0.0;
+            }
+        }
+
+        if (tire_loadneg2[2] < 0 || tire_loadneg2[3] < 0) {
+            tire_load[0] += tire_loadneg2[3];
+            tire_load[1] += tire_loadneg2[2];
+        }
+        if (tire_loadneg2[0] < 0 || tire_loadneg2[1] < 0) {
+            double sum_front = 0.5 * (tire_loadneg2[0] + tire_loadneg2[1]);
+            tire_load[2] += sum_front;
+            tire_load[3] += sum_front;
+        }
+    }
+    else if (tire_loadneg[2] < 0 || tire_loadneg[3] < 0) 
+    {
+        double WT_x = 0.5 * (x_WT_ns + x_WT_s);
+        double WT_y = (y_WT_ns_f + y_WT_s_g_f + y_WT_s_e_f);
+        double sign_ay = (ay_ > 0) ? 1.0 : ((ay_ < 0) ? -1.0 : 0.0);
+
+        double factor_x = -WT_x / (-WT_x + std::abs(WT_y) + eps);
+        double factor_y = WT_y / (-WT_x + std::abs(WT_y) + eps) * sign_ay;
+
+        for(int i = 0; i < 4; ++i) {
+            tire_loadtx[i] = factor_x * tire_loadneg[i];
+            tire_loadty[i] = factor_y * tire_loadneg[i];
+        }
+
+        tire_load[0] += tire_loadty[2];
+        tire_load[1] += tire_loadty[3];
+        tire_load[2] += tire_loadtx[3];
+        tire_load[3] += tire_loadtx[2];
+
+        double tire_loadneg2[4] = {0.0, 0.0, 0.0, 0.0};
+        for(int i = 0; i < 4; ++i) {
+            if (tire_load[i] < 0) {
+                tire_loadneg2[i] = tire_load[i];
+                tire_load[i] = 0.0;
+            }
+        }
+
+        if (tire_loadneg2[0] < 0 || tire_loadneg2[1] < 0) {
+            tire_load[2] += tire_loadneg2[1];
+            tire_load[3] += tire_loadneg2[0];
+        }
+        if (tire_loadneg2[2] < 0 || tire_loadneg2[3] < 0) {
+            double sum_rear = 0.5 * (tire_loadneg2[2] + tire_loadneg2[3]);
+            tire_load[0] += sum_rear;
+            tire_load[1] += sum_rear;
+        }
+    }
+    tire_loads_.fl_ = tire_load[0];
+    tire_loads_.fr_ = tire_load[1];
+    tire_loads_.rl_ = tire_load[2];
+    tire_loads_.rr_ = tire_load[3];
 }
 
 void VehicleDynamics::calculate_ackermann(){
@@ -346,68 +567,243 @@ void VehicleDynamics::calculate_tire_slip(){
 }
 
 VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(
-    double slip_angle, double slip_ratio, double tire_load)
+    double slip_angle, double slip_ratio, double tire_load, double camber, double pressure)
 {
     Tire_force tf;
 
-    double SA = slip_angle;
-    double SR = slip_ratio;
+    double alpha = slip_angle;
+    double kappa = slip_ratio;
     double Fz = tire_load;
+    double gamma = camber;
+    double p = pressure;
 
-    double D_lon, D_lat, arg_x, arg_y, fx_pure, fy_pure;
-    double Bxa, Cxa, Exa, arg_gxa, Gxa;
-    double Byk, Gyk, byk_term;
-    double Gx_alpha, Gy_kappa;
+    double epsilon = 1e-6;
 
-    // Pacejka scaling
-    D_lon = pac_param_.D1_x + pac_param_.D2_x * (Fz / pac_param_.Fz0);
-    D_lat = pac_param_.D1_y + pac_param_.D2_y * (Fz / pac_param_.Fz0);
+    // Calculate basic variables
+    double V0 = pac_param_.LONGVL;
+    double pi0 = pac_param_.NOMPRES;
+    double Fz0 = pac_param_.FNOMIN;
+    double LFZO = pac_param_.LFZO;
+    double LMUX = pac_param_.LMUX;
+    double LMUY = pac_param_.LMUY;
 
-    // Longitudinal puro
-    arg_x = pac_param_.Bx * SR;
-    fx_pure = Fz * D_lon * sin(pac_param_.Cx * atan(arg_x - pac_param_.Ex * (arg_x - atan(arg_x))));
+    double Fz0_prime = LFZO * Fz0;
+    double dfz = (Fz - Fz0_prime) / Fz0_prime;
+    double dpi = (p - pi0) / pi0;
 
-    // Lateral puro
-    arg_y = pac_param_.By * SA;
-    fy_pure = Fz * D_lat * sin(pac_param_.Cy * atan(arg_y - pac_param_.Ey * (arg_y - atan(arg_y))));
+    double alpha_star = tan(alpha);
+    double gamma_star = sin(gamma);
 
-    if(pac_param_.comb_model == 1)
-    {
-        // MODELO CHECHU
-        // Long combined
-        Bxa = pac_param_.rB1_x * cos(atan(pac_param_.rB2_x * SR));
-        Cxa = pac_param_.rC1_x;
-        Exa = pac_param_.rE1_x;
+    // Same correction as dynamic model
+    Fz = 0.5*(Fz + sqrt(pow(Fz, 2) + 1e-3));
 
-        arg_gxa = Bxa * SA - Exa * (Bxa * SA - atan(Bxa * SA));
-        Gxa = cos(Cxa * atan(arg_gxa));
+    // Calculate FX0
+    double LCX  = pac_param_.LCX;
+    double LEX  = pac_param_.LEX;
+    double LKX  = pac_param_.LKX;
+    double LHX  = pac_param_.LHX;
+    double LVX  = pac_param_.LVX;
 
-        // Lat combined
-        Byk = pac_param_.rB1_y * cos(atan(pac_param_.rB2_y * SA));
-        byk_term = Byk * (SR + pac_param_.rSh);
-        Gyk = pac_param_.rC1_y * exp(-(byk_term * byk_term));
+    double PCX1 = pac_param_.PCX1;
+    double PDX1 = pac_param_.PDX1;
+    double PDX2 = pac_param_.PDX2;
+    double PDX3 = pac_param_.PDX3;
+    double PEX1 = pac_param_.PEX1;
+    double PEX2 = pac_param_.PEX2;
+    double PEX3 = pac_param_.PEX3;
+    double PEX4 = pac_param_.PEX4;
+    double PKX1 = pac_param_.PKX1;
+    double PKX2 = pac_param_.PKX2;
+    double PKX3 = pac_param_.PKX3;
+    double PHX1 = pac_param_.PHX1;
+    double PHX2 = pac_param_.PHX2;
+    double PVX1 = pac_param_.PVX1;
+    double PVX2 = pac_param_.PVX2;
+    double PPX1 = pac_param_.PPX1;
+    double PPX2 = pac_param_.PPX2;
+    double PPX3 = pac_param_.PPX3;
+    double PPX4 = pac_param_.PPX4;
+    
+    double Cx = PCX1 * LCX;
+    double mux = (PDX1 + PDX2 * dfz) * (1 + PPX3 * dpi + PPX4 * pow(dpi, 2)) * (1 - PDX3 * pow(gamma, 2)) * LMUX;
+    double Dx = mux * Fz;
+    double Kxk = Fz * (PKX1 + PKX2 * dfz) * exp(PKX3 * dfz) * (1 + PPX1 * dpi + PPX2 * pow(dpi, 2) * LKX);
+    double Bx = Kxk / (Cx * Dx + epsilon*tanh(1e4*Dx));
+    double SHx = (PHX1 + PHX2 * dfz) * LHX;
+    double SVx = Fz * (PVX1 + PVX2 * dfz) * LVX * LMUX;
+    double kappax = kappa + SHx;
+    double Ex = (PEX1 + PEX2 * dfz + PEX3 * pow(dfz, 2)) * (1 - PEX4 * tanh(1e4*kappax)) * LEX;
+    Ex = 0.5 * (Ex + 1 - sqrt(pow(Ex-1, 2) + 1e-3));
+    double Fx0 = Dx * sin(Cx * atan(Bx * kappax - Ex * (Bx * kappax - atan(Bx * kappax)))) + SVx;
 
-        tf.fx = fx_pure * Gxa;
-        tf.fy = fy_pure * Gyk;
-    }
-    else if(pac_param_.comb_model == 2)
-    {
-        // MODELO CALERO
-        double SA_tan = tan(SA);
+    // Calculate Fy0
+    double epsilony_local = epsilon;
+    double LCY   = pac_param_.LCY;
+    double LEY   = pac_param_.LEY;
+    double LKY   = pac_param_.LKY;
+    double LHY   = pac_param_.LHY;
+    double LVY   = pac_param_.LVY;
+    double LKYC  = pac_param_.LKYC;
 
-        Gx_alpha = (1.0 - pac_param_.rBx) * exp(-pac_param_.rGx1 *
-            exp(-pow(fabs(pac_param_.rAx * SR), pac_param_.rCx)) * SA_tan * SA_tan) + pac_param_.rBx;
+    double PCY1  = pac_param_.PCY1;
+    double PDY1  = pac_param_.PDY1;
+    double PDY2  = pac_param_.PDY2;
+    double PDY3  = pac_param_.PDY3;
+    double PEY1  = pac_param_.PEY1;
+    double PEY2  = pac_param_.PEY2;
+    double PEY3  = pac_param_.PEY3;
+    double PEY4  = pac_param_.PEY4;
+    double PEY5  = pac_param_.PEY5;
+    double PKY1  = pac_param_.PKY1;
+    double PKY2  = pac_param_.PKY2;
+    double PKY3  = pac_param_.PKY3;
+    double PKY4  = pac_param_.PKY4;
+    double PKY5  = pac_param_.PKY5;
+    double PHY1  = pac_param_.PHY1;
+    double PHY2  = pac_param_.PHY2;
+    double PHY3  = pac_param_.PHY3;
+    double PVY1  = pac_param_.PVY1;
+    double PVY2  = pac_param_.PVY2;
+    double PVY3  = pac_param_.PVY3;
+    double PVY4  = pac_param_.PVY4;
+    double PPY1  = pac_param_.PPY1;
+    double PPY2  = pac_param_.PPY2;
+    double PPY3  = pac_param_.PPY3;
+    double PPY4  = pac_param_.PPY4;
 
-        Gy_kappa = pac_param_.rBy + (1.0 - pac_param_.rBy) * exp(-pac_param_.rGy1 * SR * SR);
+    double Kya = PKY1 * Fz0_prime * (1 + PPY1 * dpi) * (1 - PKY3 * sqrt(pow(gamma_star, 2) + 1e-4)) * sin(PKY4 * atan(Fz / Fz0_prime) / ((PKY2 + PKY5 * (pow(gamma_star, 2)) * (1 + PPY2 * dpi)))) * LKY;
+    double SVyg = Fz * (PVY3 + PVY4 * dfz) *  gamma_star * LKYC * LMUY;
 
-        tf.fx = fx_pure * Gx_alpha;
-        tf.fy = fy_pure * Gy_kappa;
-    }
-    else
-    {
-        tf.fx = fx_pure;
-        tf.fy = fy_pure;
-    }
+    double SHy = (PHY1 + PHY2 * dfz) * LHY + PHY3 * gamma_star * LKYC;
+    double SVy = Fz * (PVY1 + PVY2 * dfz) * LVY * LMUY + SVyg;
+    double alphay = alpha_star + SHy;
+    double Cy = PCY1 * LCY;
+    double muy = (PDY1 + PDY2 * dfz) * (1 + PPY3 * dpi + PPY4 * pow(dpi, 2)) * (1 - PDY3 * pow(gamma_star, 2)) * LMUY;
+    double Dy = muy * Fz;
+
+    double Ey = (PEY1 + PEY2 * dfz) * (1 + PPY3 * dpi + PPY4 * pow(dpi, 2)) * (1 - PDY3 * pow(gamma_star, 2)) * LMUY;
+    Ey = 0.5*(Ey + 1 - sqrt(pow(Ey - 1, 2) + 1e-3));
+    double By = Kya / (Cy * Dy + epsilony_local * tanh(1e4*Dy));
+    double Fy0 = Dy * sin(Cy * atan(By * alphay - Ey *(By * alphay -atan(By * alphay)))) + SVy;
+
+    // Calculate Mz0 and related variables
+    double epsilonk_local = epsilon;
+    double R0    = pac_param_.UNLOADED_RADIUS;
+    double LTR   = pac_param_.LTR;
+    double LRES  = pac_param_.LRES;
+    double LKZC  = pac_param_.LKZC;
+
+    double QBZ1  = pac_param_.QBZ1;
+    double QBZ2  = pac_param_.QBZ2;
+    double QBZ3  = pac_param_.QBZ3;
+    double QBZ4  = pac_param_.QBZ4;
+    double QBZ5  = pac_param_.QBZ5;
+    double QBZ9  = pac_param_.QBZ9;
+    double QBZ10 = pac_param_.QBZ10;
+    double QCZ1  = pac_param_.QCZ1;
+    double QDZ1  = pac_param_.QDZ1;
+    double QDZ2  = pac_param_.QDZ2;
+    double QDZ3  = pac_param_.QDZ3;
+    double QDZ4  = pac_param_.QDZ4;
+    double QDZ6  = pac_param_.QDZ6;
+    double QDZ7  = pac_param_.QDZ7;
+    double QDZ8  = pac_param_.QDZ8;
+    double QDZ9  = pac_param_.QDZ9;
+    double QDZ10 = pac_param_.QDZ10;
+    double QDZ11 = pac_param_.QDZ11;
+    double QEZ1  = pac_param_.QEZ1;
+    double QEZ2  = pac_param_.QEZ2;
+    double QEZ3  = pac_param_.QEZ3;
+    double QEZ4  = pac_param_.QEZ4;
+    double QEZ5  = pac_param_.QEZ5;
+    double QHZ1  = pac_param_.QHZ1;
+    double QHZ2  = pac_param_.QHZ2;
+    double QHZ3  = pac_param_.QHZ3;
+    double QHZ4  = pac_param_.QHZ4;
+    double PPZ1  = pac_param_.PPZ1;
+    double PPZ2  = pac_param_.PPZ2;
+
+    double SHt = QHZ1 + QHZ2 * dfz + (QHZ3 + QHZ4 * dfz) * gamma_star;
+    double Kya_prime = Kya + epsilonk_local * tanh(1e4*Kya);
+    double SHf = SHy + SVy / Kya_prime;
+    double alphat = alpha_star + SHt;
+
+    double Dt = (QDZ1 + QDZ2 * dfz) * (1 - PPZ1 * dpi) * (1 + QDZ3 * gamma + QDZ4 * pow(gamma, 2)) * Fz * (R0 / Fz0_prime) * LTR;
+    double Bt = (QBZ1 + QBZ2 * dfz + QBZ3 * pow(dfz, 2)) * (1 + QBZ4 * gamma + QBZ5 * sqrt(pow(gamma, 2) + 1e-4)) * LKY / LMUY;
+    double Ct = QCZ1;
+    double Et =  (QEZ1 + QEZ2 * dfz + QEZ3 * pow(dfz, 2)) * (1 + (QEZ4 + QEZ5 * gamma_star) * (2/M_PI) * atan(Bt * Ct * alphat));
+    Et = 0.5 * (Et + 1 - sqrt (pow(Et-1, 2) + 1e-3));
+
+    double Dr = Fz * R0 * ((QDZ6 + QDZ7 * dfz) * LRES + ((QDZ8 + QDZ9 * dfz) * (1 + PPZ2 * dpi) + (QDZ10 + QDZ11 * dfz) * sqrt(pow(gamma_star, 2) + 1e-4)) * gamma_star * LKZC) * LMUY * cos(alpha_star);
+    double Br = (QBZ9 * LKY / LMUY + QBZ10 * By * Cy);
+
+    // CALCULATE COMBINED FX
+    double LXAL = pac_param_.LXAL;
+    double RBX1 = pac_param_.RBX1;
+    double RBX2 = pac_param_.RBX2;
+    double RBX3 = pac_param_.RBX3;
+    double RCX1 = pac_param_.RCX1;
+    double REX1 = pac_param_.REX1;
+    double REX2 = pac_param_.REX2;
+    double RHX1 = pac_param_.RHX1;
+    double Cxa = RCX1;
+    double Exa =  REX1 + REX2 * dfz;
+    Exa = 0.5 * (Exa + 1 - sqrt(pow(Exa-1, 2) + 1e-3));
+    double SHxa = RHX1;
+    double Bxa = (RBX1 + RBX3 * pow(gamma_star, 2)) * cos(atan(RBX2 * kappa)) * LXAL;
+    double alphas = alpha_star + SHxa;
+    double Gxa0 = cos(Cxa * atan(Bxa * SHxa - Exa * (Bxa * SHxa - atan(Bxa *  SHxa))));
+    double Gxa = cos(Cxa * atan(Bxa * alphas - Exa * (Bxa * alphas - atan(Bxa * alphas)))) / Gxa0;
+    double force_fx = Gxa * Fx0;
+
+    //CALCUALTE COMBINED FY
+    double LYKA  = pac_param_.LYKA;
+    double LVYKA = pac_param_.LVYKA;
+    double RBY1  = pac_param_.RBY1;
+    double RBY2  = pac_param_.RBY2;
+    double RBY3  = pac_param_.RBY3;
+    double RBY4  = pac_param_.RBY4;
+    double RCY1  = pac_param_.RCY1;
+    double REY1  = pac_param_.REY1;
+    double REY2  = pac_param_.REY2;
+    double RHY1  = pac_param_.RHY1;
+    double RHY2  = pac_param_.RHY2;
+    double RVY1  = pac_param_.RVY1;
+    double RVY2  = pac_param_.RVY2;
+    double RVY3  = pac_param_.RVY3;
+    double RVY4  = pac_param_.RVY4;
+    double RVY5  = pac_param_.RVY5;
+    double RVY6  = pac_param_.RVY6;
+
+    double DVyk = muy * Fz * (RVY1 + RVY2 * dfz + RVY3 * gamma_star) * cos(atan(RVY4 * alpha_star));
+    double SVyk = DVyk * sin(RVY5 * atan(RVY6 * kappa)) * LVYKA;
+    double SHyk = RHY1 + RHY2 * dfz;
+    double Eyk = REY1 + REY2 * dfz;
+    Eyk = 0.5* (Eyk + 1 - sqrt(pow(Eyk, 2) + 1e-3));
+    double Cyk = RCY1;
+    double Byk = (RBY1 + RBY4 * pow(gamma_star, 2)) * cos(atan(RBY2 * (alpha_star - RBY3))) * LYKA;
+    double kappas = kappa + SHyk;
+    double Gyk0 = cos(Cyk * atan(Byk * SHyk - Eyk * (Byk * SHyk - atan(Byk * SHyk))));
+    double Gyk = cos(Cyk * atan(Byk * kappas - Eyk * (Byk * kappas - atan(Byk * kappas)))) / Gyk0;
+    double force_fy = Gyk * Fy0 * SVyk;
+
+    // CALCULATE COMBINED MZ
+    double LS   = pac_param_.LS;
+    double SSZ1 = pac_param_.SSZ1;
+    double SSZ2 = pac_param_.SSZ2;
+    double SSZ3 = pac_param_.SSZ3;
+    double SSZ4 = pac_param_.SSZ4;
+
+    double alpha_eq = atan(sqrt(pow(tan(alphat), 2) + pow(Kxk / Kya_prime, 2) * pow(kappa, 2))) * tanh(1e4*alphat);
+    double s_val = R0 * (SSZ1 + SSZ2 * (force_fy / Fz0) + (SSZ3 + SSZ4 * dfz) * gamma) * LS;
+    double Mzr = Dr * cos(atan(Br * (alpha_star + SHf)));
+    double t_val = Dt * cos(Ct * atan(Bt * alpha_eq - Et * (Bt * alpha_eq - atan(Bt * alpha_eq))));
+    t_val = t_val * LFZO;
+    double Mz = -t_val * (force_fy - SVyk) + Mzr + s_val * force_fx;
+
+    tf.fx = force_fx;
+    tf.fy = force_fy;
+    tf.mz = Mz;
 
     return tf;
 }

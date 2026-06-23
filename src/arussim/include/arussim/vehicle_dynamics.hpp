@@ -72,6 +72,10 @@ class VehicleDynamics
         double kNsMassR;
         double kSMass;
         double kIzz;
+        double kHCoGNsMassF;
+        double kHCoGNsMassR;
+        double kHCoGsMass;
+        double kPres;
 
         double kMassDistributionRear;
         double kSMassF;
@@ -108,53 +112,43 @@ class VehicleDynamics
 
         double kGearRatio;
 
-        struct {
-            // Normal load
-            double Fz0;
+    struct {
+        // PARAMETROS GENERALES Y ESCALAS
+        double LONGVL, NOMPRES, FNOMIN, UNLOADED_RADIUS;
+        double LFZO, LMUX, LMUY, LKX, LKY, LKYC, LHY, LTR, LRES, LKZC, LXAL, LYKA, LVYKA, LS;
 
-            // Longitudinal coefficients
-            double D1_x;
-            double D2_x;
-            double Cx;
-            double Bx;
-            double Ex;
+        // FUERZA LONGITUDINAL PURA (Fx0)
+        double LCX, LEX, LHX, LVX;
+        double PCX1, PDX1, PDX2, PDX3;
+        double PEX1, PEX2, PEX3, PEX4;
+        double PKX1, PKX2, PKX3;
+        double PHX1, PHX2;
+        double PVX1, PVX2;
+        double PPX1, PPX2, PPX3, PPX4;
 
-            // Lateral coefficients
-            double D1_y;
-            double D2_y;
-            double Cy;
-            double By;
-            double Ey;
+        // FUERZA LATERAL PURA (Fy0)
+        double LCY, LEY, LVY;
+        double PCY1, PDY1, PDY2, PDY3;
+        double PEY1, PEY2, PEY3, PEY4, PEY5;
+        double PKY1, PKY2, PKY3, PKY4, PKY5;
+        double PHY1, PHY2, PHY3;
+        double PVY1, PVY2, PVY3, PVY4;
+        double PPY1, PPY2, PPY3, PPY4;
 
-            // Shifts
-            double SH;
-            double SV;
+        // MOMENTO DE AUTOALINEAMIENTO PURO (Mz0)
+        double QBZ1, QBZ2, QBZ3, QBZ4, QBZ5, QBZ9, QBZ10;
+        double QCZ1;
+        double QDZ1, QDZ2, QDZ3, QDZ4, QDZ6, QDZ7, QDZ8, QDZ9, QDZ10, QDZ11;
+        double QEZ1, QEZ2, QEZ3, QEZ4, QEZ5;
+        double QHZ1, QHZ2, QHZ3, QHZ4;
+        double PPZ1, PPZ2;
+        double SSZ1, SSZ2, SSZ3, SSZ4;
 
-            // Combined slip longitudinal
-            double rB1_x;
-            double rB2_x;
-            double rC1_x;
-            double rE1_x;
+        // COEFICIENTES DE TRACCIÓN / GIRO COMBINADO (Gxa y Gyk)
+        double RBX1, RBX2, RBX3, RCX1, REX1, REX2, RHX1;
+        double RBY1, RBY2, RBY3, RBY4, RCY1, REY1, REY2, RHY1, RHY2, RVY1, RVY2, RVY3, RVY4, RVY5, RVY6;
 
-            // Combined slip lateral
-            double rB1_y;
-            double rB2_y;
-            double rC1_y;
-            double rSh;
-
-            // Scaling / weighting factors
-            double rGx1;
-            double rBx;
-            double rAx;
-            double rCx;
-
-            double rGy1;
-            double rBy;
-
-            // Model selector
-            int comb_model;
-
-        } pac_param_;
+    } pac_param_;
 
         double kRollingResistance;
         double kCDA;
@@ -175,6 +169,7 @@ class VehicleDynamics
         struct Tire_force {
             double fy;
             double fx;
+            double mz;
         };
 
         Tire_force force;
@@ -194,7 +189,7 @@ class VehicleDynamics
         void calculate_tire_loads();
         void calculate_ackermann();
         void calculate_tire_slip();
-        Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load);
+        Tire_force calculate_tire_forces(double slip_angle, double slip_ratio, double tire_load, double camber, double pressure);
         void kinematic_correction();
 
         std::shared_ptr<CSVGenerator> csv_generator_vehicle_dynamics_;
