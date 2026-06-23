@@ -122,7 +122,7 @@ add_executable(arussim_exec
   src/vehicle_dynamics.cpp
   include/CON-VehicleControl/src/control.c
   include/CON-VehicleControl/src/aux_functions.c
-  include/CON-VehicleControl/src/estimation.c
+  include/CON-VehicleControl/src/estimation.cpp
   include/CON-VehicleControl/src/Parameters.c
   include/CON-VehicleControl/src/power_control.c
   include/CON-VehicleControl/src/torque_vectoring.c

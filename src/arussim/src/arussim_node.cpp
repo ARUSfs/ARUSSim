@@ -586,11 +586,16 @@ void Simulator::on_controller_sim_timer()
     current_sensors.steering_angle = noisy_delta_;
     current_sensors.speed_x = noisy_vx_;
     current_sensors.speed_y = noisy_vy_;
+    current_sensors.gss_ok = 1; // Assume GSS is always OK in simulation
 
     current_sensors.motor_speed[0] = noisy_ws_fl_;
     current_sensors.motor_speed[1] = noisy_ws_fr_;
     current_sensors.motor_speed[2] = noisy_ws_rl_;
     current_sensors.motor_speed[3] = noisy_ws_rr_;
+    current_sensors.motor_torque[0] = torque_cmd_[0];
+    current_sensors.motor_torque[1] = torque_cmd_[1];
+    current_sensors.motor_torque[2] = torque_cmd_[2];
+    current_sensors.motor_torque[3] = torque_cmd_[3];
 
     current_sensors.V_soc = 500;
 
@@ -601,9 +606,10 @@ void Simulator::on_controller_sim_timer()
     current_dv.target_r = can_target_r_;
 
     // Save controller output
-    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4];
+    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4], sr_t[4];
+    estimation_update(&current_sensors, state_out);
     control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
-                   fx_obj_tc, t_ff_tc, sr_tc);
+                   fx_obj_tc, t_ff_tc, sr_tc, sr_t);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
