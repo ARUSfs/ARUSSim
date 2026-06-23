@@ -1,6 +1,6 @@
 arussim:
   ros__parameters:
-    simulation_car: 'ART_26D_DV_old_tires'   # str    Simulation car model
+    simulation_car: 'ART_26D_DV_calero_tires'   # str    Simulation car model
     simulation_mode: 'default'             # str   default/raspi_sim/hil 
     track: "FSG"
     state_update_rate: 1000.0      # Hz
