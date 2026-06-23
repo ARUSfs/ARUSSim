@@ -307,7 +307,7 @@ void VehicleDynamics::calculate_dynamics(){
     mz_longitudinal += (force_fl.fx + force_fr.fx) * std::sin(delta_) * kLf;
 
     double total_mz = mz_lateral + mz_longitudinal;
-    total_mz += force_fl.mz + force_fr.mz + force_rl.mz + force_rr.mz;
+    //total_mz += force_fl.mz + force_fr.mz + force_rl.mz + force_rr.mz;
 
     r_dot_ = total_mz / kIzz;
 
@@ -362,8 +362,9 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
 }
 
 void VehicleDynamics::calculate_tire_loads(){
-    double F_L = 0.5 * kAirDensity * kCLA * pow(vx_, 2);
-    double F_D = 0.5 * kAirDensity * kCDA * pow(vx_, 2);
+    double v = sqrt(vx_ * vx_ + vy_ * vy_);
+    double F_L = 0.5 * kAirDensity * kCLA * pow(v, 2);
+    double F_D = 0.5 * kAirDensity * kCDA * pow(v, 2);
 
     //LATERAL LOAD TRANSFER
     //nonsuspended weight transfer
@@ -681,7 +682,7 @@ VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(
     double muy = (PDY1 + PDY2 * dfz) * (1 + PPY3 * dpi + PPY4 * pow(dpi, 2)) * (1 - PDY3 * pow(gamma_star, 2)) * LMUY;
     double Dy = muy * Fz;
 
-    double Ey = (PEY1 + PEY2 * dfz) * (1 + PPY3 * dpi + PPY4 * pow(dpi, 2)) * (1 - PDY3 * pow(gamma_star, 2)) * LMUY;
+    double Ey = (PEY1 + PEY2 * dfz) * (1 + PEY5 * pow(gamma_star, 2) - (PEY3 + PEY4 * gamma_star) * tanh(1e4*alphay)) * LEY;
     Ey = 0.5*(Ey + 1 - sqrt(pow(Ey - 1, 2) + 1e-3));
     double By = Kya / (Cy * Dy + epsilony_local * tanh(1e4*Dy));
     double Fy0 = Dy * sin(Cy * atan(By * alphay - Ey *(By * alphay -atan(By * alphay)))) + SVy;
@@ -779,13 +780,13 @@ VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(
     double SVyk = DVyk * sin(RVY5 * atan(RVY6 * kappa)) * LVYKA;
     double SHyk = RHY1 + RHY2 * dfz;
     double Eyk = REY1 + REY2 * dfz;
-    Eyk = 0.5* (Eyk + 1 - sqrt(pow(Eyk, 2) + 1e-3));
+    Eyk = 0.5* (Eyk + 1 - sqrt(pow(Eyk - 1, 2) + 1e-3));
     double Cyk = RCY1;
     double Byk = (RBY1 + RBY4 * pow(gamma_star, 2)) * cos(atan(RBY2 * (alpha_star - RBY3))) * LYKA;
     double kappas = kappa + SHyk;
     double Gyk0 = cos(Cyk * atan(Byk * SHyk - Eyk * (Byk * SHyk - atan(Byk * SHyk))));
     double Gyk = cos(Cyk * atan(Byk * kappas - Eyk * (Byk * kappas - atan(Byk * kappas)))) / Gyk0;
-    double force_fy = Gyk * Fy0 * SVyk;
+    double force_fy = Gyk * Fy0 + SVyk;
 
     // CALCULATE COMBINED MZ
     double LS   = pac_param_.LS;
