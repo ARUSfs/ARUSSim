@@ -118,17 +118,6 @@ class Simulator : public rclcpp::Node
     std::lognormal_distribution<double> perception_delay_dist;
     double kLidarMuTime;
     double kLidarSigmaTime;
-    // Sensor data with noise
-    double noisy_ax_ = 0.0;
-    double noisy_ay_ = 0.0;
-    double noisy_r_ = 0.0;
-    double noisy_ws_fl_ = 0.0;
-    double noisy_ws_fr_ = 0.0;
-    double noisy_ws_rl_ = 0.0;
-    double noisy_ws_rr_ = 0.0;
-    double noisy_vx_ = 0.0;
-    double noisy_vy_ = 0.0;
-    double noisy_delta_ = 0.0;
 
     //Cones geometry
     double kConeHeight = 0.325;
@@ -144,6 +133,9 @@ class Simulator : public rclcpp::Node
     std::map<std::string, double> parameters_map_;
     CarParams car_parameters_;
 
+    SensorData sensors_{};
+    DV dv_{};
+
     rclcpp::Clock::SharedPtr clock_;
     rclcpp::Time time_last_cmd_;
     double target_r_;
@@ -155,6 +147,25 @@ class Simulator : public rclcpp::Node
     float can_delta_;
     std::vector<double> can_torque_cmd_;
     uint16_t as_status_ = 0x02;
+
+    //CAN Communication
+    int can_socket_0_;
+    struct ifreq ifr_0_{};
+    struct sockaddr_can addr_0_{};
+    struct can_frame frame_0_;
+    std::thread thread_0_;
+
+    int can_socket_1_;
+    struct ifreq ifr_1_{};
+    struct sockaddr_can addr_1_{};
+    struct can_frame frame_1_;
+    std::thread thread_1_;
+
+    int can_socket_2_;
+    struct ifreq ifr_2_{};
+    struct sockaddr_can addr_2_{};
+    struct can_frame frame_2_;
+    std::thread thread_2_;
 
     //raspi_sim
     control_raspi::ControlRaspi control_raspi_manager_;
@@ -221,7 +232,8 @@ class Simulator : public rclcpp::Node
     void noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg);
-    void noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
+    void noisy_ms_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
+    void noisy_torque_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg);
     void noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg);
     void noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg);
@@ -331,7 +343,8 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
-    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ws_sub_;
+   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ms_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_torque_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
@@ -363,24 +376,5 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr circuit_sub_;
-
-    //CAN Communication
-    int can_socket_0_;
-    struct ifreq ifr_0_{};
-    struct sockaddr_can addr_0_{};
-    struct can_frame frame_0_;
-    std::thread thread_0_;
-
-    int can_socket_1_;
-    struct ifreq ifr_1_{};
-    struct sockaddr_can addr_1_{};
-    struct can_frame frame_1_;
-    std::thread thread_1_;
-
-    int can_socket_2_;
-    struct ifreq ifr_2_{};
-    struct sockaddr_can addr_2_{};
-    struct can_frame frame_2_;
-    std::thread thread_2_;
     
 };
