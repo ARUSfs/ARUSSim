@@ -87,8 +87,9 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         prev_time_ = this->get_clock()->now().seconds();
         parameters_dump_ = get_config_params();
         auto ws_path = std::filesystem::canonical("/proc/self/exe");
-        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
+        for (int i = 0; i < 3; ++i) ws_path = ws_path.parent_path();
         file_path_ = ws_path / "src/ARUSSim/src/arussim/laptimes" / (circuit_ + ".csv");
+        current_best_time_ = 0.0;
 
         // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
         if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
@@ -167,7 +168,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
         }
         if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
         {
-            if(current_best_time_ > best_time_){
+            if(current_best_time_ <= 0.0 || current_best_time_ > best_time_){
                 std::ofstream file(file_path_);
                 file << "lap,cones,best_time\n";
                 file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
@@ -175,6 +176,7 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 file << parameters_dump_ << "\n";
                 file << "---PARAM_DUMP_END---\n";
                 file.close();
+                current_best_time_ = best_time_;
             }
         }
         else // Creates a .csv file and adds the time done in simulation.
