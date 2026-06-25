@@ -85,7 +85,6 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         prev_time_ = this->get_clock()->now().seconds();
-        parameters_dump_ = get_config_params();
         auto ws_path = std::filesystem::canonical("/proc/self/exe");
         for (int i = 0; i < 3; ++i) ws_path = ws_path.parent_path();
         file_path_ = ws_path / "src/ARUSSim/src/arussim/laptimes" / (circuit_ + ".csv");
@@ -234,6 +233,7 @@ void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
     {
         circuit_.erase(circuit_.size() - ext.size());
     }
+    parameters_dump_ = get_config_params();
 }
 
 /**
