@@ -89,6 +89,8 @@ Simulator::Simulator() : Node("simulator")
 
     state_pub_ = this->create_publisher<arussim_msgs::msg::State>(
         "/arussim/state", 10);
+    ground_truth_pub_ = this->create_publisher<common_msgs::msg::State>(
+        "/arussim/ground_truth", 10);
     control_vx_pub_ = this->create_publisher<std_msgs::msg::Float32>(
         "/arussim/control_vx", 10);
     control_vy_pub_ = this->create_publisher<std_msgs::msg::Float32>(
@@ -146,8 +148,11 @@ Simulator::Simulator() : Node("simulator")
     noisy_r_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/IMU/yaw_rate", 10, std::bind(&Simulator::noisy_r_callback, this, std::placeholders::_1));
 
-    noisy_ws_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
-        "/arussim/motor_speed", 10, std::bind(&Simulator::noisy_ws_callback, this, std::placeholders::_1));
+    noisy_ms_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/motor_speed", 10, std::bind(&Simulator::noisy_ms_callback, this, std::placeholders::_1));
+    noisy_torque_sub_ = this->create_subscription<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/torque4WD", 10, std::bind(&Simulator::noisy_torque_callback, this, std::placeholders::_1));
+
     noisy_vx_sub_ = this->create_subscription<std_msgs::msg::Float32>(
         "/arussim/gss/vx", 10, std::bind(&Simulator::noisy_vx_callback, this, std::placeholders::_1));
     noisy_vy_sub_ = this->create_subscription<std_msgs::msg::Float32>(
@@ -194,6 +199,14 @@ Simulator::Simulator() : Node("simulator")
     // Initialize torque variable 
     torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
 
+    // Initialize sensors struct
+    sensors_.gss_ok = 1; // Assume GSS is always OK in simulation
+    sensors_.V_soc = 500;
+
+    // Initialize DV struct
+    dv_.autonomous = 1; // 1 -> DV mode
+    dv_.driving = 1;    // 1 -> Car is driving
+
     try
     {
         this->simulation_car_csv_ = kSimulationCar + ".csv";
@@ -209,7 +222,7 @@ Simulator::Simulator() : Node("simulator")
     if (kSimulationMode == "default")
     {
         this->load_control_parameters();
-        control_init(&car_parameters_); // Initialize CON-VehicleControl
+        control_init(&sensors_, &car_parameters_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
@@ -574,34 +587,16 @@ void Simulator::on_slow_timer()
 
 void Simulator::on_controller_sim_timer()
 {
-    // Update sensor data in CON-VehicleControl
-    SensorData current_sensors{};
-    DV current_dv{};
 
-    current_sensors.acceleration_x = noisy_ax_;
-    current_sensors.acceleration_y = noisy_ay_;
-    current_sensors.angular_z = noisy_r_;
-    current_sensors.steering_angle = noisy_delta_;
-    current_sensors.speed_x = noisy_vx_;
-    current_sensors.speed_y = noisy_vy_;
-
-    current_sensors.motor_speed[0] = noisy_ws_fl_;
-    current_sensors.motor_speed[1] = noisy_ws_fr_;
-    current_sensors.motor_speed[2] = noisy_ws_rl_;
-    current_sensors.motor_speed[3] = noisy_ws_rr_;
-
-    current_sensors.V_soc = 500;
-
-    // State parameters
-    current_dv.autonomous = 1; // 1 -> DV mode
-    current_dv.driving = 1;    // 1 -> Car is driving
-    current_dv.acc = can_acc_;
-    current_dv.target_r = can_target_r_;
+    // DV command
+    dv_.acc = can_acc_;
+    dv_.target_r = can_target_r_;
 
     // Save controller output
-    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4];
-    control_update(&current_sensors, &current_dv, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
-                   fx_obj_tc, t_ff_tc, sr_tc);
+    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4], sr_t[4];
+    estimation_update(&sensors_, state_out);
+    control_update(&sensors_, &dv_, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
+                   fx_obj_tc, t_ff_tc, sr_tc, sr_t);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
@@ -729,6 +724,19 @@ void Simulator::on_fast_timer()
     }
 
     state_pub_->publish(message);
+
+    auto ground_truth_msg = common_msgs::msg::State();
+    ground_truth_msg.x = vehicle_dynamics_.x_;
+    ground_truth_msg.y = vehicle_dynamics_.y_;
+    ground_truth_msg.yaw = vehicle_dynamics_.yaw_;
+    ground_truth_msg.vx = vehicle_dynamics_.vx_;
+    ground_truth_msg.vy = vehicle_dynamics_.vy_;
+    ground_truth_msg.r = vehicle_dynamics_.r_;
+    ground_truth_msg.ax = vehicle_dynamics_.ax_;
+    ground_truth_msg.ay = vehicle_dynamics_.ay_;
+    ground_truth_msg.delta = vehicle_dynamics_.delta_;
+
+    ground_truth_pub_->publish(ground_truth_msg);
 
     auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
     slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
@@ -866,7 +874,7 @@ void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::Shar
  */
 void Simulator::noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_ax_ = msg->data;
+    sensors_.acceleration_x = msg->data;
 }
 
 /**
@@ -877,7 +885,7 @@ void Simulator::noisy_ax_callback(const std_msgs::msg::Float32::SharedPtr msg)
  */
 void Simulator::noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_ay_ = msg->data;
+    sensors_.acceleration_y = msg->data;
 }
 
 /**
@@ -888,21 +896,35 @@ void Simulator::noisy_ay_callback(const std_msgs::msg::Float32::SharedPtr msg)
  */
 void Simulator::noisy_r_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_r_ = msg->data;
+    sensors_.angular_z = msg->data;
 }
 
 /**
- * @brief Callback for receiving noisy front left wheel speed data.
+ * @brief Callback for receiving noisy motor speed data.
  *
- * This method updates the noisy front left wheel speed value based on incoming messages.
- * @param msg Incoming message containing the noisy front left wheel speed data.
+ * This method updates the noisy motor speed value based on incoming messages.
+ * @param msg Incoming message containing the noisy motor speed data.
  */
-void Simulator::noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg)
+void Simulator::noisy_ms_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg)
 {
-    noisy_ws_fl_ = msg->front_left;
-    noisy_ws_fr_ = msg->front_right;
-    noisy_ws_rl_ = msg->rear_left;
-    noisy_ws_rr_ = msg->rear_right;
+    sensors_.motor_speed[0] = msg->front_left;
+    sensors_.motor_speed[1] = msg->front_right;
+    sensors_.motor_speed[2] = msg->rear_left;
+    sensors_.motor_speed[3] = msg->rear_right;
+}
+
+/**
+ * @brief Callback for receiving noisy motor torque data.
+ *
+ * This method updates the noisy motor torque value based on incoming messages.
+ * @param msg Incoming message containing the noisy motor torque data.
+ */
+void Simulator::noisy_torque_callback(const arussim_msgs::msg::FourWheelDrive::SharedPtr msg)
+{
+    sensors_.motor_torque[0] = msg->front_left;
+    sensors_.motor_torque[1] = msg->front_right;
+    sensors_.motor_torque[2] = msg->rear_left;
+    sensors_.motor_torque[3] = msg->rear_right;
 }
 
 /**
@@ -911,18 +933,19 @@ void Simulator::noisy_ws_callback(const arussim_msgs::msg::FourWheelDrive::Share
  */
 void Simulator::noisy_vx_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_vx_ = msg->data;
+    sensors_.speed_x = msg->data;
 }
 
 void Simulator::noisy_vy_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_vy_ = msg->data;
+    sensors_.speed_y = msg->data;
 }
 
 void Simulator::noisy_delta_callback(const std_msgs::msg::Float32::SharedPtr msg)
 {
-    noisy_delta_ = msg->data;
+    sensors_.steering_angle = msg->data;
 }
+
 
 void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
@@ -939,7 +962,18 @@ void Simulator::ebs_callback(const std_msgs::msg::Bool::SharedPtr msg)
 
 void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::SharedPtr msg)
 {
-    if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
+    if (msg && msg->data && (kSimulationMode == "default")) 
+    {
+        sensors_.speed_x = 0.;
+        sensors_.speed_y = 0.;
+        sensors_.angular_z = 0.;
+        sensors_.acceleration_x = 0.;
+        sensors_.acceleration_y = 0.;
+        sensors_.steering_angle = 0.;
+
+        control_init(&sensors_, &car_parameters_);
+    }
+    else if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {
         control_raspi_manager_.stop_control_rasp(this->get_logger());
     }
