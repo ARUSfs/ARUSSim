@@ -114,7 +114,7 @@ private:
     double kNoiseTorqueFrontLeft;
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
-    double kGearRatio = 12.48;
+    double kGearRatio = 11.7;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;
