@@ -119,12 +119,18 @@ class VehicleDynamics
             double Bx;
             double Ex;
 
-            // Lateral coefficients
-            double D1_y;
-            double D2_y;
-            double Cy;
-            double By;
-            double Ey;
+            // Lateral coefficients (Magic Formula, 10 parametros - TTC)
+            double P_KY1;
+            double P_KY2;
+            double P_KY4;
+            double P_DY1;
+            double P_DY2;
+            double P_CY1;
+            double P_EY1;
+            double P_EY2;
+            double S_Hy;
+            double S_Vy;
+            double Lambda_mu_y;   // Factor de escala de adherencia lateral (ajuste de suelo/piso)
 
             // Shifts
             double SH;

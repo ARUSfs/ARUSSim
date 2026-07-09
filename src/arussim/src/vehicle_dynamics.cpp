@@ -124,11 +124,17 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     pac_param_.Bx   = params["Bx"];
     pac_param_.Ex   = params["Ex"];
 
-    pac_param_.D1_y = params["D1_y"];
-    pac_param_.D2_y = params["D2_y"];
-    pac_param_.Cy   = params["Cy"];
-    pac_param_.By   = params["By"];
-    pac_param_.Ey   = params["Ey"];
+    pac_param_.P_KY1 = params["P_KY1"];
+    pac_param_.P_KY2 = params["P_KY2"];
+    pac_param_.P_KY4 = params["P_KY4"];
+    pac_param_.P_DY1 = params["P_DY1"];
+    pac_param_.P_DY2 = params["P_DY2"];
+    pac_param_.P_CY1 = params["P_CY1"];
+    pac_param_.P_EY1 = params["P_EY1"];
+    pac_param_.P_EY2 = params["P_EY2"];
+    pac_param_.S_Hy  = params["S_Hy"];
+    pac_param_.S_Vy  = params["S_Vy"];
+    pac_param_.Lambda_mu_y = params["Lambda_mu_y"];
 
     pac_param_.SH = params["SH"];
     pac_param_.SV = params["SV"];
@@ -359,22 +365,38 @@ VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(
     double SR = slip_ratio;
     double Fz = tire_load;
 
-    double D_lon, D_lat, arg_x, arg_y, fx_pure, fy_pure;
+    double D_lon, arg_x, fx_pure, fy_pure;
     double Bxa, Cxa, Exa, arg_gxa, Gxa;
     double Byk, Gyk, byk_term;
     double Gx_alpha, Gy_kappa;
 
+    // Lateral puro (Magic Formula, 10 parametros - dependiente solo de Fz, ajuste TTC)
+    double dfz, alpha_star, Ky_alpha, mu_y, Dy, Cy, Ey, alpha_y, By;
+    const double eps_y = 1e-6;
+
     // Pacejka scaling
     D_lon = pac_param_.D1_x + pac_param_.D2_x * (Fz / pac_param_.Fz0);
-    D_lat = pac_param_.D1_y + pac_param_.D2_y * (Fz / pac_param_.Fz0);
 
     // Longitudinal puro
     arg_x = pac_param_.Bx * SR;
     fx_pure = Fz * D_lon * sin(pac_param_.Cx * atan(arg_x - pac_param_.Ex * (arg_x - atan(arg_x))));
 
-    // Lateral puro
-    arg_y = pac_param_.By * SA;
-    fy_pure = Fz * D_lat * sin(pac_param_.Cy * atan(arg_y - pac_param_.Ey * (arg_y - atan(arg_y))));
+    // Lateral puro - Magic Formula de 10 parametros (igual que calculate_tire_forces.m)
+    dfz        = (Fz - pac_param_.Fz0) / pac_param_.Fz0;
+    alpha_star = tan(SA);
+
+    Ky_alpha = pac_param_.P_KY1 * pac_param_.Fz0 * sin(pac_param_.P_KY4 * atan((Fz / pac_param_.Fz0) / (pac_param_.P_KY2 + eps_y)));
+
+    mu_y = pac_param_.Lambda_mu_y * (pac_param_.P_DY1 + pac_param_.P_DY2 * dfz);
+    Dy   = mu_y * Fz;
+
+    Cy = pac_param_.P_CY1;
+    Ey = pac_param_.P_EY1 + pac_param_.P_EY2 * dfz;
+
+    alpha_y = alpha_star + pac_param_.S_Hy;
+    By      = Ky_alpha / (Cy * Dy + eps_y);
+
+    fy_pure = Dy * sin(Cy * atan(By * alpha_y - Ey * (By * alpha_y - atan(By * alpha_y)))) + pac_param_.S_Vy;
 
     if(pac_param_.comb_model == 1)
     {
