@@ -216,7 +216,7 @@ Simulator::Simulator() : Node("simulator")
 
     // Initialize sensors struct
     sensors_.gss_ok = 1; // Assume GSS is always OK in simulation
-    sensors_.battery_voltage = 500;
+    sensors_.battery_voltage = 470;
 
     // Initialize DV struct
     dv_.autonomous = 1; // 1 -> DV mode
