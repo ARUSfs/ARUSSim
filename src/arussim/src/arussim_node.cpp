@@ -634,6 +634,11 @@ void Simulator::on_controller_sim_timer()
     frame.data[4] = yaw_rate_scaled & 0xFF;
     frame.data[5] = (yaw_rate_scaled >> 8) & 0xFF;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
+
+    frame.can_id = 0x120;
+    frame.can_dlc = 3;
+    frame.data[2] = (uint8_t)saturation;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
 }
 
 /**
