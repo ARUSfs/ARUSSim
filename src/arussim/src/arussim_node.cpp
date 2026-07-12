@@ -609,10 +609,10 @@ void Simulator::on_controller_sim_timer()
 
     // Save controller output
     double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], 
-        t_ff_tc[4], sa_tc[4], sr_tc[4], sr_t[4], Fz[4], pl_debug[4], tc_int_error[4];
+        t_ff_tc[4], sa_tc[4], sr_tc[4], sr_t[4], Fz[4], pl_debug[4], tc_int_error[4], tc_calc[4];
     estimation_update(&sensors_, state_out, Fz);
     control_update(&sensors_, &dv_, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
-                   fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, pl_debug, tc_int_error);
+                   fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, pl_debug, tc_int_error, tc_calc);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
