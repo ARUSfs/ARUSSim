@@ -148,6 +148,8 @@ class Simulator : public rclcpp::Node
     std::vector<double> can_torque_cmd_;
     uint16_t as_status_ = 0x02;
 
+    double saturation = 0.0;
+
     //CAN Communication
     int can_socket_0_;
     struct ifreq ifr_0_{};

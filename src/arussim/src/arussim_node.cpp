@@ -201,7 +201,7 @@ Simulator::Simulator() : Node("simulator")
 
     // Initialize sensors struct
     sensors_.gss_ok = 1; // Assume GSS is always OK in simulation
-    sensors_.V_soc = 500;
+    sensors_.battery_voltage = 470;
 
     // Initialize DV struct
     dv_.autonomous = 1; // 1 -> DV mode
@@ -593,10 +593,15 @@ void Simulator::on_controller_sim_timer()
     dv_.target_r = can_target_r_;
 
     // Save controller output
-    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], t_ff_tc[4], sr_tc[4], sr_t[4];
-    estimation_update(&sensors_, state_out);
+    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[4], Fz[4],
+        fx_obj_tc[4], t_ff_tc[4], sr_tc[4], sr_t[4], sa_tc[4],
+        PL_debug_data[4], TC_int_error[4], TC_calc[4], saturation;
+
+    estimation_update(&sensors_, state_out, Fz);
+
     control_update(&sensors_, &dv_, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
-                   fx_obj_tc, t_ff_tc, sr_tc, sr_t);
+                fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, PL_debug_data,
+                TC_int_error, TC_calc, &saturation);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
@@ -628,6 +633,11 @@ void Simulator::on_controller_sim_timer()
     frame.data[3] = (vy_scaled >> 8) & 0xFF;
     frame.data[4] = yaw_rate_scaled & 0xFF;
     frame.data[5] = (yaw_rate_scaled >> 8) & 0xFF;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
+
+    frame.can_id = 0x120;
+    frame.can_dlc = 3;
+    frame.data[2] = (uint8_t)saturation;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
 }
 
