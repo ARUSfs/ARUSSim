@@ -201,7 +201,7 @@ Simulator::Simulator() : Node("simulator")
 
     // Initialize sensors struct
     sensors_.gss_ok = 1; // Assume GSS is always OK in simulation
-    sensors_.V_soc = 500;
+    sensors_.battery_voltage = 470;
 
     // Initialize DV struct
     dv_.autonomous = 1; // 1 -> DV mode
@@ -601,7 +601,7 @@ void Simulator::on_controller_sim_timer()
 
     control_update(&sensors_, &dv_, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
                 fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, PL_debug_data,
-                TC_int_error, TC_calc, saturation);
+                TC_int_error, TC_calc, &saturation);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
