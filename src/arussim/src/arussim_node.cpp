@@ -709,17 +709,7 @@ void Simulator::on_fast_timer()
         vehicle_dynamics_.vx_ = 0.0;
         vehicle_dynamics_.vy_ = 0.0;
         vehicle_dynamics_.r_ = 0.0;
-
-        // DEBUG: EBS active -> vx forced to 0 every tick, the car cannot move
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-            "[FAST] EBS activo: as_status=0x%02X (!= 0x03), velocidad forzada a 0", as_status_);
     }
-
-    // DEBUG: what reaches the dynamics every tick (1 Hz)
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-        "[FAST] as_status=0x%02X | can_torque=[%.2f %.2f %.2f %.2f] delta=%.3f | vx=%.3f x=%.2f",
-        as_status_, can_torque_cmd_[0], can_torque_cmd_[1], can_torque_cmd_[2], can_torque_cmd_[3],
-        can_delta_, vehicle_dynamics_.vx_, vehicle_dynamics_.x_);
 
     double dt = 1.0 / kStateUpdateRate;
 
