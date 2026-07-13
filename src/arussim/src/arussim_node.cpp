@@ -219,9 +219,12 @@ Simulator::Simulator() : Node("simulator")
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
     }
 
+    // Needed in every mode: raspi_sim/hil use car_parameters_.gear_ratio to convert
+    // the CAN torque command (motor side) to wheel torque
+    this->load_control_parameters();
+
     if (kSimulationMode == "default")
     {
-        this->load_control_parameters();
         control_init(&sensors_, &car_parameters_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
@@ -232,6 +235,9 @@ Simulator::Simulator() : Node("simulator")
     else if(kSimulationMode == "raspi_sim")
     {
         RCLCPP_WARN(this->get_logger(), "Raspi control simulation enabled.");
+        raspi_sim_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(100),
+            std::bind(&Simulator::on_raspi_sim_timer, this));
     }
     else if(kSimulationMode == "hil")
     {
@@ -642,6 +648,43 @@ void Simulator::on_controller_sim_timer()
 }
 
 /**
+ * @brief Timer callback for raspi_sim mode.
+ *
+ * While the simulation is launched (as_status_ == 0x03), periodically sends on can0
+ * the frames Control-RaspPi needs to command torque:
+ *  - 0x160: data[2] != 0 -> dv_.autonomous = 1
+ *  - 0x161: data[0] == 0x03 -> dv_.driving = 1
+ *  - 0x221: data[0] -> enable_flag_ (R2D), required to start the inverters enable sequence
+ */
+void Simulator::on_raspi_sim_timer()
+{
+    if (as_status_ != 0x03)
+        return;
+
+    struct can_frame frame;
+    std::memset(&frame, 0, sizeof(frame));
+
+    // Autonomous mode
+    frame.can_id = 0x160;
+    frame.can_dlc = 3;
+    frame.data[2] = 0x01;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
+
+    // AS status: driving
+    std::memset(frame.data, 0, sizeof(frame.data));
+    frame.can_id = 0x161;
+    frame.can_dlc = 1;
+    frame.data[0] = 0x03;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
+
+    // R2D enable flag
+    frame.can_id = 0x221;
+    frame.can_dlc = 1;
+    frame.data[0] = 0x01;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
+}
+
+/**
  * @brief Fast timer callback for state updates.
  *
  * This method handles vehicle state updates, broadcasting the transform
@@ -666,7 +709,17 @@ void Simulator::on_fast_timer()
         vehicle_dynamics_.vx_ = 0.0;
         vehicle_dynamics_.vy_ = 0.0;
         vehicle_dynamics_.r_ = 0.0;
+
+        // DEBUG: EBS active -> vx forced to 0 every tick, the car cannot move
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+            "[FAST] EBS activo: as_status=0x%02X (!= 0x03), velocidad forzada a 0", as_status_);
     }
+
+    // DEBUG: what reaches the dynamics every tick (1 Hz)
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+        "[FAST] as_status=0x%02X | can_torque=[%.2f %.2f %.2f %.2f] delta=%.3f | vx=%.3f x=%.2f",
+        as_status_, can_torque_cmd_[0], can_torque_cmd_[1], can_torque_cmd_[2], can_torque_cmd_[3],
+        can_delta_, vehicle_dynamics_.vx_, vehicle_dynamics_.x_);
 
     double dt = 1.0 / kStateUpdateRate;
 
@@ -839,6 +892,47 @@ void Simulator::receive_can_1()
             continue;
         }
 
+        // Setpoints from Control-RaspPi: enable sequence and torque command per motor
+        if (frame_1_.can_id == 0x200 || frame_1_.can_id == 0x203 ||
+            frame_1_.can_id == 0x206 || frame_1_.can_id == 0x209)
+        {
+            int idx = (frame_1_.can_id - 0x200) / 3; // 0,1,2,3
+
+            int16_t torque_scaled = static_cast<int16_t>((frame_1_.data[3] << 8) | frame_1_.data[2]);
+            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * car_parameters_.gear_ratio;
+
+            // DEBUG: confirm torque reception and scaling (1 Hz)
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                "[CAN1 rx] torque motor %d: raw=%d -> %.2f Nm rueda (gear_ratio=%.2f) | cmd=[%.2f %.2f %.2f %.2f]",
+                idx, torque_scaled, can_torque_cmd_.at(idx), car_parameters_.gear_ratio,
+                can_torque_cmd_[0], can_torque_cmd_[1], can_torque_cmd_[2], can_torque_cmd_[3]);
+
+            if (kSimulationMode == "raspi_sim")
+            {
+                if (!amk_enabled_.at(idx))
+                {
+                    amk_enabled_.at(idx) = true;
+                    RCLCPP_INFO(this->get_logger(),
+                                "Enable sequence detected for motor %d, replying inverter enabled", idx);
+                }
+
+                // Emulate inverter status: (data[1] & 0x62) == 0x60 -> enable_amk_[idx] = 1
+                static constexpr uint32_t kAmkStatusIds[4] = {0x100, 0x104, 0x108, 0x112};
+                struct can_frame status_frame;
+                std::memset(&status_frame, 0, sizeof(status_frame));
+                status_frame.can_id = kAmkStatusIds[idx];
+                status_frame.can_dlc = 8;
+                status_frame.data[1] = 0x60;
+                if (idx == 0)
+                {
+                    // 0x100 also carries the DC bus voltage in data[6..7]
+                    int16_t dc_voltage = static_cast<int16_t>(sensors_.battery_voltage);
+                    status_frame.data[6] = dc_voltage & 0xFF;
+                    status_frame.data[7] = (dc_voltage >> 8) & 0xFF;
+                }
+                write(can_socket_1_, &status_frame, sizeof(struct can_frame));
+            }
+        }
     }
 }
 
@@ -855,13 +949,6 @@ void Simulator::receive_can_2()
             continue;
         }
 
-        if (frame_0_.can_id == 0x200 || frame_0_.can_id == 0x203 ||
-                 frame_0_.can_id == 0x206 || frame_0_.can_id == 0x209)
-        {
-            int idx = (frame_0_.can_id - 0x200) / 3; // 0,1,2,3
-            int16_t torque_scaled = static_cast<int16_t>((frame_0_.data[3] << 8) | frame_0_.data[2]);
-            can_torque_cmd_.at(idx) = torque_scaled * 9.8 / 1000.0 * car_parameters_.gear_ratio;
-        }
     }
 }
 
@@ -993,6 +1080,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
     can_delta_ = 0.0;
     can_target_r_ = 0.0;
     can_torque_cmd_ = {0.0, 0.0, 0.0, 0.0};
+    amk_enabled_ = {false, false, false, false};
 
     as_status_ = 0x02;
     vehicle_dynamics_ = VehicleDynamics();

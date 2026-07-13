@@ -37,6 +37,7 @@
 #include <thread>
 #include <queue>
 #include <chrono>
+#include <array>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include "arussim/csv_generator.hpp"
@@ -171,6 +172,7 @@ class Simulator : public rclcpp::Node
 
     //raspi_sim
     control_raspi::ControlRaspi control_raspi_manager_;
+    std::array<bool, 4> amk_enabled_ = {false, false, false, false};
 
     visualization_msgs::msg::Marker marker_;
     pcl::PointCloud<ConeXYZColorScore> track_;
@@ -218,6 +220,15 @@ class Simulator : public rclcpp::Node
      * action, simulating vehicle control unit from real car.
      */
     void on_controller_sim_timer();
+
+    /**
+     * @brief Callback function for the raspi_sim timer.
+     *
+     * Periodically sends on can0 the status frames Control-RaspPi needs to
+     * command torque: 0x160 (autonomous mode), 0x161 (AS driving) and
+     * 0x221 (R2D enable flag). Only active while the simulation is launched.
+     */
+    void on_raspi_sim_timer();
 
     /**
      * @brief Callback function for the fast timer.
@@ -353,6 +364,7 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
+    rclcpp::TimerBase::SharedPtr raspi_sim_timer_;
     rclcpp::TimerBase::SharedPtr perception_timer_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
