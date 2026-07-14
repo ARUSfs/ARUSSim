@@ -120,6 +120,21 @@ Simulator::Simulator() : Node("simulator")
     tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/tire_load", 10);
 
+    tv_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tv_out", 10);
+    tc_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tc_out", 10);
+    pl_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/pl_out", 10);
+    torque_cmd_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/torque_cmd", 10);
+    sr_t_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/sr_t", 10);
+    sr_tc_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/sr_tc", 10);
+    ff_torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/ff_torque", 10);
+
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kSensorRate)),
         std::bind(&Simulator::on_slow_timer, this));
@@ -222,7 +237,7 @@ Simulator::Simulator() : Node("simulator")
     if (kSimulationMode == "default")
     {
         this->load_control_parameters();
-        control_init(&sensors_, &car_parameters_); // Initialize CON-VehicleControl
+        control_init(&sensors_, &car_parameters_, &dv_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
@@ -635,6 +650,55 @@ void Simulator::on_controller_sim_timer()
     frame.data[5] = (yaw_rate_scaled >> 8) & 0xFF;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
 
+    // Publish control debug info
+    auto tv_out_msg = arussim_msgs::msg::FourWheelDrive();
+    tv_out_msg.front_left = tv_out[0];
+    tv_out_msg.front_right = tv_out[1];
+    tv_out_msg.rear_left = tv_out[2];
+    tv_out_msg.rear_right = tv_out[3];
+    tv_out_pub_->publish(tv_out_msg);
+
+    auto tc_out_msg = arussim_msgs::msg::FourWheelDrive();
+    tc_out_msg.front_left = tc_out[0];
+    tc_out_msg.front_right = tc_out[1];
+    tc_out_msg.rear_left = tc_out[2];   
+    tc_out_msg.rear_right = tc_out[3];
+    tc_out_pub_->publish(tc_out_msg);
+
+    auto pl_out_msg = arussim_msgs::msg::FourWheelDrive();
+    pl_out_msg.front_left = pl_out[0];
+    pl_out_msg.front_right = pl_out[1];
+    pl_out_msg.rear_left = pl_out[2];
+    pl_out_msg.rear_right = pl_out[3];
+    pl_out_pub_->publish(pl_out_msg);
+
+    auto torque_cmd_msg = arussim_msgs::msg::FourWheelDrive();
+    torque_cmd_msg.front_left = torque_cmd_out[0];
+    torque_cmd_msg.front_right = torque_cmd_out[1];
+    torque_cmd_msg.rear_left = torque_cmd_out[2];
+    torque_cmd_msg.rear_right = torque_cmd_out[3];
+    torque_cmd_pub_->publish(torque_cmd_msg);
+
+    auto sr_t_msg = arussim_msgs::msg::FourWheelDrive();
+    sr_t_msg.front_left = sr_t[0];
+    sr_t_msg.front_right = sr_t[1];
+    sr_t_msg.rear_left = sr_t[2];
+    sr_t_msg.rear_right = sr_t[3];
+    sr_t_pub_->publish(sr_t_msg);
+
+    auto sr_tc_msg = arussim_msgs::msg::FourWheelDrive();
+    sr_tc_msg.front_left = sr_tc[0];
+    sr_tc_msg.front_right = sr_tc[1];
+    sr_tc_msg.rear_left = sr_tc[2];
+    sr_tc_msg.rear_right = sr_tc[3];
+    sr_tc_pub_->publish(sr_tc_msg);
+
+    auto ff_torque_msg = arussim_msgs::msg::FourWheelDrive();
+    ff_torque_msg.front_left = t_ff_tc[0];
+    ff_torque_msg.front_right = t_ff_tc[1];
+    ff_torque_msg.rear_left = t_ff_tc[2];
+    ff_torque_msg.rear_right = t_ff_tc[3];
+    ff_torque_pub_->publish(ff_torque_msg);
     frame.can_id = 0x120;
     frame.can_dlc = 3;
     frame.data[2] = (uint8_t)saturation;
@@ -981,7 +1045,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
         sensors_.acceleration_y = 0.;
         sensors_.steering_angle = 0.;
 
-        control_init(&sensors_, &car_parameters_);
+        control_init(&sensors_, &car_parameters_, &dv_);
     }
     else if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {

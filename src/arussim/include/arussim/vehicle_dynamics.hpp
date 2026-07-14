@@ -119,12 +119,13 @@ class VehicleDynamics
             double Bx;
             double Ex;
 
-            // Lateral coefficients
+            // Lateral coefficients (Magic Formula, 7 parametros - Pacejka)
             double D1_y;
             double D2_y;
             double Cy;
             double By;
             double Ey;
+            double Lambda_mu_y;   // Factor de escala de adherencia lateral (ajuste de suelo/piso)
 
             // Shifts
             double SH;

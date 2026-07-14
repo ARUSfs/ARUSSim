@@ -185,7 +185,7 @@ Sensors::Sensors() : Node("sensors")
             }, Sensors::CanBus::kCan1
         },
         {0x134, 2, { // Extensometer
-            {"extensometer", {0, 15, true, 0.000035, -0.482442}}
+            {"extensometer", {0, 15, true, 0.00003435, -0.3364}}
             }, Sensors::CanBus::kCan0
         },
         {0x123, 6, {

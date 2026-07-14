@@ -363,6 +363,13 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_ratio_pub_;
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr slip_angle_pub_;
     rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tire_load_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tv_out_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr tc_out_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr pl_out_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_cmd_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr sr_t_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr sr_tc_pub_;
+    rclcpp::Publisher<arussim_msgs::msg::FourWheelDrive>::SharedPtr ff_torque_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vx_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_vy_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr control_r_pub_;
