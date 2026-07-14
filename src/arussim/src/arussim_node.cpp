@@ -237,7 +237,7 @@ Simulator::Simulator() : Node("simulator")
     if (kSimulationMode == "default")
     {
         this->load_control_parameters();
-        control_init(&sensors_, &car_parameters_); // Initialize CON-VehicleControl
+        control_init(&sensors_, &car_parameters_, &dv_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
@@ -608,11 +608,15 @@ void Simulator::on_controller_sim_timer()
     dv_.target_r = can_target_r_;
 
     // Save controller output
-    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[3], fx_obj_tc[4], 
-        t_ff_tc[4], sa_tc[4], sr_tc[4], sr_t[4], Fz[4], pl_debug[4], tc_int_error[4], tc_calc[4];
+    double tv_out[4], tc_out[4], pl_out[4], torque_cmd_out[4], state_out[4], Fz[4],
+        fx_obj_tc[4], t_ff_tc[4], sr_tc[4], sr_t[4], sa_tc[4],
+        PL_debug_data[4], TC_int_error[4], TC_calc[4], saturation;
+
     estimation_update(&sensors_, state_out, Fz);
+
     control_update(&sensors_, &dv_, tv_out, tc_out, pl_out, torque_cmd_out, state_out,
-                   fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, pl_debug, tc_int_error, tc_calc);
+                fx_obj_tc, t_ff_tc, sr_tc, sr_t, sa_tc, PL_debug_data,
+                TC_int_error, TC_calc, &saturation);
 
     torque_cmd_ = {
         static_cast<double>(torque_cmd_out[0] * car_parameters_.gear_ratio),
@@ -695,6 +699,10 @@ void Simulator::on_controller_sim_timer()
     ff_torque_msg.rear_left = t_ff_tc[2];
     ff_torque_msg.rear_right = t_ff_tc[3];
     ff_torque_pub_->publish(ff_torque_msg);
+    frame.can_id = 0x120;
+    frame.can_dlc = 3;
+    frame.data[2] = (uint8_t)saturation;
+    write(can_socket_0_, &frame, sizeof(struct can_frame));
 }
 
 /**
@@ -1037,7 +1045,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
         sensors_.acceleration_y = 0.;
         sensors_.steering_angle = 0.;
 
-        control_init(&sensors_, &car_parameters_);
+        control_init(&sensors_, &car_parameters_, &dv_);
     }
     else if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {
