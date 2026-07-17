@@ -877,9 +877,9 @@ void Simulator::receive_can_0()
             time_last_cmd_ = clock_->now();
         }
 
-        else if (frame_0_.can_id == 0x161)
+        else if (frame_0_.can_id == 0x261)
         {
-            as_status_ = frame_0_.data[0];
+            as_status_ = frame_0_.data[1];
         }
 
         else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x601)
