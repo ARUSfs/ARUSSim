@@ -5,6 +5,10 @@
 
 #include "arussim/arussim_node.hpp"
 #include <cstdlib>
+#include <csignal>
+#include <filesystem>
+#include <sys/wait.h>
+#include <unistd.h>
 
 /**
  * @class Simulator
@@ -275,6 +279,16 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 
+}
+
+/**
+ * @brief Destructor for the Simulator class.
+ *
+ * Stops the rosbag recording if it is still active.
+ */
+Simulator::~Simulator()
+{
+    stop_rosbag_recording();
 }
 
 /**
@@ -716,6 +730,17 @@ void Simulator::on_fast_timer()
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
 
+    // Record a rosbag while the AS status is Driving (0x03)
+    if (as_status_ == 0x03 && prev_as_status_ != 0x03)
+    {
+        start_rosbag_recording();
+    }
+    else if (as_status_ != 0x03 && prev_as_status_ == 0x03)
+    {
+        stop_rosbag_recording();
+    }
+    prev_as_status_ = as_status_;
+
     if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
     {
         can_acc_ = 0;
@@ -938,6 +963,64 @@ void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::Shar
     {
         control_raspi_manager_.start_control_rasp(this->get_logger());
     }
+}
+
+/**
+ * @brief Starts recording a rosbag of the current run in ~/ARUS_logs/arussim/.
+ *
+ * Only one recording is kept: the previous one is deleted before starting.
+ */
+void Simulator::start_rosbag_recording()
+{
+    if (rosbag_pid_ > 0)
+        return;
+
+    const char* home = std::getenv("HOME");
+    if (!home)
+    {
+        RCLCPP_ERROR(this->get_logger(), "HOME is not set, the rosbag will not be recorded");
+        return;
+    }
+
+    std::filesystem::path bag_dir = std::filesystem::path(home) / "ARUS_logs" / "arussim";
+    std::filesystem::path bag_path = bag_dir / "sim_rosbag";
+
+    std::error_code ec;
+    std::filesystem::create_directories(bag_dir, ec);
+    std::filesystem::remove_all(bag_path, ec);
+
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        // Own process group so the recorder only receives the signals we send it
+        setpgid(0, 0);
+        execlp("ros2", "ros2", "bag", "record", "-a", "-s", "mcap",
+               "-o", bag_path.c_str(), (char*)NULL);
+        _exit(1);
+    }
+    else if (pid > 0)
+    {
+        rosbag_pid_ = pid;
+        RCLCPP_INFO(this->get_logger(), "Recording rosbag in %s", bag_path.c_str());
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to start the rosbag recording");
+    }
+}
+
+/**
+ * @brief Stops the active rosbag recording.
+ */
+void Simulator::stop_rosbag_recording()
+{
+    if (rosbag_pid_ <= 0)
+        return;
+
+    kill(rosbag_pid_, SIGINT);
+    waitpid(rosbag_pid_, nullptr, 0);
+    rosbag_pid_ = -1;
+    RCLCPP_INFO(this->get_logger(), "Rosbag recording stopped");
 }
 
 /**
