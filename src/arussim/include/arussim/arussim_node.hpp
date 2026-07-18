@@ -78,6 +78,13 @@ class Simulator : public rclcpp::Node
      */
     Simulator();
 
+    /**
+     * @brief Destructor for the Simulator class.
+     *
+     * Stops the rosbag recording if it is still active.
+     */
+    ~Simulator();
+
   private:
     VehicleDynamics vehicle_dynamics_;
 
@@ -147,6 +154,10 @@ class Simulator : public rclcpp::Node
     float can_delta_;
     std::vector<double> can_torque_cmd_;
     uint16_t as_status_ = 0x02;
+    uint16_t prev_as_status_ = 0x02;
+
+    // Rosbag recording of the current run
+    pid_t rosbag_pid_ = -1;
 
     double saturation = 0.0;
 
@@ -274,6 +285,18 @@ class Simulator : public rclcpp::Node
      * 
      */
     void launch_callback(const std_msgs::msg::Bool::SharedPtr msg);
+
+    /**
+     * @brief Starts recording a rosbag of the current run in ~/ARUS_logs/arussim/.
+     *
+     * Only one recording is kept: the previous one is deleted before starting.
+     */
+    void start_rosbag_recording();
+
+    /**
+     * @brief Stops the active rosbag recording.
+     */
+    void stop_rosbag_recording();
 
     /**
      * @brief Broadcasts the vehicle's current pose to the ROS TF system.
