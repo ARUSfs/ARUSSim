@@ -26,7 +26,6 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
-    this->declare_parameter<double>("visualization_rate", 50);
     this->declare_parameter<std::string>("simulation_mode", "default");
     this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
@@ -61,9 +60,6 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("simulation_car", kSimulationCar);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
-    this->get_parameter("visualization_rate", kVisualizationRate);
-
-    rviz_decimation_ = std::max(1, (int)std::round(kStateUpdateRate / kVisualizationRate));
     this->get_parameter("simulation_mode", kSimulationMode);
     this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
@@ -123,13 +119,13 @@ Simulator::Simulator() : Node("simulator")
         "/arussim/fixed_trajectory", 10);
     camera_perception_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "/arussim/camera_perception", 10);
+
     slip_ratio_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/slip_ratio", 10);
     slip_angle_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/slip_angle", 10);
     tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/tire_load", 10);
-
     tv_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/tv_out", 10);
     tc_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
@@ -145,19 +141,23 @@ Simulator::Simulator() : Node("simulator")
     ff_torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/ff_torque", 10);
 
+    slow_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kSensorRate)),
-        std::bind(&Simulator::on_slow_timer, this));
+        std::bind(&Simulator::on_slow_timer, this), slow_group_);
     fast_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kStateUpdateRate)),
         std::bind(&Simulator::on_fast_timer, this));
 
     perception_timer_ = this->create_wall_timer(
         std::chrono::milliseconds(1),
-        std::bind(&Simulator::process_perception_queue, this));
+        std::bind(&Simulator::process_perception_queue, this), slow_group_);
 
-    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1, 
-        std::bind(&Simulator::load_track, this, std::placeholders::_1));
+    rclcpp::SubscriptionOptions slow_sub_options;
+    slow_sub_options.callback_group = slow_group_;
+    circuit_sub_ = this->create_subscription<std_msgs::msg::String>("/arussim/circuit", 1,
+        std::bind(&Simulator::load_track, this, std::placeholders::_1), slow_sub_options);
     rviz_telep_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "/initialpose", 1, std::bind(&Simulator::rviz_telep_callback, this, std::placeholders::_1));
     ebs_sub_ = this->create_subscription<std_msgs::msg::Bool>(
@@ -723,6 +723,28 @@ void Simulator::on_controller_sim_timer()
     frame.can_dlc = 3;
     frame.data[2] = (uint8_t)saturation;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
+
+    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
+    slip_ratio_pub_->publish(slip_ratio_msg);
+
+    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
+    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
+    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
+    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
+    slip_angle_pub_->publish(slip_angle_msg);
+
+    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
+    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
+    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
+    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
+    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
+    tire_load_pub_->publish(tire_load_msg);
+
 }
 
 /**
@@ -846,36 +868,11 @@ void Simulator::on_fast_timer()
 
     ground_truth_pub_->publish(ground_truth_msg);
 
-    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
-    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
-    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
-    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
-    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
-    slip_ratio_pub_->publish(slip_ratio_msg);
+    broadcast_transform();
 
-    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
-    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
-    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
-    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
-    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
-    slip_angle_pub_->publish(slip_angle_msg);
-
-    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
-    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
-    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
-    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
-    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
-    tire_load_pub_->publish(tire_load_msg);
-
-    if (++rviz_counter_ >= rviz_decimation_)
-    {
-        rviz_counter_ = 0;
-        broadcast_transform();
-
-        // Update vehicle marker
-        marker_.header.stamp = clock_->now();
-        marker_pub_->publish(marker_);
-    }
+    // Update vehicle marker
+    marker_.header.stamp = clock_->now();
+    marker_pub_->publish(marker_);
 }
 
 void Simulator::receive_can_0()
@@ -1687,7 +1684,10 @@ void Simulator::cone_visualization()
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Simulator>());
+    auto node = std::make_shared<Simulator>();
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
     rclcpp::shutdown();
     return 0;
 }

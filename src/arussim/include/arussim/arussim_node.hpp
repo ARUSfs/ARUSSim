@@ -8,6 +8,7 @@
  */
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/executors/multi_threaded_executor.hpp>
 
 #include "arussim_msgs/msg/state.hpp"
 #include "arussim_msgs/msg/cmd.hpp"
@@ -92,9 +93,6 @@ class Simulator : public rclcpp::Node
     std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate;
-    double kVisualizationRate;
-    int rviz_decimation_ = 1;
-    int rviz_counter_ = 0;
     std::string kSimulationMode;
     bool kUseGSS;
     double kWheelBase;
@@ -376,6 +374,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_delta_sub_;   
+    rclcpp::CallbackGroup::SharedPtr slow_group_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;

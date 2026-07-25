@@ -5,7 +5,6 @@ arussim:
     track: "FSG"
     state_update_rate: 1000.0      # Hz
     controller_rate:   200.0       # Hz
-    visualization_rate: 500.0       # Hz   RViz TF + vehicle marker publish rate (decoupled from physics)
     use_gss: true
     csv_state: false               # bool   Save data to CSV file
     csv_vehicle_dynamics: false    # bool   Save data to CSV file
