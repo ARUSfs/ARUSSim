@@ -4,6 +4,10 @@ VehicleDynamics::VehicleDynamics(){
     x_ = 0;
     y_ = 0;
     yaw_ = 0;
+    roll_ = 0;
+    pitch_ = 0;
+    roll_rate_ = 0;
+    pitch_rate_ = 0;
     vx_ = 0;
     vy_ = 0;
     r_ = 0;
@@ -68,8 +72,16 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kMassDistributionRear = params["r_cdg"];
     kSpringStiffnessF = params["k_F"];
     kSpringStiffnessR = params["k_R"];
+    kARBStiffnessF = params["k_ARB_F"];
+    kARBStiffnessR = params["k_ARB_R"];
     kMotionRatioF = params["MR_F"];
     kMotionRatioR = params["MR_R"];
+    kMotionRatioARBF = params["MR_ARB_F"];
+    kMotionRatioARBR = params["MR_ARB_R"];
+    kDamperF = params["d_f"];
+    kDamperR = params["d_r"];
+    kIxx = params["Ixx_F"] + params["Ixx_R"];
+    kIyy = params["Iyy"];
     kTrackWidth = params["trackwidthF"];
     kTireDynRadius = params["rdyn"];
     kTireInertia_F = params["I_wheel_F"];
@@ -88,15 +100,37 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kLf = kWheelBase*kMassDistributionRear;
     kLr = kWheelBase*(1-kMassDistributionRear); 
 
-    kHRollCenterF = 0.033;  // TODO: añadir roll centers al csv
-    kHRollCenterR = 0.097;
+    kHRollCenterF = params["h_RC_f"];
+    kHRollCenterR = params["h_RC_r"];
     kHRollAxis = kHRollCenterF + (kHRollCenterR - kHRollCenterF) * kLf / kWheelBase;
+
+    // Older car files don't define these yet
+    kHSCog = params.count("h_cdg_sm") ? params["h_cdg_sm"] : kHCog;
+    kHPitchCenter = params.count("h_PC") ? params["h_PC"] : 0.0;
 
     kWheelRateF = kSpringStiffnessF / std::pow(kMotionRatioF,2);
     kWheelRateR = kSpringStiffnessR / std::pow(kMotionRatioR,2);
-    kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateF;
-    kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * 0.01745 * kWheelRateR;
+    kDamperRateF = kDamperF / std::pow(kMotionRatioF,2);
+    kDamperRateR = kDamperR / std::pow(kMotionRatioR,2);
+
+    double arb_rate_f = kMotionRatioARBF > 0 ? kARBStiffnessF / std::pow(kMotionRatioARBF,2) : 0.0;
+    double arb_rate_r = kMotionRatioARBR > 0 ? kARBStiffnessR / std::pow(kMotionRatioARBR,2) : 0.0;
+
+    // Roll/pitch stiffness and damping in Nm/rad and Nms/rad
+    kRollStiffnessF = 0.5 * std::pow(kTrackWidth,2) * (kWheelRateF + arb_rate_f);
+    kRollStiffnessR = 0.5 * std::pow(kTrackWidth,2) * (kWheelRateR + arb_rate_r);
     kRollStiffness = kRollStiffnessF + kRollStiffnessR;
+    kRollDampingF = 0.5 * std::pow(kTrackWidth,2) * kDamperRateF;
+    kRollDampingR = 0.5 * std::pow(kTrackWidth,2) * kDamperRateR;
+    kRollDamping = kRollDampingF + kRollDampingR;
+    kPitchStiffness = 2 * (kWheelRateF * std::pow(kLf,2) + kWheelRateR * std::pow(kLr,2));
+    kPitchDamping = 2 * (kDamperRateF * std::pow(kLf,2) + kDamperRateR * std::pow(kLr,2));
+
+    // Suspended mass inertia about the roll axis / pitch center (parallel axis)
+    kHRollMomentArm = kHSCog - kHRollAxis;
+    kHPitchMomentArm = kHSCog - kHPitchCenter;
+    kIxxRoll = kIxx + kSMass * std::pow(kHRollMomentArm,2);
+    kIyyPitch = kIyy + kSMass * std::pow(kHPitchMomentArm,2);
 
     kHCogNsF = kTireDynRadius;
     kHCogNsR = kTireDynRadius;
@@ -207,6 +241,13 @@ void VehicleDynamics::calculate_dynamics(){
 
     r_dot_ = total_mz / kIzz;
 
+    // Suspended mass roll/pitch dynamics about the roll axis / pitch center.
+    // Inertial + gravity moments vs. spring stiffness and damper.
+    roll_rate_dot_ = (kSMass * (ay_ + kG * std::sin(roll_)) * kHRollMomentArm
+                    - kRollStiffness * roll_ - kRollDamping * roll_rate_) / kIxxRoll;
+    pitch_rate_dot_ = (kSMass * (-ax_ + kG * std::sin(pitch_)) * kHPitchMomentArm
+                    - kPitchStiffness * pitch_ - kPitchDamping * pitch_rate_) / kIyyPitch;
+
     // Tire angular acceleration
     double alpha_w = std::min(std::max(0.01,0.01*vx_),1.0);
     w_fl_dot_ = alpha_w*(torque_cmd_.fl_ - force_fl.fx * kTireDynRadius) / kTireInertia_F + (1-alpha_w)*w_fl_dot_;
@@ -229,6 +270,12 @@ void VehicleDynamics::integrate_dynamics(){
     vx_ += vx_dot_ * dt_;
     vy_ += vy_dot_ *dt_;
     r_ += r_dot_ * dt_;
+
+    // Semi-implicit Euler: rate first, then angle with the updated rate
+    roll_rate_ += roll_rate_dot_ * dt_;
+    roll_ += roll_rate_ * dt_;
+    pitch_rate_ += pitch_rate_dot_ * dt_;
+    pitch_ += pitch_rate_ * dt_;
 
     kinematic_correction();
 
@@ -273,17 +320,21 @@ void VehicleDynamics::calculate_tire_loads(){
     double lateral_s_g_f = kSMassF * ay_ * kHRollCenterF / kTrackWidth;
     double lateral_s_g_r = kSMassR * ay_ * kHRollCenterR / kTrackWidth;
 
-    // Suspended elastic
-    double lateral_s_e_f = kSMass * ay_ * (kHCog - kHRollAxis) * kRollStiffnessF / kRollStiffness / kTrackWidth;
-    double lateral_s_e_r = kSMass * ay_ * (kHCog - kHRollAxis) * kRollStiffnessR / kRollStiffness / kTrackWidth;
+    // Suspended elastic: reacted by springs/dampers through the actual roll angle,
+    // so the transfer builds up with the roll transient instead of instantly
+    double lateral_s_e_f = (kRollStiffnessF * roll_ + kRollDampingF * roll_rate_) / kTrackWidth;
+    double lateral_s_e_r = (kRollStiffnessR * roll_ + kRollDampingR * roll_rate_) / kTrackWidth;
 
-    // Longitudinal load transfer 
+    // Longitudinal load transfer
     double longitudinal_ns = (kNsMassF * kHCogNsF + kNsMassR * kHCogNsR) * ax_ / kWheelBase;
-    double longitudinal_s = kSMass * kHCog * ax_ / kWheelBase;
+    // Suspended geometric: instantaneous through the pitch center (anti-dive/anti-squat)
+    double longitudinal_s_g = kSMass * kHPitchCenter * ax_ / kWheelBase;
+    // Suspended elastic: through the actual pitch angle
+    double longitudinal_s_e = -(kPitchStiffness * pitch_ + kPitchDamping * pitch_rate_) / kWheelBase;
 
     double lateral_load_transfer_front = lateral_ns_f + lateral_s_e_f + lateral_s_g_f;
     double lateral_load_transfer_rear = lateral_ns_r + lateral_s_e_r + lateral_s_g_r;
-    double longitudinal_load_transfer = longitudinal_ns + longitudinal_s;
+    double longitudinal_load_transfer = longitudinal_ns + longitudinal_s_g + longitudinal_s_e;
 
     tire_loads_.fl_ = kStaticLoadFront - lateral_load_transfer_front - longitudinal_load_transfer/2;
     tire_loads_.fr_ = kStaticLoadFront + lateral_load_transfer_front - longitudinal_load_transfer/2;
@@ -436,6 +487,10 @@ void VehicleDynamics::write_csv_row(){
     row_values.push_back(std::to_string(x_));
     row_values.push_back(std::to_string(y_));
     row_values.push_back(std::to_string(yaw_));
+    row_values.push_back(std::to_string(roll_));
+    row_values.push_back(std::to_string(pitch_));
+    row_values.push_back(std::to_string(roll_rate_));
+    row_values.push_back(std::to_string(pitch_rate_));
     row_values.push_back(std::to_string(vx_));
     row_values.push_back(std::to_string(vy_));
     row_values.push_back(std::to_string(r_));
@@ -475,6 +530,6 @@ void VehicleDynamics::write_csv_row(){
     row_values.push_back(std::to_string(force.fy));
     row_values.push_back(std::to_string(force.fx));
     // Write header and row
-    csv_generator_vehicle_dynamics_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta,delta_v,fl_wheel_speed,fr_wheel_speed,rl_wheel_speed,rr_wheel_speed,fl_torque,fr_torque,rl_torque,rr_torque,input_delta,input_acc,dt,alpha_fl,alpha_fr,alpha_rl,alpha_rr,lambda_fl,lambda_fr,lambda_rl,lambda_rr,fl_load,fr_load,rl_load,rr_load,force_fy,force_fx", 
+    csv_generator_vehicle_dynamics_->write_row("x,y,yaw,roll,pitch,roll_rate,pitch_rate,vx,vy,r,ax,ay,delta,delta_v,fl_wheel_speed,fr_wheel_speed,rl_wheel_speed,rr_wheel_speed,fl_torque,fr_torque,rl_torque,rr_torque,input_delta,input_acc,dt,alpha_fl,alpha_fr,alpha_rl,alpha_rr,lambda_fl,lambda_fr,lambda_rl,lambda_rr,fl_load,fr_load,rl_load,rr_load,force_fy,force_fx",
                                                 row_values);
 }

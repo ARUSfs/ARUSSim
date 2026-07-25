@@ -4,6 +4,8 @@
  */
 
 #include "arussim/arussim_node.hpp"
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <csignal>
 #include <filesystem>
@@ -24,6 +26,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
+    this->declare_parameter<double>("visualization_rate", 50);
     this->declare_parameter<std::string>("simulation_mode", "default");
     this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
@@ -58,6 +61,9 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("simulation_car", kSimulationCar);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
+    this->get_parameter("visualization_rate", kVisualizationRate);
+
+    rviz_decimation_ = std::max(1, (int)std::round(kStateUpdateRate / kVisualizationRate));
     this->get_parameter("simulation_mode", kSimulationMode);
     this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
@@ -783,6 +789,8 @@ void Simulator::on_fast_timer()
     message.x = vehicle_dynamics_.x_;
     message.y = vehicle_dynamics_.y_;
     message.yaw = vehicle_dynamics_.yaw_;
+    message.roll = vehicle_dynamics_.roll_;
+    message.pitch = vehicle_dynamics_.pitch_;
     message.vx = vehicle_dynamics_.vx_;
     message.vy = vehicle_dynamics_.vy_;
     message.r = vehicle_dynamics_.r_;
@@ -859,11 +867,15 @@ void Simulator::on_fast_timer()
     tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
     tire_load_pub_->publish(tire_load_msg);
 
-    broadcast_transform();
+    if (++rviz_counter_ >= rviz_decimation_)
+    {
+        rviz_counter_ = 0;
+        broadcast_transform();
 
-    // Update vehicle marker
-    marker_.header.stamp = clock_->now();
-    marker_pub_->publish(marker_);
+        // Update vehicle marker
+        marker_.header.stamp = clock_->now();
+        marker_pub_->publish(marker_);
+    }
 }
 
 void Simulator::receive_can_0()
@@ -1225,7 +1237,7 @@ void Simulator::broadcast_transform()
 
     // Set the rotation (using a quaternion)
     tf2::Quaternion q;
-    q.setRPY(0, 0, vehicle_dynamics_.yaw_); // Roll, Pitch, Yaw in radians
+    q.setRPY(vehicle_dynamics_.roll_, vehicle_dynamics_.pitch_, vehicle_dynamics_.yaw_);
     transform_stamped.transform.rotation.x = q.x();
     transform_stamped.transform.rotation.y = q.y();
     transform_stamped.transform.rotation.z = q.z();

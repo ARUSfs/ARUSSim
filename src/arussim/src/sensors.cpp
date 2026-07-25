@@ -8,6 +8,7 @@
  */
 #include "arussim/sensors.hpp"
 #include <cerrno>
+#include <cmath>
 #include <cstring>
 #include <unistd.h>
 std::vector<Sensors::CanFrame> Sensors::frames;
@@ -284,6 +285,8 @@ void Sensors::state_callback(const arussim_msgs::msg::State::SharedPtr msg)
     x_ = msg->x;
     y_ = msg->y;
     yaw_ = msg->yaw;
+    roll_ = msg->roll;
+    pitch_ = msg->pitch;
     vx_ = msg->vx;
     vy_ = msg->vy;
     r_ = msg->r;
@@ -316,9 +319,10 @@ void Sensors::imu_timer()
     // Yaw rate
     msg_r.data = r_ + dist_r(gen);  
 
-    // Linear acceleration
-    msg_ax.data = ax_ + dist_ax(gen);  
-    msg_ay.data = ay_ + dist_ay(gen);  
+    // Linear acceleration: an accelerometer measures specific force, so the
+    // gravity component leaks into the body axes when the chassis rolls/pitches
+    msg_ax.data = ax_ - kG * std::sin(pitch_) + dist_ax(gen);
+    msg_ay.data = ay_ + kG * std::sin(roll_) * std::cos(pitch_) + dist_ay(gen);
 
     // Vehicle pose
     msg_x.data = x_ + dist_pose(gen);

@@ -64,6 +64,8 @@ private:
     double x_ = 0;
     double y_ = 0;
     double yaw_ = 0;
+    double roll_ = 0;
+    double pitch_ = 0;
     double vx_ = 0;
     double vy_ = 0;
     double r_ = 0;
@@ -115,6 +117,7 @@ private:
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
     double kGearRatio = 11.7;
+    double kG = 9.81;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;

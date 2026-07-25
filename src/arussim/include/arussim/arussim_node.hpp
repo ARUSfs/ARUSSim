@@ -91,7 +91,10 @@ class Simulator : public rclcpp::Node
     std::string kTrackName;
     std::string kSimulationCar;
     double kStateUpdateRate;
-    double kControllerRate; 
+    double kControllerRate;
+    double kVisualizationRate;
+    int rviz_decimation_ = 1;
+    int rviz_counter_ = 0;
     std::string kSimulationMode;
     bool kUseGSS;
     double kWheelBase;

@@ -13,6 +13,10 @@ class VehicleDynamics
         double x_;
         double y_;
         double yaw_;
+        double roll_;
+        double pitch_;
+        double roll_rate_;
+        double pitch_rate_;
         double vx_;
         double vy_;
         double r_;
@@ -83,21 +87,42 @@ class VehicleDynamics
         double kLr;
 
         double kHCog;
+        double kHSCog;
         double kHCogNsF;
         double kHCogNsR;
         double kHRollCenterF;
         double kHRollCenterR;
         double kHRollAxis;
+        double kHPitchCenter;
+        double kHRollMomentArm;
+        double kHPitchMomentArm;
 
         double kSpringStiffnessF;
         double kSpringStiffnessR;
+        double kARBStiffnessF;
+        double kARBStiffnessR;
         double kMotionRatioF;
-        double kMotionRatioR;        
+        double kMotionRatioR;
+        double kMotionRatioARBF;
+        double kMotionRatioARBR;
         double kWheelRateF;
         double kWheelRateR;
         double kRollStiffnessF;
         double kRollStiffnessR;
         double kRollStiffness;
+        double kDamperF;
+        double kDamperR;
+        double kDamperRateF;
+        double kDamperRateR;
+        double kRollDampingF;
+        double kRollDampingR;
+        double kRollDamping;
+        double kPitchStiffness;
+        double kPitchDamping;
+        double kIxx;
+        double kIyy;
+        double kIxxRoll;
+        double kIyyPitch;
 
         double kAckermann1;
         double kAckermann2;
@@ -165,6 +190,7 @@ class VehicleDynamics
         double kAirDensity;
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
+        double roll_rate_dot_{0.0}, pitch_rate_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
         double delta_dot_{0.0}, delta_v_dot_{0.0};
 
