@@ -93,6 +93,7 @@ class Simulator : public rclcpp::Node
     std::string kSimulationCar;
     double kStateUpdateRate;
     double kControllerRate;
+    double kDebugTimerRate;
     std::string kSimulationMode;
     bool kUseGSS;
     double kWheelBase;
@@ -240,6 +241,14 @@ class Simulator : public rclcpp::Node
     void on_fast_timer();
 
     /**
+     * @brief Callback for the debug publisher timer.
+     *
+     * Publishes vehicle state, ground truth, TF and marker at
+     * kDebugTimerRate, decoupled from the physics loop.
+     */
+    void debug_timer();
+
+    /**
      * @brief Callback functions for receiving noisy sensor data.
      * 
      */
@@ -379,6 +388,8 @@ class Simulator : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr fast_timer_;
     rclcpp::TimerBase::SharedPtr controller_sim_timer_;
     rclcpp::TimerBase::SharedPtr perception_timer_;
+    rclcpp::TimerBase::SharedPtr debug_timer_timer_;
+    rclcpp::CallbackGroup::SharedPtr debug_timer_cb_group_;
     rclcpp::Subscription<arussim_msgs::msg::Cmd>::SharedPtr cmd_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ebs_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr rviz_telep_sub_;

@@ -190,8 +190,8 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
 }
 
 
-void VehicleDynamics::update_simulation(double input_delta, 
-                                        std::vector<double> input_torque, 
+void VehicleDynamics::update_simulation(double input_delta,
+                                        const std::vector<double>& input_torque,
                                         double dt){
     input_delta_ = input_delta;
     torque_cmd_.fl_ = input_torque[0];

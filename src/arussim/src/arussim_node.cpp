@@ -26,6 +26,7 @@ Simulator::Simulator() : Node("simulator")
     this->declare_parameter<std::string>("simulation_car", "ART25D_2WD");
     this->declare_parameter<double>("state_update_rate", 1000);
     this->declare_parameter<double>("controller_rate", 100);
+    this->declare_parameter<double>("debug_timer_rate", 200);
     this->declare_parameter<std::string>("simulation_mode", "default");
     this->declare_parameter<bool>("use_gss", false);
     this->declare_parameter<double>("vehicle.COG_front_dist", 1.9);
@@ -60,6 +61,7 @@ Simulator::Simulator() : Node("simulator")
     this->get_parameter("simulation_car", kSimulationCar);
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
+    this->get_parameter("debug_timer_rate", kDebugTimerRate);
     this->get_parameter("simulation_mode", kSimulationMode);
     this->get_parameter("use_gss", kUseGSS);
     this->get_parameter("vehicle.COG_front_dist", kCOGFrontDist);
@@ -153,6 +155,11 @@ Simulator::Simulator() : Node("simulator")
     perception_timer_ = this->create_wall_timer(
         std::chrono::milliseconds(1),
         std::bind(&Simulator::process_perception_queue, this), slow_group_);
+
+    debug_timer_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    debug_timer_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds((int)(1000 / kDebugTimerRate)),
+        std::bind(&Simulator::debug_timer, this), debug_timer_cb_group_);
 
     rclcpp::SubscriptionOptions slow_sub_options;
     slow_sub_options.callback_group = slow_group_;
@@ -723,28 +730,6 @@ void Simulator::on_controller_sim_timer()
     frame.can_dlc = 3;
     frame.data[2] = (uint8_t)saturation;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
-
-    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
-    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
-    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
-    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
-    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
-    slip_ratio_pub_->publish(slip_ratio_msg);
-
-    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
-    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
-    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
-    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
-    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
-    slip_angle_pub_->publish(slip_angle_msg);
-
-    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
-    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
-    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
-    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
-    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
-    tire_load_pub_->publish(tire_load_msg);
-
 }
 
 /**
@@ -806,6 +791,25 @@ void Simulator::on_fast_timer()
         check_acc_start();
     }
 
+    if (kCSVState)
+    {
+        std::vector<std::string> row_values;
+        row_values.push_back(std::to_string(vehicle_dynamics_.x_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.y_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.yaw_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vx_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.vy_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.r_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ax_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.ay_));
+        row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
+        csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
+    }
+    if (kCSVVehicleDynamics)
+    {
+        vehicle_dynamics_.write_csv_row();
+    }
+
     auto message = arussim_msgs::msg::State();
     message.header.stamp = clock_->now();
     message.x = vehicle_dynamics_.x_;
@@ -834,26 +838,37 @@ void Simulator::on_fast_timer()
     torque.rear_right = vehicle_dynamics_.torque_cmd_.rr_;
     message.torque = torque;
 
-    if (kCSVState)
-    {
-        std::vector<std::string> row_values;
-        row_values.push_back(std::to_string(vehicle_dynamics_.x_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.y_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.yaw_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.vx_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.vy_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.r_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.ax_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.ay_));
-        row_values.push_back(std::to_string(vehicle_dynamics_.delta_));
-        csv_generator_state_->write_row("x,y,yaw,vx,vy,r,ax,ay,delta", row_values);
-    }
-    if (kCSVVehicleDynamics)
-    {
-        vehicle_dynamics_.write_csv_row();
-    }
-
     state_pub_->publish(message);
+
+}
+
+/**
+ * @brief Publishes state, ground truth, TF and marker at kDebugTimerRate,
+ * decoupled from the 1 kHz physics loop. Reads the latest vehicle_dynamics_
+ * state (benign concurrent reads, same as perception).
+ */
+void Simulator::debug_timer()
+{
+    auto slip_ratio_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_ratio_msg.front_left = vehicle_dynamics_.tire_slip_.lambda_fl_;
+    slip_ratio_msg.front_right = vehicle_dynamics_.tire_slip_.lambda_fr_;
+    slip_ratio_msg.rear_left = vehicle_dynamics_.tire_slip_.lambda_rl_;
+    slip_ratio_msg.rear_right = vehicle_dynamics_.tire_slip_.lambda_rr_;
+    slip_ratio_pub_->publish(slip_ratio_msg);
+
+    auto slip_angle_msg = arussim_msgs::msg::FourWheelDrive();
+    slip_angle_msg.front_left = vehicle_dynamics_.tire_slip_.alpha_fl_;
+    slip_angle_msg.front_right = vehicle_dynamics_.tire_slip_.alpha_fr_;
+    slip_angle_msg.rear_left = vehicle_dynamics_.tire_slip_.alpha_rl_;
+    slip_angle_msg.rear_right = vehicle_dynamics_.tire_slip_.alpha_rr_;
+    slip_angle_pub_->publish(slip_angle_msg);
+
+    auto tire_load_msg = arussim_msgs::msg::FourWheelDrive();
+    tire_load_msg.front_left = vehicle_dynamics_.tire_loads_.fl_;
+    tire_load_msg.front_right = vehicle_dynamics_.tire_loads_.fr_;
+    tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
+    tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
+    tire_load_pub_->publish(tire_load_msg);
 
     auto ground_truth_msg = common_msgs::msg::State();
     ground_truth_msg.x = vehicle_dynamics_.x_;
