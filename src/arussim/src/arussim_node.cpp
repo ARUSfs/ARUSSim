@@ -779,6 +779,7 @@ void Simulator::on_fast_timer()
     }
 
     auto message = arussim_msgs::msg::State();
+    message.header.stamp = clock_->now();
     message.x = vehicle_dynamics_.x_;
     message.y = vehicle_dynamics_.y_;
     message.yaw = vehicle_dynamics_.yaw_;
