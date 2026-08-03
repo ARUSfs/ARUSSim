@@ -908,7 +908,7 @@ void Simulator::receive_can_0()
             as_status_ = frame_0_.data[1];
         }
 
-        else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x601)
+        else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x401 || (frame_0_.can_id & CAN_EFF_MASK) == 0x601)
         {
             int32_t delta_scaled = static_cast<int32_t>((frame_0_.data[0] << 24) | (frame_0_.data[1] << 16) | (frame_0_.data[2] << 8) | frame_0_.data[3]);
             can_delta_ = static_cast<float>(delta_scaled) / 10000.0f * M_PI / 180.0f / 4.279f;
