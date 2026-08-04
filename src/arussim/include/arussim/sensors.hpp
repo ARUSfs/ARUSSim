@@ -115,6 +115,7 @@ private:
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
     double kGearRatio = 11.7;
+    double kSteeringRatio = 4.279;
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;
@@ -184,7 +185,7 @@ private:
     void as_timer();
 
     static uint64_t encode_signal(double value, double scale, double offset, int bit_len, bool is_signed);
-    void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values);
+    void send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values, bool big_endian = false);
     int setup_can_socket(const char * interface_name);
 
     // ROS Communication

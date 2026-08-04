@@ -222,7 +222,11 @@ Sensors::Sensors() : Node("sensors")
         {0x192, 6, {
             {"battery_voltage", {16, 47, true, 0.001, 0.0}}
             }, Sensors::CanBus::kCan0
-        }
+        },
+        {0x2901, 2, {
+            {"cubemars_pos", {0, 15, true, 0.1, 0.0}}
+            }, Sensors::CanBus::kCan0
+        }        
     };
 }
 
@@ -464,6 +468,15 @@ void Sensors::extensometer_timer()
             send_can_frame(frame, values);  
         }
     }
+
+    //Send CAN frame for cubemars position
+    double cubemars_position = kSteeringRatio * delta_ * 180.0 / M_PI; // Convert to degrees
+    std::map<std::string,double> values_cubemars = { {"cubemars_pos", cubemars_position + dist(gen)} };
+    for (auto &frame : frames) { 
+        if (frame.id == 0x2901) { 
+            send_can_frame(frame, values_cubemars, true);  
+        }
+    }
 }
 
 
@@ -496,8 +509,11 @@ void Sensors::as_timer() {
 }
 
 
-void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values) { 
-    canMsg_.can_id = frame.id; 
+void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values, bool big_endian) { 
+    canMsg_.can_id = frame.id;
+    if(frame.id > CAN_SFF_MASK) {
+        canMsg_.can_id |= CAN_EFF_FLAG; // Set the extended frame format flag
+    }
     canMsg_.can_dlc = frame.size; 
     std::memset(canMsg_.data, 0, sizeof(canMsg_.data)); 
     
@@ -506,19 +522,33 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
         const auto &sig = sig_pair.second;
 
         int bit_len = sig.bit_fin - sig.bit_in + 1;
+        int byte_len = (bit_len + 7) / 8;
         uint64_t raw = encode_signal(values.at(topic),
                                      sig.scale,
                                      sig.offset,
                                      bit_len,
                                      sig.is_signed);
 
-        for (int i = 0; i < bit_len; ++i) {
-            int bit_pos = sig.bit_in + i;
-            int byte_idx = bit_pos / 8;
-            int bit_offset = bit_pos % 8;
 
-            if (raw & (1ULL << i)) {
-                canMsg_.data[byte_idx] |= (1U << bit_offset);
+        if (big_endian) {
+            for (int i = 0; i < bit_len; ++i) {
+                int bit_pos = sig.bit_in + i;
+                int byte_idx = (byte_len - 1) - (bit_pos / 8);
+                int bit_offset = bit_pos % 8;
+
+                if (raw & (1ULL << i)) {
+                    canMsg_.data[byte_idx] |= (1U << bit_offset);
+                }
+            }
+        } else {
+            for (int i = 0; i < bit_len; ++i) {
+                int bit_pos = sig.bit_in + i;
+                int byte_idx = bit_pos / 8;
+                int bit_offset = bit_pos % 8;
+
+                if (raw & (1ULL << i)) {
+                    canMsg_.data[byte_idx] |= (1U << bit_offset);
+                }
             }
         }
     }
