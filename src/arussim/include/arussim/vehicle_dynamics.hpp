@@ -181,9 +181,9 @@ class VehicleDynamics
         Tire_force force;
 
         // Steering dynamics
-        double kCoefDelta = 149.9;
-        double kCoefV = 11.81;
-        double kCoefInput = 150.90;
+        double kCoefDelta = -925.7;
+        double kCoefV = -67.25;
+        double kCoefInput = 924.99;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
         double kSteeringMax = 0.30543;
