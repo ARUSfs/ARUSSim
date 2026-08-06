@@ -1,12 +1,12 @@
 lap,cones,best_time
-9.46382,0,9.46382
+6.08044,0,6.08044
 ---PARAM_DUMP_BEGIN---
 /controller:
   ros__parameters:
     Crr: 0.01
-    KD: 0.0944444
-    KI: 0.28
-    KP: 8.25
+    KD: 0.01
+    KI: 0.05
+    KP: 5.0
     auto_start: false
     braking_decc: 3.0
     braking_procedure_topic: /car_state/braking_procedure
@@ -26,10 +26,8 @@ lap,cones,best_time
     look_ahead_distance_topic: /controller/look_ahead_distance
     max_closed_lap_difference: 4.0
     max_cmd: 22.0
-    max_lateral_deviation: 0.5
     max_look_ahead_distance: 8.0
     max_steer: 20.0
-    max_yaw_deviation: 0.25
     min_cmd: -22.0
     min_look_ahead_distance: 4.0
     motor_saturation_topic: /can_interface/motor_saturation
@@ -141,7 +139,7 @@ lap,cones,best_time
     use_ggv: false
     use_grip_estimation: false
     use_sim_time: false
-    v_max: 15.0
+    v_max: 35.0
     wB: 0.096
     wH: 0.498
 
