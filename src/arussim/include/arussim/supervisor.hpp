@@ -73,6 +73,15 @@ private:
      */
     std::string get_config_params();
 
+    /**
+     * @brief Find the laptimes folder of the ARUSSim sources.
+     *
+     * Walks up from the executable until a folder contains src/ARUSSim/src/arussim/laptimes.
+     *
+     * @return std::filesystem::path Path to the laptimes folder, or empty if it is not found.
+     */
+    std::filesystem::path find_laptimes_dir();
+
 
 
     //Publishers and subscribers
