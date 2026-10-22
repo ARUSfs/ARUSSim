@@ -179,14 +179,19 @@ void MainInterface::update_lap_time_labels(double lap_time_)
 {
     lap_counter_++;
     lap_label_->setText("Lap: " + QString::number(lap_counter_));
+    last_lap_time_ = lap_time_;
+    last_lt_label_->setText("Last Lap Time: " + QString::number(last_lap_time_, 'f', 3) + "s");
 
-    if (lap_time_ < best_lap_time_) {
-        best_lap_time_ = lap_time_;
+    static double skidpad_lap_2 = 0.0;
+    const bool is_skidpad = circuit_select_->currentText().startsWith("skidpad", Qt::CaseInsensitive) || launch_select_->currentText().contains("skidpad", Qt::CaseInsensitive);
+    const bool valid_lap = !is_skidpad || lap_counter_ == 4;
+    if (is_skidpad && lap_counter_ == 2) skidpad_lap_2 = lap_time_;
+    const double best_candidate = is_skidpad ? (skidpad_lap_2 + lap_time_) / 2.0 : lap_time_;
+
+    if (valid_lap && best_candidate < best_lap_time_) {
+        best_lap_time_ = best_candidate;
         best_lt_label_->setText("Best Lap Time: " + QString::number(best_lap_time_, 'f', 3) + "s");
         last_lt_label_->setStyleSheet("color: purple;");
-    } else if (lap_time_ < last_lap_time_) {
-        last_lap_time_ = lap_time_;
-        last_lt_label_->setStyleSheet("color: green;");
     } else {
         last_lt_label_->setStyleSheet("color: black;");
     }

@@ -1,25 +1,24 @@
 lap,cones,best_time
-23.6921,0,23.6921
+6.08044,0,6.08044
 ---PARAM_DUMP_BEGIN---
 /controller:
   ros__parameters:
     Crr: 0.01
-    KD: 0.0275
-    KI: 1.1
-    KP: 26.0
+    KD: 0.01
+    KI: 0.05
+    KP: 5.0
     auto_start: false
     braking_decc: 3.0
     braking_procedure_topic: /car_state/braking_procedure
     cmd_topic: /controller/cmd
     compensation_steps: 2
-    cornering_stiffness_front: -33541.7
-    cornering_stiffness_rear: -36702.27
     cost_angular_error: 10.0
     cost_lateral_error: 10.0
     cost_steering_delta: 2000.0
     debug: false
     feed_forward_acc_topic: /controller/feed_forward_acc
     first_lap_steer_control: PP
+    integral_term_topic: /controller/integral_term
     lambda_k: 0.5
     lambda_vx: 0.7
     lateral_deviation_topic: /controller/lateral_deviation
@@ -28,10 +27,10 @@ lap,cones,best_time
     max_closed_lap_difference: 4.0
     max_cmd: 22.0
     max_look_ahead_distance: 8.0
-    max_steer: 18.5
+    max_steer: 20.0
     min_cmd: -22.0
     min_look_ahead_distance: 4.0
-    mu: 1.0976
+    motor_saturation_topic: /can_interface/motor_saturation
     optimized_look_ahead_distance: 8.0
     optimized_steer_control: MPC
     optimized_trajectory_topic: /trajectory_optimization/trajectory
@@ -60,7 +59,7 @@ lap,cones,best_time
     use_optimized_trajectory: true
     use_sim_time: false
     use_speed_smoothing: true
-    use_variable_look_ahead_distance: false
+    use_variable_look_ahead_distance: true
     yaw_deviation_topic: /controller/yaw_deviation
 
 /path_planning:
@@ -90,6 +89,7 @@ lap,cones,best_time
           history: keep_last
           reliability: reliable
     route_back: 10
+    send_before_finishing_lap: true
     short_route_max_tri_len: 16.5
     smooth_coeff: 1.3
     smooth_iterations: 2
@@ -97,6 +97,7 @@ lap,cones,best_time
     stats_topic: /path_planning/stats
     stop_after_closing: false
     time_to_close: 2.0
+    track_limit_offset: 0.5
     track_limits_topic: /path_planning/track_limits
     trajectory_topic: /path_planning/trajectory
     triangulation_topic: /path_planning/triangulation
@@ -135,10 +136,10 @@ lap,cones,best_time
     track_limits_topic: /path_planning/track_limits
     trajectory_topic: /path_planning/trajectory
     transition_method: smoothstep
-    use_ggv: true
-    use_grip_estimation: true
+    use_ggv: false
+    use_grip_estimation: false
     use_sim_time: false
-    v_max: 15.0
+    v_max: 35.0
     wB: 0.096
     wH: 0.498
 

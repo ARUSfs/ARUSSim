@@ -119,12 +119,13 @@ class VehicleDynamics
             double Bx;
             double Ex;
 
-            // Lateral coefficients
+            // Lateral coefficients (Magic Formula, 7 parametros - Pacejka)
             double D1_y;
             double D2_y;
             double Cy;
             double By;
             double Ey;
+            double Lambda_mu_y;   // Factor de escala de adherencia lateral (ajuste de suelo/piso)
 
             // Shifts
             double SH;
@@ -180,9 +181,9 @@ class VehicleDynamics
         Tire_force force;
 
         // Steering dynamics
-        double kCoefDelta = 306.3;
-        double kCoefV = 25.69;
-        double kCoefInput = 307;
+        double kCoefDelta = 149.9;
+        double kCoefV = 11.81;
+        double kCoefInput = 150.90;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
         double kSteeringMax = 0.30543;

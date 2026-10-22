@@ -5,6 +5,10 @@
 
 #include "arussim/arussim_node.hpp"
 #include <cstdlib>
+#include <csignal>
+#include <filesystem>
+#include <sys/wait.h>
+#include <unistd.h>
 
 /**
  * @class Simulator
@@ -120,6 +124,21 @@ Simulator::Simulator() : Node("simulator")
     tire_load_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/tire_load", 10);
 
+    tv_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tv_out", 10);
+    tc_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/tc_out", 10);
+    pl_out_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/pl_out", 10);
+    torque_cmd_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/torque_cmd", 10);
+    sr_t_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/sr_t", 10);
+    sr_tc_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/sr_tc", 10);
+    ff_torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
+        "/arussim/ff_torque", 10);
+
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kSensorRate)),
         std::bind(&Simulator::on_slow_timer, this));
@@ -225,7 +244,8 @@ Simulator::Simulator() : Node("simulator")
 
     if (kSimulationMode == "default")
     {
-        control_init(&sensors_, &car_parameters_); // Initialize CON-VehicleControl
+        this->load_control_parameters();
+        control_init(&sensors_, &car_parameters_, &dv_); // Initialize CON-VehicleControl
         RCLCPP_WARN(this->get_logger(), "SIL control simulation enabled.");
         controller_sim_timer_ = this->create_wall_timer(
             std::chrono::milliseconds((int)(1000 / kControllerRate)),
@@ -266,6 +286,16 @@ Simulator::Simulator() : Node("simulator")
     track_msg->data = kTrackName + ".pcd";
     load_track(track_msg);
 
+}
+
+/**
+ * @brief Destructor for the Simulator class.
+ *
+ * Stops the rosbag recording if it is still active.
+ */
+Simulator::~Simulator()
+{
+    stop_rosbag_recording();
 }
 
 /**
@@ -641,6 +671,55 @@ void Simulator::on_controller_sim_timer()
     frame.data[5] = (yaw_rate_scaled >> 8) & 0xFF;
     write(can_socket_0_, &frame, sizeof(struct can_frame));
 
+    // Publish control debug info
+    auto tv_out_msg = arussim_msgs::msg::FourWheelDrive();
+    tv_out_msg.front_left = tv_out[0];
+    tv_out_msg.front_right = tv_out[1];
+    tv_out_msg.rear_left = tv_out[2];
+    tv_out_msg.rear_right = tv_out[3];
+    tv_out_pub_->publish(tv_out_msg);
+
+    auto tc_out_msg = arussim_msgs::msg::FourWheelDrive();
+    tc_out_msg.front_left = tc_out[0];
+    tc_out_msg.front_right = tc_out[1];
+    tc_out_msg.rear_left = tc_out[2];   
+    tc_out_msg.rear_right = tc_out[3];
+    tc_out_pub_->publish(tc_out_msg);
+
+    auto pl_out_msg = arussim_msgs::msg::FourWheelDrive();
+    pl_out_msg.front_left = pl_out[0];
+    pl_out_msg.front_right = pl_out[1];
+    pl_out_msg.rear_left = pl_out[2];
+    pl_out_msg.rear_right = pl_out[3];
+    pl_out_pub_->publish(pl_out_msg);
+
+    auto torque_cmd_msg = arussim_msgs::msg::FourWheelDrive();
+    torque_cmd_msg.front_left = torque_cmd_out[0];
+    torque_cmd_msg.front_right = torque_cmd_out[1];
+    torque_cmd_msg.rear_left = torque_cmd_out[2];
+    torque_cmd_msg.rear_right = torque_cmd_out[3];
+    torque_cmd_pub_->publish(torque_cmd_msg);
+
+    auto sr_t_msg = arussim_msgs::msg::FourWheelDrive();
+    sr_t_msg.front_left = sr_t[0];
+    sr_t_msg.front_right = sr_t[1];
+    sr_t_msg.rear_left = sr_t[2];
+    sr_t_msg.rear_right = sr_t[3];
+    sr_t_pub_->publish(sr_t_msg);
+
+    auto sr_tc_msg = arussim_msgs::msg::FourWheelDrive();
+    sr_tc_msg.front_left = sr_tc[0];
+    sr_tc_msg.front_right = sr_tc[1];
+    sr_tc_msg.rear_left = sr_tc[2];
+    sr_tc_msg.rear_right = sr_tc[3];
+    sr_tc_pub_->publish(sr_tc_msg);
+
+    auto ff_torque_msg = arussim_msgs::msg::FourWheelDrive();
+    ff_torque_msg.front_left = t_ff_tc[0];
+    ff_torque_msg.front_right = t_ff_tc[1];
+    ff_torque_msg.rear_left = t_ff_tc[2];
+    ff_torque_msg.rear_right = t_ff_tc[3];
+    ff_torque_pub_->publish(ff_torque_msg);
     frame.can_id = 0x120;
     frame.can_dlc = 3;
     frame.data[2] = (uint8_t)saturation;
@@ -695,6 +774,17 @@ void Simulator::on_fast_timer()
     // Update state and broadcast transform
     rclcpp::Time current_time = clock_->now();
 
+    // Record a rosbag while the AS status is Driving (0x03)
+    if (as_status_ == 0x03 && prev_as_status_ != 0x03)
+    {
+        start_rosbag_recording();
+    }
+    else if (as_status_ != 0x03 && prev_as_status_ == 0x03)
+    {
+        stop_rosbag_recording();
+    }
+    prev_as_status_ = as_status_;
+
     if ((current_time - time_last_cmd_).seconds() > 0.2 && vehicle_dynamics_.vx_ != 0)
     {
         can_acc_ = 0;
@@ -733,6 +823,7 @@ void Simulator::on_fast_timer()
     }
 
     auto message = arussim_msgs::msg::State();
+    message.header.stamp = clock_->now();
     message.x = vehicle_dynamics_.x_;
     message.y = vehicle_dynamics_.y_;
     message.yaw = vehicle_dynamics_.yaw_;
@@ -856,12 +947,12 @@ void Simulator::receive_can_0()
             time_last_cmd_ = clock_->now();
         }
 
-        else if (frame_0_.can_id == 0x161)
+        else if (frame_0_.can_id == 0x261)
         {
-            as_status_ = frame_0_.data[0];
+            as_status_ = frame_0_.data[1];
         }
 
-        else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x601)
+        else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x401 || (frame_0_.can_id & CAN_EFF_MASK) == 0x601)
         {
             int32_t delta_scaled = static_cast<int32_t>((frame_0_.data[0] << 24) | (frame_0_.data[1] << 16) | (frame_0_.data[2] << 8) | frame_0_.data[3]);
             can_delta_ = static_cast<float>(delta_scaled) / 10000.0f * M_PI / 180.0f / 4.279f;
@@ -951,6 +1042,64 @@ void Simulator::launch_callback([[maybe_unused]] const std_msgs::msg::Bool::Shar
     {
         control_raspi_manager_.start_control_rasp(this->get_logger());
     }
+}
+
+/**
+ * @brief Starts recording a rosbag of the current run in ~/ARUS_logs/arussim/.
+ *
+ * Only one recording is kept: the previous one is deleted before starting.
+ */
+void Simulator::start_rosbag_recording()
+{
+    if (rosbag_pid_ > 0)
+        return;
+
+    const char* home = std::getenv("HOME");
+    if (!home)
+    {
+        RCLCPP_ERROR(this->get_logger(), "HOME is not set, the rosbag will not be recorded");
+        return;
+    }
+
+    std::filesystem::path bag_dir = std::filesystem::path(home) / "ARUS_logs" / "arussim";
+    std::filesystem::path bag_path = bag_dir / "sim_rosbag";
+
+    std::error_code ec;
+    std::filesystem::create_directories(bag_dir, ec);
+    std::filesystem::remove_all(bag_path, ec);
+
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        // Own process group so the recorder only receives the signals we send it
+        setpgid(0, 0);
+        execlp("ros2", "ros2", "bag", "record", "-a", "-s", "mcap",
+               "-o", bag_path.c_str(), (char*)NULL);
+        _exit(1);
+    }
+    else if (pid > 0)
+    {
+        rosbag_pid_ = pid;
+        RCLCPP_INFO(this->get_logger(), "Recording rosbag in %s", bag_path.c_str());
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to start the rosbag recording");
+    }
+}
+
+/**
+ * @brief Stops the active rosbag recording.
+ */
+void Simulator::stop_rosbag_recording()
+{
+    if (rosbag_pid_ <= 0)
+        return;
+
+    kill(rosbag_pid_, SIGINT);
+    waitpid(rosbag_pid_, nullptr, 0);
+    rosbag_pid_ = -1;
+    RCLCPP_INFO(this->get_logger(), "Rosbag recording stopped");
 }
 
 /**
@@ -1058,7 +1207,7 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
         sensors_.acceleration_y = 0.;
         sensors_.steering_angle = 0.;
 
-        control_init(&sensors_, &car_parameters_);
+        control_init(&sensors_, &car_parameters_, &dv_);
     }
     else if (msg && msg->data && (kSimulationMode == "raspi_sim")) 
     {
