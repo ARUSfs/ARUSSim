@@ -199,7 +199,7 @@ Visualization Manager:
     Max Intensity: 1
     Min Color: 0; 0; 255
     Min Intensity: 0
-    Name: 'SLAM map (Select: score, cov_*, num_observations)'
+    Name: SLAM map
     Position Transformer: XYZ
     Selectable: true
     Size (Pixels): 3
@@ -275,6 +275,17 @@ Visualization Manager:
       History Policy: Keep Last
       Reliability Policy: Reliable
       Value: /visualization/slam/score
+    Value: true
+  - Class: rviz_default_plugins/MarkerArray
+    Enabled: true
+    Name: SLAM selected cone (click it with Publish Point)
+    Namespaces: {}
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /visualization/slam/selected
     Value: true
   - Alpha: 1
     Autocompute Intensity Bounds: false
