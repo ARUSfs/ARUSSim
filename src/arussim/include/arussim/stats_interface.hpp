@@ -2,6 +2,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <rviz_common/panel.hpp>
+#include <rviz_common/config.hpp>
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <rviz_common/display_context.hpp>
 
@@ -45,6 +46,18 @@ public:
   ~StatsInterface() override;
 
   void onInitialize() override;
+
+  /**
+   * @brief Loads the panel settings from the .rviz file (SlamStatsTopic).
+   * @param config Panel configuration.
+   */
+  void load(const rviz_common::Config & config) override;
+
+  /**
+   * @brief Saves the panel settings to the .rviz file (SlamStatsTopic).
+   * @param config Panel configuration.
+   */
+  void save(rviz_common::Config config) const override;
 
 protected:
   std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -126,6 +139,12 @@ private:
   rclcpp::Subscription<common_msgs::msg::State>::SharedPtr state_sub_;
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr gt_state_sub_;
   rclcpp::Subscription<common_msgs::msg::SlamStats>::SharedPtr stats_sub_;
+  QString slam_stats_topic_ = "/slam/stats";  // /slam/stats2 in rosbag_simulation
+
+  /**
+   * @brief (Re)creates the SlamStats subscription with slam_stats_topic_.
+   */
+  void subscribe_slam_stats();
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;
@@ -140,6 +159,10 @@ private:
   double observed_landmarks_ = 0.0;
   double unmatched_landmarks_ = 0.0;
   double optimization_time_ = 0.0;
+  double optimization_time_sum_ = 0.0;
+  double optimization_time_max_ = 0.0;
+  int optimization_time_count_ = 0;
+  static constexpr double kOptimizationTimeObjective = 0.050;  // s, SLAM objective (max)
   double data_association_time_ = 0.0;
 
   double bar_size_;
