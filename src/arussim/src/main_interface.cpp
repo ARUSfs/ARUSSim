@@ -1,8 +1,4 @@
 #include <arussim/main_interface.hpp>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include <QBrush>
-#include <QFont>
 namespace main_interface
 {
 
@@ -138,10 +134,8 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
         }
     };
 
-    add_subdir("competition", "Competition");
-    add_subdir("generated",   "Generated (auto)");
-    add_subdir("test",        "Test");
-    add_subdir("custom",      "Custom");
+    add_subdir("generated", "Generated");
+    add_subdir("recorded",  "Recorded (Real Tracks)");
 
     QStringList root_files = QDir(tracks_root).entryList(
         QStringList() << "*.pcd", QDir::Files, QDir::Name);

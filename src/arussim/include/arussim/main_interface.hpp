@@ -22,6 +22,10 @@
 #include <QScreen>
 #include <QTextEdit>
 #include <QRegularExpression>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QBrush>
+#include <QFont>
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
