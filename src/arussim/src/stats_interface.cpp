@@ -176,7 +176,8 @@ void StatsInterface::onInitialize()
 
     // Subscribe to car state to compute slam jumps using member callback
     state_sub_ = node->create_subscription<common_msgs::msg::State>(
-        "/car_state/state", 10, std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
+        state_topic_.toStdString(), 10,
+        std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
 
     // Subscribe to the simulator ground-truth pose to compute SLAM accuracy.
     // Buffers each pose with its header timestamp; state_callback then matches
@@ -233,12 +234,21 @@ void StatsInterface::load(const rviz_common::Config & config)
         reset_callback();
         subscribe_slam_stats();
     }
+    if (config.mapGetString("StateTopic", &topic) && !topic.isEmpty() && topic != state_topic_ &&
+        node_ptr_) {
+        state_topic_ = topic;
+        reset_callback();
+        state_sub_ = node_ptr_->get_raw_node()->create_subscription<common_msgs::msg::State>(
+            state_topic_.toStdString(), 10,
+            std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
+    }
 }
 
 void StatsInterface::save(rviz_common::Config config) const
 {
     rviz_common::Panel::save(config);
     config.mapSetValue("SlamStatsTopic", slam_stats_topic_);
+    config.mapSetValue("StateTopic", state_topic_);
 }
 
 bool StatsInterface::eventFilter(QObject* obj, QEvent* event)

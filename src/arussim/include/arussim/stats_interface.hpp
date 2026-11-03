@@ -48,13 +48,13 @@ public:
   void onInitialize() override;
 
   /**
-   * @brief Loads the panel settings from the .rviz file (SlamStatsTopic).
+   * @brief Loads the panel settings from the .rviz file (SlamStatsTopic, StateTopic).
    * @param config Panel configuration.
    */
   void load(const rviz_common::Config & config) override;
 
   /**
-   * @brief Saves the panel settings to the .rviz file (SlamStatsTopic).
+   * @brief Saves the panel settings to the .rviz file (SlamStatsTopic, StateTopic).
    * @param config Panel configuration.
    */
   void save(rviz_common::Config config) const override;
@@ -140,6 +140,7 @@ private:
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr gt_state_sub_;
   rclcpp::Subscription<common_msgs::msg::SlamStats>::SharedPtr stats_sub_;
   QString slam_stats_topic_ = "/slam/stats";  // /slam/stats2 in rosbag_simulation
+  QString state_topic_ = "/car_state/state";  // /car_state/state2 in rosbag_simulation
 
   /**
    * @brief (Re)creates the SlamStats subscription with slam_stats_topic_.
