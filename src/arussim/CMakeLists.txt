@@ -78,6 +78,7 @@ ament_target_dependencies(plot_interface_exec
   pluginlib
   rviz_common
   arussim_msgs
+  common_msgs
 )
 ament_target_dependencies(stats_interface_exec
   pluginlib
