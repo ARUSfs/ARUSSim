@@ -256,7 +256,7 @@ Visualization Manager:
     Value: true
   - Class: rviz_default_plugins/MarkerArray
     Enabled: true
-    Name: SLAM covariance (3 sigma)
+    Name: SLAM covariance (3 sigma x20)
     Namespaces: {}
     Topic:
       Depth: 5
