@@ -138,6 +138,14 @@ private:
    * @brief (Re)creates the target speed subscription with target_speed_topic_.
    */
   void subscribe_target_speed();
+
+  /**
+   * @brief Redraws the labels and plots at most every kRefreshPeriodMs. Without ARUSSim nothing
+   * publishes the torques, which is what redraws them otherwise.
+   */
+  void refresh_from_car_state();
+  qint64 last_refresh_ms_ = -1;
+  static constexpr qint64 kRefreshPeriodMs = 40;  // 25 Hz
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;

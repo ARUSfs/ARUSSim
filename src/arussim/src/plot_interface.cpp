@@ -636,9 +636,20 @@ void PlotInterface::subscribe_state()
         [this](const common_msgs::msg::State::SharedPtr msg) {
             QMetaObject::invokeMethod(this, [this, msg]() {
                 state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+                refresh_from_car_state();
             }, Qt::QueuedConnection);
         }
     );
+}
+
+void PlotInterface::refresh_from_car_state()
+{
+    const qint64 now_ms = timer_.elapsed();
+    if (last_refresh_ms_ >= 0 && now_ms - last_refresh_ms_ < kRefreshPeriodMs) return;
+    last_refresh_ms_ = now_ms;
+    update_telemetry_labels();
+    update_vx_target_graph();
+    update_gg_graph();
 }
 
 void PlotInterface::subscribe_target_speed()
