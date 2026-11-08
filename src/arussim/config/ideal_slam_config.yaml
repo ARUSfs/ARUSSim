@@ -1,0 +1,5 @@
+ideal_slam:
+  ros__parameters:
+    sensor_max_dist: 40.0       # m   Cones farther than this are not added to the map (lidar_max_dist)
+    sensor_fov: 120.0           # deg Field of view in which cones are added to the map (lidar_fov)
+    min_lap_distance: 30.0      # m   Min driven distance to count a new lap

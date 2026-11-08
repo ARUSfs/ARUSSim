@@ -117,11 +117,13 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
     // Launch selection
     launch_select_ = new QComboBox(this);
     launch_select_->setFixedHeight(rviz_height_ * 0.025);
-    std::string package_path_launch = ament_index_cpp::get_package_share_directory("common_meta");
-    QString launch_path = QString::fromStdString(package_path_launch + "/launch/");
-    QDir launch_dir(launch_path);
-    QStringList launch_files = launch_dir.entryList(QStringList() << "*sim*.py", QDir::Files);
-    launch_select_->addItems(launch_files);
+    // Launch files of the stack (common_meta) and of ARUSSim itself (e.g. sim_no_slam_launch.py)
+    for (const char* pkg : {"common_meta", "arussim"}) {
+        QDir launch_dir(QString::fromStdString(ament_index_cpp::get_package_share_directory(pkg) + "/launch/"));
+        for (const QString& file : launch_dir.entryList(QStringList() << "*sim*.py", QDir::Files)) {
+            launch_select_->addItem(file, pkg);
+        }
+    }
     launch_select_->setCurrentText("simulation_launch.py");
     button_grid->addWidget(launch_select_, 0, 0, 1, 2);
 
@@ -219,7 +221,7 @@ void MainInterface::launch_button_clicked()
         
         QString launch_file = launch_select_->currentText();
         QStringList args;
-        args << "launch" << "common_meta" << launch_file;
+        args << "launch" << launch_select_->currentData().toString() << launch_file;
         simulation_process_->start("ros2", args);
     }
 }
