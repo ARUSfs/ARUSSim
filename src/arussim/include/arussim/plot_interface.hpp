@@ -2,6 +2,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <rviz_common/panel.hpp>
+#include <rviz_common/config.hpp>
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <rviz_common/display_context.hpp>
 
@@ -30,6 +31,7 @@
 #include <std_msgs/msg/float32.hpp>
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "arussim_msgs/msg/state.hpp"
+#include "common_msgs/msg/state.hpp"
 
 
 namespace plot_interface
@@ -42,6 +44,18 @@ public:
   ~PlotInterface() override;
 
   void onInitialize() override;
+
+  /**
+   * @brief Loads the panel settings from the .rviz file (CarStateTopic, TargetSpeedTopic).
+   * @param config Panel configuration.
+   */
+  void load(const rviz_common::Config & config) override;
+
+  /**
+   * @brief Saves the panel settings to the .rviz file (CarStateTopic, TargetSpeedTopic).
+   * @param config Panel configuration.
+   */
+  void save(rviz_common::Config config) const override;
 
 protected:
   std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -110,6 +124,28 @@ private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
   rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
+  rclcpp::Subscription<common_msgs::msg::State>::SharedPtr car_state_sub_;
+  // Empty: ARUSSim ground truth (/arussim/state). In rosbag_simulation, /car_state/state2
+  QString car_state_topic_;
+  QString target_speed_topic_ = "/controller/target_speed";
+
+  /**
+   * @brief (Re)creates the state subscription: car_state_topic_ if set, else /arussim/state.
+   */
+  void subscribe_state();
+
+  /**
+   * @brief (Re)creates the target speed subscription with target_speed_topic_.
+   */
+  void subscribe_target_speed();
+
+  /**
+   * @brief Redraws the labels and plots at most every kRefreshPeriodMs. Without ARUSSim nothing
+   * publishes the torques, which is what redraws them otherwise.
+   */
+  void refresh_from_car_state();
+  qint64 last_refresh_ms_ = -1;
+  static constexpr qint64 kRefreshPeriodMs = 40;  // 25 Hz
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr target_speed_sub_;

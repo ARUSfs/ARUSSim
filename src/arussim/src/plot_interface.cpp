@@ -215,23 +215,8 @@ void PlotInterface::onInitialize()
         }
     );
 
-    state_sub_ = node->create_subscription<arussim_msgs::msg::State>(
-        "/arussim/state", 1, 
-        [this](const arussim_msgs::msg::State::SharedPtr msg) { 
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
-            }, Qt::QueuedConnection);
-        }
-    );
-
-    target_speed_sub_ = node->create_subscription<std_msgs::msg::Float32>(
-        "/controller/target_speed", 1,
-        [this](const std_msgs::msg::Float32::SharedPtr msg) {
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                target_speed_ = msg->data;
-            }, Qt::QueuedConnection);
-        }
-    );
+    subscribe_state();
+    subscribe_target_speed();
 
     reset_sub_ = node->create_subscription<std_msgs::msg::Bool>(
         "/arussim/reset", 1,
@@ -626,6 +611,81 @@ void PlotInterface::update_telemetry_labels()
     ax_label_->setText("Ax: " + QString::number(ax_, 'f', 2));
     ay_label_->setText("Ay: " + QString::number(ay_, 'f', 2));
     delta_label_->setText("Delta: " + QString::number(delta_, 'f', 2));
+}
+
+void PlotInterface::subscribe_state()
+{
+    if (!node_ptr_) return;
+    rclcpp::Node::SharedPtr node = node_ptr_->get_raw_node();
+    state_sub_.reset();
+    car_state_sub_.reset();
+    if (car_state_topic_.isEmpty()) {
+        state_sub_ = node->create_subscription<arussim_msgs::msg::State>(
+            "/arussim/state", 1,
+            [this](const arussim_msgs::msg::State::SharedPtr msg) {
+                QMetaObject::invokeMethod(this, [this, msg]() {
+                    state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+                }, Qt::QueuedConnection);
+            }
+        );
+        return;
+    }
+    // Without ARUSSim (rosbag_simulation): the car_state estimate
+    car_state_sub_ = node->create_subscription<common_msgs::msg::State>(
+        car_state_topic_.toStdString(), 1,
+        [this](const common_msgs::msg::State::SharedPtr msg) {
+            QMetaObject::invokeMethod(this, [this, msg]() {
+                state_callback(msg->vx, msg->vy, msg->r, msg->ax, msg->ay, msg->delta);
+                refresh_from_car_state();
+            }, Qt::QueuedConnection);
+        }
+    );
+}
+
+void PlotInterface::refresh_from_car_state()
+{
+    const qint64 now_ms = timer_.elapsed();
+    if (last_refresh_ms_ >= 0 && now_ms - last_refresh_ms_ < kRefreshPeriodMs) return;
+    last_refresh_ms_ = now_ms;
+    update_telemetry_labels();
+    update_vx_target_graph();
+    update_gg_graph();
+}
+
+void PlotInterface::subscribe_target_speed()
+{
+    if (!node_ptr_) return;
+    target_speed_sub_ = node_ptr_->get_raw_node()->create_subscription<std_msgs::msg::Float32>(
+        target_speed_topic_.toStdString(), 1,
+        [this](const std_msgs::msg::Float32::SharedPtr msg) {
+            QMetaObject::invokeMethod(this, [this, msg]() {
+                target_speed_ = msg->data;
+            }, Qt::QueuedConnection);
+        }
+    );
+}
+
+void PlotInterface::load(const rviz_common::Config & config)
+{
+    rviz_common::Panel::load(config);
+    QString topic;
+    if (config.mapGetString("CarStateTopic", &topic) && topic != car_state_topic_) {
+        car_state_topic_ = topic;
+        reset_callback();
+        subscribe_state();
+    }
+    if (config.mapGetString("TargetSpeedTopic", &topic) && !topic.isEmpty() &&
+        topic != target_speed_topic_) {
+        target_speed_topic_ = topic;
+        subscribe_target_speed();
+    }
+}
+
+void PlotInterface::save(rviz_common::Config config) const
+{
+    rviz_common::Panel::save(config);
+    config.mapSetValue("CarStateTopic", car_state_topic_);
+    config.mapSetValue("TargetSpeedTopic", target_speed_topic_);
 }
 
 /**

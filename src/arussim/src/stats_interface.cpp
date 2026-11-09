@@ -172,19 +172,12 @@ void StatsInterface::onInitialize()
     rclcpp::Node::SharedPtr node = node_ptr_->get_raw_node();
 
     // Subscribers
-    stats_sub_ = node->create_subscription<common_msgs::msg::SlamStats>(
-        "/slam/stats", 1, 
-        [this](const common_msgs::msg::SlamStats::SharedPtr msg) { 
-            QMetaObject::invokeMethod(this, [this, msg]() {
-                stats_callback(msg->active_vertices, msg->active_edges, msg->observed_landmarks,
-                                msg->unmatched_landmarks,msg->optimization_time, msg->data_association_time);
-            }, Qt::QueuedConnection);
-        }
-    );
+    subscribe_slam_stats();
 
     // Subscribe to car state to compute slam jumps using member callback
     state_sub_ = node->create_subscription<common_msgs::msg::State>(
-        "/car_state/state", 10, std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
+        state_topic_.toStdString(), 10,
+        std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
 
     // Subscribe to the simulator ground-truth pose to compute SLAM accuracy.
     // Buffers each pose with its header timestamp; state_callback then matches
@@ -213,6 +206,49 @@ void StatsInterface::onInitialize()
     );
 
     slam_graph_label_->installEventFilter(this);
+}
+
+void StatsInterface::subscribe_slam_stats()
+{
+    if (!node_ptr_) return;
+    rclcpp::Node::SharedPtr node = node_ptr_->get_raw_node();
+    stats_sub_ = node->create_subscription<common_msgs::msg::SlamStats>(
+        slam_stats_topic_.toStdString(), 1,
+        [this](const common_msgs::msg::SlamStats::SharedPtr msg) {
+            QMetaObject::invokeMethod(this, [this, msg]() {
+                stats_callback(msg->active_vertices, msg->active_edges, msg->observed_landmarks,
+                               msg->unmatched_landmarks, msg->optimization_time,
+                               msg->data_association_time);
+            }, Qt::QueuedConnection);
+        }
+    );
+}
+
+void StatsInterface::load(const rviz_common::Config & config)
+{
+    rviz_common::Panel::load(config);
+    QString topic;
+    if (config.mapGetString("SlamStatsTopic", &topic) && !topic.isEmpty() &&
+        topic != slam_stats_topic_) {
+        slam_stats_topic_ = topic;
+        reset_callback();
+        subscribe_slam_stats();
+    }
+    if (config.mapGetString("StateTopic", &topic) && !topic.isEmpty() && topic != state_topic_ &&
+        node_ptr_) {
+        state_topic_ = topic;
+        reset_callback();
+        state_sub_ = node_ptr_->get_raw_node()->create_subscription<common_msgs::msg::State>(
+            state_topic_.toStdString(), 10,
+            std::bind(&StatsInterface::state_callback, this, std::placeholders::_1));
+    }
+}
+
+void StatsInterface::save(rviz_common::Config config) const
+{
+    rviz_common::Panel::save(config);
+    config.mapSetValue("SlamStatsTopic", slam_stats_topic_);
+    config.mapSetValue("StateTopic", state_topic_);
 }
 
 bool StatsInterface::eventFilter(QObject* obj, QEvent* event)
@@ -359,6 +395,9 @@ void StatsInterface::stats_callback(double active_vertices, double active_edges,
     unmatched_landmarks_ = unmatched_landmarks;
     optimization_time_ = optimization_time;
     data_association_time_ = data_association_time;
+    optimization_time_sum_ += optimization_time;
+    optimization_time_max_ = std::max(optimization_time_max_, optimization_time);
+    optimization_time_count_++;
 
     // Collect the sample now (cheap); defer the repaint to the render timer.
     collect_optimizer_sample();
@@ -584,7 +623,8 @@ void StatsInterface::collect_optimizer_sample()
     optimization_time_history_.append(qMakePair(current_time, optimization_time_));
 
     // Calculate max data
-    double current_max = 0.025; // Mínimo una división para evitar división por cero
+    // At least one division above the 50 ms objective, so its line is always visible
+    double current_max = kOptimizationTimeObjective + 0.01;
     for (const auto &point : optimization_time_history_) {
         current_max = std::max(current_max, point.second);
     }
@@ -630,6 +670,15 @@ void StatsInterface::rebuild_optimizer_background(int w, int h)
         int y_pos = h - (j * step_y);
         int text_y = (j == num_rows) ? y_pos + 12 : y_pos;
         painter.drawText(5, text_y, QString::number(val, 'f', 3));
+    }
+
+    // Objective line: max. optimization time 50 ms
+    const double objective_norm = kOptimizationTimeObjective / max_optimization_time_;
+    if (objective_norm > 0.0 && objective_norm < 1.0) {
+        int y_objective = h - qRound(objective_norm * h);
+        painter.setPen(QPen(QColor(200, 0, 0), graph_grid_width_ * 3, Qt::DashLine));
+        painter.drawLine(0, y_objective, w, y_objective);
+        painter.drawText(w - 60, y_objective - 4, tr("50 ms"));
     }
 }
 
@@ -712,8 +761,14 @@ void StatsInterface::update_telemetry_labels()
     active_edges_label_->setText("Active Edges: " + QString::number(active_edges_, 'f', 0));
     observed_landmarks_label_->setText("Observed Landmarks: " + QString::number(observed_landmarks_, 'f', 0));
     unmatched_landmarks_label_->setText("Unmatched Landmarks: " + QString::number(unmatched_landmarks_, 'f', 0));
-    optimization_time_label_->setText("Optimization Time: " + QString::number(optimization_time_, 'f', 5));
-    data_association_time_label_->setText("Data Association Time: " + QString::number(data_association_time_, 'f', 5));
+    const double mean_optimization_time = optimization_time_count_ > 0 ?
+        optimization_time_sum_ / optimization_time_count_ : 0.0;
+    optimization_time_label_->setText(
+        "Optimization Time: " + QString::number(optimization_time_ * 1e3, 'f', 1) + " ms"
+        + " | mean " + QString::number(mean_optimization_time * 1e3, 'f', 1) + " ms"
+        + " | max " + QString::number(optimization_time_max_ * 1e3, 'f', 1) + " ms");
+    data_association_time_label_->setText(
+        "Data Association Time: " + QString::number(data_association_time_ * 1e3, 'f', 1) + " ms");
 }
 
 /**
@@ -724,6 +779,9 @@ void StatsInterface::reset_callback()
 {
     // reset graphs
     optimization_time_history_.clear();
+    optimization_time_sum_ = 0.0;
+    optimization_time_max_ = 0.0;
+    optimization_time_count_ = 0;
     slam_graph_label_->clear();
     slam_jump_history_.clear();
     slam_accuracy_history_.clear();
@@ -753,8 +811,8 @@ void StatsInterface::reset_callback()
     active_edges_label_->setText("Active Edges: " + QString::number(0.0, 'f', 0));
     observed_landmarks_label_->setText("Observed Landmarks: " + QString::number(0.0, 'f', 0));
     unmatched_landmarks_label_->setText("Unmatched Landmarks: " + QString::number(0.0, 'f', 0));
-    optimization_time_label_->setText("Optimization Time: " + QString::number(0.0, 'f', 5));
-    data_association_time_label_->setText("Data Association Time: " + QString::number(0.0, 'f', 5));
+    optimization_time_label_->setText("Optimization Time: 0.0 ms | mean 0.0 ms | max 0.0 ms");
+    data_association_time_label_->setText("Data Association Time: 0.0 ms");
     if (slam_jump_value_label_) {
         slam_jump_value_label_->setText("Slam Jump (Precision): " + QString::number(0.0, 'f', 4));
     }
