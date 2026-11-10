@@ -85,19 +85,26 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
     if (!started_){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%sLap started%s", green.c_str(), reset.c_str());
         prev_time_ = this->get_clock()->now().seconds();
-        parameters_dump_ = get_config_params();
-        auto ws_path = std::filesystem::canonical("/proc/self/exe");
-        for (int i = 0; i < 5; ++i) ws_path = ws_path.parent_path();
-        file_path_ = ws_path / "src/ARUSSim/src/arussim/laptimes" / (circuit_ + ".csv");
+        std::filesystem::path laptimes_dir = find_laptimes_dir();
+        file_path_.clear();
+        if (laptimes_dir.empty()) {
+            RCLCPP_WARN(this->get_logger(),
+                        "Laptimes folder not found: the best lap time will not be saved");
+        } else {
+            file_path_ = laptimes_dir / (circuit_ + ".csv");
+        }
+        current_best_time_ = 0.0;
 
         // Reads the file if it exists and overwrites it if the time done in simulation is better than the stored one.
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
-        {
-            std::ifstream file(file_path_);
-
+        std::ifstream file;
+        if (!file_path_.empty() && std::filesystem::is_regular_file(file_path_)) {
+            file.open(file_path_);
             if (!file.is_open()) {
-                throw std::runtime_error("Could not open CSV file");
+                RCLCPP_WARN(this->get_logger(), "Could not open %s", file_path_.c_str());
             }
+        }
+        if (file.is_open())
+        {
             std::string line;
             std::string last_line;
 
@@ -119,7 +126,12 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 std::getline(ss, cones, ',');
                 std::getline(ss, time, ',');
 
-                current_best_time_ = std::stod(time);
+                try {
+                    current_best_time_ = std::stod(time);
+                } catch (const std::exception&) {
+                    RCLCPP_WARN(this->get_logger(), "Could not read the best lap time from %s",
+                                file_path_.c_str());
+                }
             }
         }
         if(circuit_ == "skidpad") time_cone_penalty_ = 0.2;
@@ -165,9 +177,9 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
             row_values.push_back(std::to_string(n_total_cones_hit_));
             csv_generator_->write_row("lap_time,total_hit_cones", row_values);
         }
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_))
+        if (!file_path_.empty() && std::filesystem::is_regular_file(file_path_))
         {
-            if(current_best_time_ > best_time_){
+            if(current_best_time_ <= 0.0 || current_best_time_ > best_time_){
                 std::ofstream file(file_path_);
                 file << "lap,cones,best_time\n";
                 file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
@@ -175,20 +187,23 @@ void Supervisor::tpl_signal_callback([[maybe_unused]] const std_msgs::msg::Bool:
                 file << parameters_dump_ << "\n";
                 file << "---PARAM_DUMP_END---\n";
                 file.close();
+                current_best_time_ = best_time_;
             }
         }
-        else // Creates a .csv file and adds the time done in simulation.
+        else if (!file_path_.empty()) // Creates a .csv file and adds the time done in simulation.
         {
             std::ofstream file(file_path_, std::ios::out);
             if (!file.is_open()) {
-                throw std::runtime_error("Could not create CSV file");
+                RCLCPP_WARN(this->get_logger(), "Could not create %s: best lap time not saved",
+                            file_path_.c_str());
+            } else {
+                file << "lap,cones,best_time\n";
+                file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
+                file << "---PARAM_DUMP_BEGIN---\n";
+                file << parameters_dump_ << "\n";
+                file << "---PARAM_DUMP_END---\n";
+                current_best_time_ = best_time_;
             }
-            file << "lap,cones,best_time\n";
-            file << lap_time_ << "," << cones_hitted_ << "," << best_time_ << "\n";
-            file << "---PARAM_DUMP_BEGIN---\n";
-            file << parameters_dump_ << "\n";
-            file << "---PARAM_DUMP_END---\n";
-            current_best_time_ = best_time_;
         }
     }
     speed_multiplier_list_.clear();
@@ -232,6 +247,7 @@ void Supervisor::track_name(const std_msgs::msg::String::SharedPtr msg)
     {
         circuit_.erase(circuit_.size() - ext.size());
     }
+    parameters_dump_ = get_config_params();
 }
 
 /**
@@ -274,6 +290,29 @@ std::string Supervisor::get_config_params()
     }
     return result;
 }
+
+/**
+ * @brief Find the laptimes folder of the ARUSSim sources.
+ *
+ * Walks up from the executable until a folder contains src/ARUSSim/src/arussim/laptimes. With
+ * --symlink-install the executable resolves to build/arussim and without it to
+ * install/arussim/lib/arussim, so a fixed number of levels only works in one of the two cases.
+ *
+ * @return std::filesystem::path Path to the laptimes folder, or empty if it is not found.
+ */
+std::filesystem::path Supervisor::find_laptimes_dir()
+{
+    const std::filesystem::path laptimes = "src/ARUSSim/src/arussim/laptimes";
+    std::error_code error;
+    std::filesystem::path dir = std::filesystem::canonical("/proc/self/exe", error);
+    if (error) return {};
+    while (dir.has_parent_path() && dir != dir.parent_path()) {
+        dir = dir.parent_path();
+        if (std::filesystem::is_directory(dir / laptimes, error)) return dir / laptimes;
+    }
+    return {};
+}
+
 
 /**
  * @brief Main function for the supervisor node

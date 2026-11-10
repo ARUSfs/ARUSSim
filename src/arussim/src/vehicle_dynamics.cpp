@@ -129,6 +129,7 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     pac_param_.Cy   = params["Cy"];
     pac_param_.By   = params["By"];
     pac_param_.Ey   = params["Ey"];
+    pac_param_.Lambda_mu_y = params["Lambda_mu_y"];
 
     pac_param_.SH = params["SH"];
     pac_param_.SV = params["SV"];
@@ -237,6 +238,7 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
     delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_ = std::clamp(delta_, -kSteeringMax, kSteeringMax);
     delta_v_ += delta_v_dot_ * dt_;
 
     if(vx_ < 0){
@@ -251,7 +253,11 @@ double VehicleDynamics::calculate_fx(Tire_force force_fl, Tire_force force_fr, T
 
     double aero_drag = 0.5 * kAirDensity * kCDA * vx_*vx_;
 
-    double longitudinal_force = longitudinal_tire_force - aero_drag - kRollingResistance;
+    double longitudinal_force = longitudinal_tire_force - aero_drag;
+    if(abs(longitudinal_force) >= kRollingResistance) {
+        int sign = longitudinal_force/abs(longitudinal_force);
+        longitudinal_force -= sign*kRollingResistance;
+    }
 
     return longitudinal_force;
 }
@@ -354,22 +360,21 @@ VehicleDynamics::Tire_force VehicleDynamics::calculate_tire_forces(
     double SR = slip_ratio;
     double Fz = tire_load;
 
-    double D_lon, D_lat, arg_x, arg_y, fx_pure, fy_pure;
+    double D_lon, arg_x, fx_pure, fy_pure;
     double Bxa, Cxa, Exa, arg_gxa, Gxa;
     double Byk, Gyk, byk_term;
     double Gx_alpha, Gy_kappa;
 
-    // Pacejka scaling
-    D_lon = pac_param_.D1_x + pac_param_.D2_x * (Fz / pac_param_.Fz0);
-    D_lat = pac_param_.D1_y + pac_param_.D2_y * (Fz / pac_param_.Fz0);
-
     // Longitudinal puro
+    D_lon = pac_param_.D1_x + pac_param_.D2_x * (Fz / pac_param_.Fz0);
     arg_x = pac_param_.Bx * SR;
     fx_pure = Fz * D_lon * sin(pac_param_.Cx * atan(arg_x - pac_param_.Ex * (arg_x - atan(arg_x))));
 
     // Lateral puro
-    arg_y = pac_param_.By * SA;
-    fy_pure = Fz * D_lat * sin(pac_param_.Cy * atan(arg_y - pac_param_.Ey * (arg_y - atan(arg_y))));
+    double Dy       = pac_param_.Lambda_mu_y * (pac_param_.D1_y + pac_param_.D2_y * (Fz / pac_param_.Fz0));  
+    double alpha_eq = SA + pac_param_.SH;                           
+    double aux_fy   = pac_param_.Ey * (pac_param_.By * alpha_eq - atan(pac_param_.By * alpha_eq));
+    fy_pure = Fz * Dy * sin(pac_param_.Cy * atan(pac_param_.By * alpha_eq - aux_fy)) + pac_param_.SV;
 
     if(pac_param_.comb_model == 1)
     {

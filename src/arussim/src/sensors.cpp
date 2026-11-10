@@ -175,17 +175,26 @@ Sensors::Sensors() : Node("sensors")
             {"GSS/yaw_rate", {32, 47, true, 0.02*M_PI/180, 0.0}}
             }, Sensors::CanBus::kCan1
         },
-        {0x1B0, 4, { // IMU accelerations
+        {0x1B0, 6, { // IMU accelerations (Control-RaspPi reads it on can2)
             {"IMU/ax", {0, 15, true, 0.01, 0.0}},
             {"IMU/ay", {16, 31, true, 0.01, 0.0}},
-            }, Sensors::CanBus::kCan1
+            }, Sensors::CanBus::kCan2
         },
-        {0x1B1, 6, { // IMU rates
-            {"IMU/yaw_rate", {32, 47, true, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan1
+        {0x1B1, 6, { // IMU rates (Control-RaspPi decodes rad/s with factor 0.001)
+            {"IMU/yaw_rate", {32, 47, true, 0.001, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x540, 8, { // Doppla GSS speeds (Control-RaspPi reads it on can2, m/s x0.01)
+            {"Doppla/vx", {32, 47, true, 0.01, 0.0}},
+            {"Doppla/vy", {48, 63, true, 0.01, 0.0}}
+            }, Sensors::CanBus::kCan2
+        },
+        {0x54A, 1, { // Doppla GSS status (bit 0 of data0 = 1 -> GSS OK)
+            {"Doppla/status", {0, 7, false, 1.0, 0.0}}
+            }, Sensors::CanBus::kCan2
         },
         {0x134, 2, { // Extensometer
-            {"extensometer", {0, 15, true, 0.000035, -0.482442}}
+            {"extensometer", {0, 15, true, 0.00007332, -0.5228}}
             }, Sensors::CanBus::kCan0
         },
         {0x123, 6, {
@@ -195,25 +204,43 @@ Sensors::Sensors() : Node("sensors")
             {"rr_inv_speed", {96, 127, true, 0.01, 0.0}}, // Rear Right inverter
             }, Sensors::CanBus::kCan2
         },
+        // AMK inverters actual values: motor speed (raw x0.0001 = rpm) and
+        // motor torque (raw x0.0098 = Nm). Control-RaspPi reads them on can1.
+        {0x102, 8, { // Motor 0: Front Left
+            {"motor_speed", {0, 31, true, 0.0001 * 2 * M_PI / 60, 0.0}},
+            {"motor_torque", {32, 47, true, 0.1 * 9.8 / 100, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x106, 8, { // Motor 1: Front Right
+            {"motor_speed", {0, 31, true, 0.0001 * 2 * M_PI / 60, 0.0}},
+            {"motor_torque", {32, 47, true, 0.1 * 9.8 / 100, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x110, 8, { // Motor 2: Rear Left
+            {"motor_speed", {0, 31, true, 0.0001 * 2 * M_PI / 60, 0.0}},
+            {"motor_torque", {32, 47, true, 0.1 * 9.8 / 100, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
+        {0x114, 8, { // Motor 3: Rear Right
+            {"motor_speed", {0, 31, true, 0.0001 * 2 * M_PI / 60, 0.0}},
+            {"motor_torque", {32, 47, true, 0.1 * 9.8 / 100, 0.0}}
+            }, Sensors::CanBus::kCan1
+        },
         {0x100, 2, {
             {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan2
+            }, Sensors::CanBus::kCan1
         },
         {0x104, 2, {
             {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan2
+            }, Sensors::CanBus::kCan1
         },
         {0x108, 2, {
             {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan2
+            }, Sensors::CanBus::kCan1
         },
         {0x112, 2, {
             {"enable_amk_status_byte1", {8, 15, false, 1.0, 0.0}}
-            }, Sensors::CanBus::kCan2
-        },
-        {0x161, 2, {
-            {"dv_driving", {0, 7, false, 1.0, 0.0}},
-            }, Sensors::CanBus::kCan0
+            }, Sensors::CanBus::kCan1
         },
         {0x221, 1, {
             {"enable_flag", {0, 7, false, 1.0, 0.0}}
@@ -222,7 +249,11 @@ Sensors::Sensors() : Node("sensors")
         {0x192, 6, {
             {"battery_voltage", {16, 47, true, 0.001, 0.0}}
             }, Sensors::CanBus::kCan0
-        }
+        },
+        {0x2901, 2, {
+            {"cubemars_pos", {0, 15, true, 0.1, 0.0}}
+            }, Sensors::CanBus::kCan0
+        }        
     };
 }
 
@@ -397,16 +428,29 @@ void Sensors::inverter_timer()
     
     //Send Inverter CAN frames
     std::map<std::string,double> values = {
-    {"fl_inv_speed", motor_speed_msg.front_left}, 
-    {"fr_inv_speed", motor_speed_msg.front_right}, 
-    {"rl_inv_speed", motor_speed_msg.rear_left}, 
+    {"fl_inv_speed", motor_speed_msg.front_left},
+    {"fr_inv_speed", motor_speed_msg.front_right},
+    {"rl_inv_speed", motor_speed_msg.rear_left},
     {"rr_inv_speed", motor_speed_msg.rear_right},
     {"enable_amk_status_byte1", 96.0}
-    }; 
+    };
 
-    for (auto &frame : frames) { 
-        if (frame.id == 0x123) { 
+    // AMK actual values per motor (0 = FL, 1 = FR, 2 = RL, 3 = RR), read by Control-RaspPi on can1
+    const std::array<std::pair<uint32_t, std::map<std::string,double>>, 4> amk_values = {{
+        {0x102, {{"motor_speed", motor_speed_msg.front_left},  {"motor_torque", torque_msg.front_left}}},
+        {0x106, {{"motor_speed", motor_speed_msg.front_right}, {"motor_torque", torque_msg.front_right}}},
+        {0x110, {{"motor_speed", motor_speed_msg.rear_left},   {"motor_torque", torque_msg.rear_left}}},
+        {0x114, {{"motor_speed", motor_speed_msg.rear_right},  {"motor_torque", torque_msg.rear_right}}}
+    }};
+
+    for (auto &frame : frames) {
+        if (frame.id == 0x123) {
             send_can_frame(frame, values);
+        }
+        for (const auto &amk : amk_values) {
+            if (frame.id == amk.first) {
+                send_can_frame(frame, amk.second);
+            }
         }
     }
 }
@@ -432,15 +476,18 @@ void Sensors::groundspeed_timer()
     gss_vx_pub_->publish(msg_vx);
     gss_vy_pub_->publish(msg_vy);
     
-    std::map<std::string,double> values = { {"GSS/ax", ax_ + dist_ax(gen)}, 
-    {"GSS/ay", ay_ + dist_ay(gen)}, {"GSS/yaw_rate", r_ + dist_r(gen)}, 
-    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)} }; 
+    std::map<std::string,double> values = { {"GSS/ax", ax_ + dist_ax(gen)},
+    {"GSS/ay", ay_ + dist_ay(gen)}, {"GSS/yaw_rate", r_ + dist_r(gen)},
+    {"GSS/vx", vx_ + dist_vx(gen)}, {"GSS/vy", vy_ + dist_vy(gen)},
+    {"Doppla/vx", vx_ + dist_vx(gen)}, {"Doppla/vy", vy_ + dist_vy(gen)},
+    {"Doppla/status", 1.0} };
 
-    for (auto &frame : frames) { 
-        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0)  { 
-            send_can_frame(frame, values); 
-        } 
-        
+    for (auto &frame : frames) {
+        if (frame.id == 0x1A3 || frame.id == 0x1A4 || frame.id == 0x1A0 ||
+            frame.id == 0x540 || frame.id == 0x54A)  {
+            send_can_frame(frame, values);
+        }
+
     }
 }
 
@@ -462,6 +509,15 @@ void Sensors::extensometer_timer()
     for (auto &frame : frames) { 
         if (frame.id == 0x134) { 
             send_can_frame(frame, values);  
+        }
+    }
+
+    //Send CAN frame for cubemars position
+    double cubemars_position = kSteeringRatio * delta_ * 180.0 / M_PI; // Convert to degrees
+    std::map<std::string,double> values_cubemars = { {"cubemars_pos", cubemars_position + dist(gen)} };
+    for (auto &frame : frames) { 
+        if (frame.id == 0x2901) { 
+            send_can_frame(frame, values_cubemars, true);  
         }
     }
 }
@@ -486,18 +542,22 @@ void Sensors::bms_timer() {
 
 void Sensors::as_timer() {
 
-    std::map<std::string,double> values = { {"dv_driving", as_status_}, {"enable_flag", 1.0} }; 
+    // 0x161 (dv_driving) is sent by the arussim node in raspi_sim mode
+    std::map<std::string,double> values = { {"enable_flag", 1.0} };
 
-    for (auto &frame : frames) { 
-        if (frame.id == 0x161 || frame.id == 0x221)  { 
-            send_can_frame(frame, values); 
-        } 
+    for (auto &frame : frames) {
+        if (frame.id == 0x221)  {
+            send_can_frame(frame, values);
+        }
     }
 }
 
 
-void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values) { 
-    canMsg_.can_id = frame.id; 
+void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,double> &values, bool big_endian) { 
+    canMsg_.can_id = frame.id;
+    if(frame.id > CAN_SFF_MASK) {
+        canMsg_.can_id |= CAN_EFF_FLAG; // Set the extended frame format flag
+    }
     canMsg_.can_dlc = frame.size; 
     std::memset(canMsg_.data, 0, sizeof(canMsg_.data)); 
     
@@ -506,19 +566,33 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
         const auto &sig = sig_pair.second;
 
         int bit_len = sig.bit_fin - sig.bit_in + 1;
+        int byte_len = (bit_len + 7) / 8;
         uint64_t raw = encode_signal(values.at(topic),
                                      sig.scale,
                                      sig.offset,
                                      bit_len,
                                      sig.is_signed);
 
-        for (int i = 0; i < bit_len; ++i) {
-            int bit_pos = sig.bit_in + i;
-            int byte_idx = bit_pos / 8;
-            int bit_offset = bit_pos % 8;
 
-            if (raw & (1ULL << i)) {
-                canMsg_.data[byte_idx] |= (1U << bit_offset);
+        if (big_endian) {
+            for (int i = 0; i < bit_len; ++i) {
+                int bit_pos = sig.bit_in + i;
+                int byte_idx = (byte_len - 1) - (bit_pos / 8);
+                int bit_offset = bit_pos % 8;
+
+                if (raw & (1ULL << i)) {
+                    canMsg_.data[byte_idx] |= (1U << bit_offset);
+                }
+            }
+        } else {
+            for (int i = 0; i < bit_len; ++i) {
+                int bit_pos = sig.bit_in + i;
+                int byte_idx = bit_pos / 8;
+                int bit_offset = bit_pos % 8;
+
+                if (raw & (1ULL << i)) {
+                    canMsg_.data[byte_idx] |= (1U << bit_offset);
+                }
             }
         }
     }

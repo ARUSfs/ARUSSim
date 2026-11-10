@@ -23,6 +23,8 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QScrollArea>
+#include <QTimer>
+#include <QPointF>
 
 
 #include <std_msgs/msg/bool.hpp>
@@ -31,7 +33,7 @@
 #include "arussim_msgs/msg/four_wheel_drive.hpp"
 #include "arussim_msgs/msg/state.hpp"
 #include "common_msgs/msg/slam_stats.hpp"
-
+#include "common_msgs/msg/state.hpp"
 
 namespace stats_interface
 {
@@ -74,6 +76,11 @@ protected:
   QVector<QPair<double, double>> optimization_time_history_;
   QVector<QPair<double, double>> target_speed_history_;
   QLabel* slam_graph_label_ = nullptr;
+  QLabel* slam_jump_label_ = nullptr;
+  QLabel* slam_jump_value_label_ = nullptr;       // instantaneous precision (jump)
+  QLabel* slam_accuracy_label_ = nullptr;         // instantaneous accuracy
+  QLabel* slam_precision_mean_label_ = nullptr;   // mean precision over the window
+  QLabel* slam_accuracy_mean_label_ = nullptr;    // mean accuracy over the window
 
   QLabel* active_vertices_label_;
   QLabel* active_edges_label_;
@@ -101,11 +108,23 @@ private Q_SLOTS:
   void zoom_out_slam_graph();
   void zoom_in_gg_graph();
   void zoom_out_gg_graph();
+  void update_slam_jump_graph();
+  void state_callback(const common_msgs::msg::State::SharedPtr msg);
+  void render_tick();
+  void collect_optimizer_sample();
+  void rebuild_jump_background(int w, int h);
+  void rebuild_optimizer_background(int w, int h);
+  QVector<QPointF> decimate_series(const QVector<QPair<double, double>>& hist,
+                                   double current_time, double window,
+                                   int w, int h, double vmin, double vrange);
+  double mean_of(const QVector<QPair<double, double>>& hist);
+  bool interpolate_gt(double t, double& gx, double& gy);
 
 private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr torque_sub_;
-  rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr state_sub_;
+  rclcpp::Subscription<common_msgs::msg::State>::SharedPtr state_sub_;
+  rclcpp::Subscription<arussim_msgs::msg::State>::SharedPtr gt_state_sub_;
   rclcpp::Subscription<common_msgs::msg::SlamStats>::SharedPtr stats_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr lap_time_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr hit_cones_bool_sub_;
@@ -146,6 +165,46 @@ private:
   double gg_center_y_ = 0.0;
   bool timer_gg_started_ = false;
 
+  // State history for slam jump detection
+  QVector<QPair<double, double>> slam_jump_history_;
+  double prev_x_ = 0.0;
+  double prev_y_ = 0.0;
+  double prev_yaw_ = 0.0;
+  double prev_vx_ = 0.0;
+  double prev_vy_ = 0.0;
+  double prev_stamp_ = 0.0;  // previous message timestamp (s), used for dt
+  bool has_prev_state_ = false;
+  double slam_jump_ = 0.0;
+  double min_slam_jump_ = 0.0;
+  double max_slam_jump_ = 0.1;
+
+  // SLAM accuracy: pose error of the estimate (/car_state/state) against the
+  // simulator ground truth (/arussim/state). Each SLAM state is matched to the
+  // ground-truth sample with the nearest header timestamp, so the two streams
+  // are associated in time rather than "latest received". Shares the jump
+  // graph's y-scale (max_slam_jump_/min_slam_jump_ span both series).
+  struct GtSample { double stamp; double x; double y; double yaw; };
+  QVector<GtSample> gt_buffer_;
+  static constexpr int kGtBufferMax = 512;      // bound the ground-truth buffer
+  static constexpr double kGtMatchTol = 0.1;    // s; skip if no GT this close in time
+  QVector<QPair<double, double>> slam_accuracy_history_;
+  double slam_accuracy_ = 0.0;
+
+  // Render throttling: repaint at a fixed frame rate instead of once per message
+  static constexpr int kRenderIntervalMs = 100;  // ~20 fps
+  QTimer* render_timer_ = nullptr;
+  bool slam_jump_dirty_ = false;
+  bool optimizer_dirty_ = false;
+  bool telemetry_dirty_ = false;
+
+  // Cached static backgrounds (grid + numeric scale). Rebuilt only when the
+  // widget size or the value range changes, so drawText is not run every frame;
+  // each frame just copies the background and draws the dynamic data line.
+  QPixmap jump_bg_;
+  double jump_bg_min_ = 1.0;    // sentinels that force a first rebuild
+  double jump_bg_max_ = -1.0;
+  QPixmap opt_bg_;
+  double opt_bg_max_ = -1.0;
 
   bool eventFilter(QObject* obj, QEvent* event) override;
 
