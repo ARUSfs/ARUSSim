@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys, math, shutil
 from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -22,17 +23,18 @@ from circuit_gen_core import (
     _HAS_PROFILES, _HAS_MAPFILE,
 )
 
-#  Automatic detection of ARUSSim
-_ARUSSIM_CANDIDATES = [
-    "~/ros2_ws/src/ARUSSim/src/arussim/resources/tracks",
-    "~/ros2_ws/install/arussim/share/arussim/resources/tracks",
-]
+#  Automatic detection of ARUSSim: <workspace>/install/arussim/share/arussim -> <workspace>
+_ARUSSIM_WS = Path(get_package_share_directory("arussim")).parents[3]
+_ARUSSIM_TRACKS = _ARUSSIM_WS / "src/ARUSSim/src/arussim/resources/tracks"
 
 def _find_arussim_tracks() -> Path | None:
-    for c in _ARUSSIM_CANDIDATES:
-        p = Path(c).expanduser()
-        if p.exists(): return p
-    return None
+    try:
+        # <workspace>/install/arussim/share/arussim 
+        ws = Path(get_package_share_directory("arussim")).parents[3]
+    except Exception:          # arussim not built or workspace not sourced
+        return None
+    p = ws / "src/ARUSSim/src/arussim/resources/tracks"
+    return p if p.exists() else None
 
 _ARUSSIM_TRACKS = _find_arussim_tracks()
 
