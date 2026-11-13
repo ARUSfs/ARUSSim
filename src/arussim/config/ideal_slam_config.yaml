@@ -1,5 +1,20 @@
 ideal_slam:
   ros__parameters:
-    sensor_max_dist: 40.0       # m   Cones farther than this are not added to the map (lidar_max_dist)
-    sensor_fov: 120.0           # deg Field of view in which cones are added to the map (lidar_fov)
-    min_lap_distance: 30.0      # m   Min driven distance to count a new lap
+    # TOPICS
+    map_topic: "/slam/map"                        # Output: map of cones
+    lap_count_topic: "/slam/lap_count"            # Output: laps completed
+    track_topic: "/arussim/track"                 # Input: real cones of the track (ARUSSim)
+    perception_topic: "/arussim/perception"       # Input: cones detected by the simulated lidar
+    ground_truth_topic: "/arussim/ground_truth"   # Input: real state of the car (ARUSSim)
+    tpl_signal_topic: "/arussim/tpl_signal"       # Input: the car crosses the finish line (ARUSSim)
+    reset_topic: "/arussim/reset"                 # Input: simulation reset (ARUSSim)
+    global_frame: "arussim/world"                 # Frame of the map and parent of the car TF
+    local_frame: "slam/vehicle"                   # Frame of the car TF
+
+    # SLAM PARAMETERS
+    sensor_max_dist: 30.0       # m  Detections farther than this are ignored
+    match_dist: 1.0             # m  Max distance between a detection and the real cone it comes from
+    track_tolerance: 0.001      # m  Min change in a cone position to consider that the track has changed
+    publish_freq: 10.0          # Hz Frequency at which the map and the lap count are published
+    min_observations: 12        #    Times a cone must be detected to be added to the map
+    min_lap_distance: 30.0      # m  Min driven distance to count a new lap
