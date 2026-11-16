@@ -109,9 +109,9 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
     kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
 
-    kCoefDelta = 306.3; 
-    kCoefV = 25.69;
-    kCoefInput = 307;
+    kCoefDelta = 556900.00; 
+    kCoefV = 69500.00;
+    kCoefInput = 561700.00;
     kSteeringAMax = 3.0;
     kSteeringVMax = 2.3;
 
