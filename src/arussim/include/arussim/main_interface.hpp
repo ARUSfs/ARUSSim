@@ -26,6 +26,8 @@
 #include <QStandardItem>
 #include <QBrush>
 #include <QFont>
+#include <QListView>
+#include <QTimer>
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -97,6 +99,12 @@ protected:
 
   QComboBox* circuit_select_ = nullptr;
   QComboBox* launch_select_ = nullptr;
+
+  // Generated circuits are collapsed under a toggle row in circuit_select_
+  QList<QStandardItem*> generated_items_;
+  QStandardItem* generated_toggle_ = nullptr;
+  bool generated_expanded_ = false;
+  int last_circuit_index_ = -1;
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr launch_pub_;

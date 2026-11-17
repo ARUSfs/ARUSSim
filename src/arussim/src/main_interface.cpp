@@ -121,37 +121,62 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
         mdl->appendRow(it);
     };
 
-    auto add_subdir = [&](const QString & subdir, const QString & label) {
-        QDir d(tracks_root + subdir);
-        if (!d.exists()) return;
-        QStringList files = d.entryList(QStringList() << "*.pcd", QDir::Files, QDir::Name);
-        if (files.isEmpty()) return;
-        add_header(label);
-        for (const QString & f : files) {
-            auto * it = new QStandardItem(f);
-            it->setData(subdir + "/" + f, Qt::UserRole);  
-            mdl->appendRow(it);
-        }
+    auto list_tracks = [&](const QString & subdir) {
+        return QDir(tracks_root + subdir).entryList(
+            QStringList() << "*.pcd", QDir::Files, QDir::Name);
     };
 
-    add_subdir("generated", "Generated");
-    add_subdir("recorded",  "Recorded (Real Tracks)");
+    auto add_track = [&](const QString & subdir, const QString & file) {
+        auto * it = new QStandardItem(file);
+        it->setData(subdir + "/" + file, Qt::UserRole);
+        mdl->appendRow(it);
+        return it;
+    };
 
-    QStringList root_files = QDir(tracks_root).entryList(
-        QStringList() << "*.pcd", QDir::Files, QDir::Name);
-    if (!root_files.isEmpty()) {
-        add_header("Uncategorized");
-        for (const QString & f : root_files) {
-            auto * it = new QStandardItem(f);
-            it->setData(f, Qt::UserRole);
-            mdl->appendRow(it);
-        }
+    // Recorded tracks are always visible
+    QStringList recorded_files = list_tracks("recorded");
+    if (!recorded_files.isEmpty()) {
+        add_header("Recorded (Real Tracks)");
+        for (const QString & f : recorded_files) add_track("recorded", f);
     }
 
+    // Generated tracks stay collapsed until the toggle row is clicked
+    QStringList generated_files = list_tracks("generated");
+    if (!generated_files.isEmpty()) {
+        generated_toggle_ = new QStandardItem();
+        generated_toggle_->setForeground(QBrush(QColor(110, 90, 50)));
+        QFont f = generated_toggle_->font(); f.setBold(true); generated_toggle_->setFont(f);
+        generated_toggle_->setBackground(QBrush(QColor(225, 218, 202)));
+        mdl->appendRow(generated_toggle_);
+        for (const QString & g : generated_files) generated_items_.append(add_track("generated", g));
+    }
+
+    auto refresh_generated = [this]() {
+        if (!generated_toggle_) return;
+        generated_toggle_->setText(QString("%1 Generated (%2)")
+            .arg(generated_expanded_ ? "\u25BE" : "\u25B8")
+            .arg(generated_items_.size()));
+        auto * view = qobject_cast<QListView*>(circuit_select_->view());
+        if (!view) return;
+        for (auto * it : generated_items_) view->setRowHidden(it->row(), !generated_expanded_);
+    };
+    refresh_generated();
+
     connect(circuit_select_, qOverload<int>(&QComboBox::currentIndexChanged),
-            this, [this](int idx) {
+            this, [this, mdl, refresh_generated](int idx) {
+                // Toggle row: expand/collapse generated tracks and keep the popup open
+                if (generated_toggle_ && idx >= 0 && mdl->item(idx) == generated_toggle_) {
+                    generated_expanded_ = !generated_expanded_;
+                    refresh_generated();
+                    circuit_select_->blockSignals(true);
+                    circuit_select_->setCurrentIndex(last_circuit_index_);
+                    circuit_select_->blockSignals(false);
+                    QTimer::singleShot(0, circuit_select_, [this]() { circuit_select_->showPopup(); });
+                    return;
+                }
                 QString val = circuit_select_->itemData(idx, Qt::UserRole).toString();
-                if (val.isEmpty()) return;  
+                if (val.isEmpty()) return;
+                last_circuit_index_ = idx;
                 auto msg = std_msgs::msg::String();
                 msg.data = val.toStdString();
                 circuit_pub_->publish(msg);
