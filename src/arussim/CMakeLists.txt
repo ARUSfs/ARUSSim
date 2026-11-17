@@ -168,11 +168,25 @@ ament_target_dependencies(supervisor_exec rclcpp
                             tf2_ros
                             tf2)
 
-# Install both executables
+# generate executable for ideal_slam.cpp (ground truth SLAM, replaces graph_slam in simulation)
+add_executable(ideal_slam_exec src/ideal_slam.cpp)
+target_include_directories(ideal_slam_exec PRIVATE include)
+ament_target_dependencies(ideal_slam_exec rclcpp
+                            std_msgs
+                            sensor_msgs
+                            geometry_msgs
+                            common_msgs
+                            tf2_ros
+                            tf2
+                            PCL
+                            pcl_conversions)
+
+# Install executables
 install(TARGETS
   arussim_exec
   sensors_exec
   supervisor_exec
+  ideal_slam_exec
   DESTINATION lib/${PROJECT_NAME})
 
 # share folders location
