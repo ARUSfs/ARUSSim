@@ -1,5 +1,4 @@
 #include <arussim/main_interface.hpp>
-
 namespace main_interface
 {
 
@@ -102,16 +101,91 @@ MainInterface::MainInterface(QWidget* parent) : Panel(parent)
     connect(reset_button_, &QPushButton::clicked, this, &MainInterface::reset_button_clicked);
     button_grid->addWidget(reset_button_, 2, 1);
 
-    // Circuit selection
+    // Circuit selection 
     circuit_select_ = new QComboBox(this);
     circuit_select_->setFixedHeight(rviz_height_ * 0.025);
     circuit_select_->setPlaceholderText("Choose a circuit");
-    std::string package_path_arussim = ament_index_cpp::get_package_share_directory("arussim");
-    QString tracks_path = QString::fromStdString(package_path_arussim + "/resources/tracks/");
-    QDir tracks_dir(tracks_path);
-    QStringList pcd_files = tracks_dir.entryList(QStringList() << "*.pcd", QDir::Files);
-    circuit_select_->addItems(pcd_files);
-    connect(circuit_select_, &QComboBox::currentTextChanged, this, &MainInterface::circuit_selector);
+
+    std::string pkg_arussim = ament_index_cpp::get_package_share_directory("arussim");
+    QString tracks_root = QString::fromStdString(pkg_arussim + "/resources/tracks/");
+
+    auto * mdl = new QStandardItemModel(circuit_select_);
+    circuit_select_->setModel(mdl);
+
+    auto add_header = [&](const QString & label) {
+        auto * it = new QStandardItem("── " + label + " ──");
+        it->setEnabled(false);
+        it->setForeground(QBrush(QColor(110, 90, 50)));
+        QFont f = it->font(); f.setItalic(true); f.setBold(true); it->setFont(f);
+        it->setBackground(QBrush(QColor(225, 218, 202)));
+        mdl->appendRow(it);
+    };
+
+    auto list_tracks = [&](const QString & subdir) {
+        return QDir(tracks_root + subdir).entryList(
+            QStringList() << "*.pcd", QDir::Files, QDir::Name);
+    };
+
+    auto add_track = [&](const QString & subdir, const QString & file) {
+        auto * it = new QStandardItem(file);
+        it->setData(subdir + "/" + file, Qt::UserRole);
+        mdl->appendRow(it);
+        return it;
+    };
+
+    // Recorded tracks are always visible
+    QStringList recorded_files = list_tracks("recorded");
+    if (!recorded_files.isEmpty()) {
+        add_header("Recorded (Real Tracks)");
+        for (const QString & f : recorded_files) add_track("recorded", f);
+    }
+
+    // Generated tracks stay collapsed until the toggle row is clicked
+    QStringList generated_files = list_tracks("generated");
+    if (!generated_files.isEmpty()) {
+        generated_toggle_ = new QStandardItem();
+        generated_toggle_->setForeground(QBrush(QColor(110, 90, 50)));
+        QFont f = generated_toggle_->font(); f.setBold(true); generated_toggle_->setFont(f);
+        generated_toggle_->setBackground(QBrush(QColor(225, 218, 202)));
+        mdl->appendRow(generated_toggle_);
+        for (const QString & g : generated_files) generated_items_.append(add_track("generated", g));
+    }
+
+    auto refresh_generated = [this]() {
+        if (!generated_toggle_) return;
+        generated_toggle_->setText(QString("%1 Generated (%2)")
+            .arg(generated_expanded_ ? "\u25BE" : "\u25B8")
+            .arg(generated_items_.size()));
+        auto * view = qobject_cast<QListView*>(circuit_select_->view());
+        if (!view) return;
+        for (auto * it : generated_items_) view->setRowHidden(it->row(), !generated_expanded_);
+    };
+    refresh_generated();
+
+    connect(circuit_select_, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, [this, mdl, refresh_generated](int idx) {
+                // Toggle row: expand/collapse generated tracks and keep the popup open
+                if (generated_toggle_ && idx >= 0 && mdl->item(idx) == generated_toggle_) {
+                    generated_expanded_ = !generated_expanded_;
+                    refresh_generated();
+                    circuit_select_->blockSignals(true);
+                    circuit_select_->setCurrentIndex(last_circuit_index_);
+                    circuit_select_->blockSignals(false);
+                    QTimer::singleShot(0, circuit_select_, [this]() { circuit_select_->showPopup(); });
+                    return;
+                }
+                QString val = circuit_select_->itemData(idx, Qt::UserRole).toString();
+                if (val.isEmpty()) return;
+                last_circuit_index_ = idx;
+                auto msg = std_msgs::msg::String();
+                msg.data = val.toStdString();
+                circuit_pub_->publish(msg);
+                auto rst = std_msgs::msg::Bool(); rst.data = true;
+                reset_pub_->publish(rst);
+                RCLCPP_INFO(rclcpp::get_logger("MainInterface"),
+                    "%sCircuit: %s%s", cyan.c_str(), val.toStdString().c_str(), reset.c_str());
+          });
+
     button_grid->addWidget(circuit_select_, 1, 1);
 
     // Launch selection
@@ -260,24 +334,6 @@ void MainInterface::reset_button_clicked()
     lap_label_->setText("Lap: 0");
 
     RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sReset Simulation%s", cyan.c_str(), reset.c_str());
-}
-
-/**
- * @brief Callback for the circuit selector
- * 
- * @param option 
- */
-void MainInterface::circuit_selector(const QString & option)
-{
-    auto msg_circuit = std_msgs::msg::String();
-    msg_circuit.data = option.toStdString();
-    circuit_pub_->publish(msg_circuit);
-
-    auto msg_reset = std_msgs::msg::Bool();
-    msg_reset.data = true;
-    reset_pub_->publish(msg_reset);
-
-    RCLCPP_INFO(rclcpp::get_logger("MainInterface"), "%sCircuit selected: %s%s", cyan.c_str(), option.toStdString().c_str(), reset.c_str());
 }
 
 /**
