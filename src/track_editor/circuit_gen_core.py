@@ -51,26 +51,45 @@ def _outward_normals(pts):
 
 def _offset(pts, norms, d):      return pts + norms * d
 
-def _place_cones(pts, spacing):
-    c=[pts[0].copy()]; acc=0.0
-    for i in range(1,len(pts)):
+def _place_cones_adaptive(pts, spacing, min_spacing=1.5):
+    """Place cones every `spacing` m, tightened in curves to 0.5*local radius (>= min_spacing)."""
+    n=len(pts)
+    ip=(np.arange(n)-8)%n; ix=(np.arange(n)+8)%n
+    a=pts[ip]; b=pts; c=pts[ix]
+    ab=np.linalg.norm(b-a,axis=1); bc=np.linalg.norm(c-b,axis=1); ac=np.linalg.norm(c-a,axis=1)
+    area=np.abs((b[:,0]-a[:,0])*(c[:,1]-a[:,1])-(c[:,0]-a[:,0])*(b[:,1]-a[:,1]))/2
+    radius=np.where(area>1e-9, ab*bc*ac/np.maximum(4*area,1e-12), 1e9)
+    local=np.clip(0.5*radius, min_spacing, spacing)
+    cones=[pts[0].copy()]; acc=0.0
+    for i in range(1,n):
         acc += np.linalg.norm(pts[i]-pts[i-1])
-        if acc >= spacing: c.append(pts[i].copy()); acc=0.0
-    return np.array(c)
+        if acc >= local[i]: cones.append(pts[i].copy()); acc=0.0
+    return np.array(cones)
 
-def _menger_min_r(cones):
-    n=len(cones)
-    if n<3: return 9999.0
-    mr=9999.0
-    for i in range(n):
-        p1=cones[(i-1)%n]; p2=cones[i]; p3=cones[(i+1)%n]
-        a=np.linalg.norm(p2-p1); b=np.linalg.norm(p3-p2); c=np.linalg.norm(p3-p1)
-        area=abs((p2[0]-p1[0])*(p3[1]-p1[1])-(p3[0]-p1[0])*(p2[1]-p1[1]))/2
-        d=a*b*c
-        if area<1e-8 or d<1e-8: continue
-        k=4*area/d
-        if k>0.05: mr=min(mr, 1.0/k)
-    return mr
+def _resample(pts, step):
+    """Closed polyline resampled to roughly constant spacing `step` (m)."""
+    d=np.hypot(*np.diff(pts,axis=0,append=pts[:1]).T)
+    s=np.concatenate([[0],np.cumsum(d)])
+    t=np.arange(0,s[-1],step)
+    closed=np.vstack([pts,pts[:1]])
+    return np.column_stack([np.interp(t,s,closed[:,0]),np.interp(t,s,closed[:,1])])
+
+def _center_min_r(center, base=1.5):
+    """Minimum centerline turning radius (m), measured over chords of ~`base` m."""
+    p=_resample(center,0.5); k=max(1,int(round(base/0.5)))
+    a=np.roll(p,k,axis=0); c=np.roll(p,-k,axis=0)
+    ab=np.linalg.norm(p-a,axis=1); bc=np.linalg.norm(c-p,axis=1); ac=np.linalg.norm(c-a,axis=1)
+    area=np.abs((p[:,0]-a[:,0])*(c[:,1]-a[:,1])-(c[:,0]-a[:,0])*(p[:,1]-a[:,1]))/2
+    r=np.where(area>1e-9, ab*bc*ac/np.maximum(4*area,1e-12), 1e9)
+    return float(r.min())
+
+def _min_clearance(center, min_arc):
+    """Min distance between centerline points that are more than `min_arc` m apart along the track."""
+    p=_resample(center,1.0); n=len(p)
+    d=np.linalg.norm(p[:,None,:]-p[None,:,:],axis=2)
+    i=np.arange(n); sep=np.abs(i[:,None]-i[None,:]); sep=np.minimum(sep,n-sep)*1.0
+    d[sep<=min_arc]=np.inf
+    return float(d.min()) if np.isfinite(d).any() else 9999.0
 
 def _max_gap(cones):
     if len(cones)<2: return 0.0
@@ -270,14 +289,122 @@ def _shape_irregular(rg, nr, hw):
     ang += nr.uniform(-0.05, 0.05, n)
     return _polar_to_xy(r, ang, rot)
 
+def _arc_samples(p, h, theta, R, step=0.5):
+    """Sample an arc (signed angle theta, radius R) starting at p with heading h. Returns pts, end, heading."""
+    m=max(2,int(math.ceil(abs(theta)*R/step)))
+    t=np.linspace(0,theta,m+1)[1:]
+    sg=1.0 if theta>=0 else -1.0
+    lx=R*np.sin(np.abs(t)); ly=sg*R*(1-np.cos(t))
+    ch,sh=math.cos(h),math.sin(h)
+    pts=np.column_stack([p[0]+lx*ch-ly*sh, p[1]+lx*sh+ly*ch])
+    return pts, pts[-1].copy(), h+theta
+
+def _shape_technical(rg, nr, hw, target_len=None):
+    """
+    Technical track built like a real FS layout: a chain of straights and arcs
+    (hairpins >150 deg, tight corners, sweepers and slaloms) turning both ways.
+    Not star-shaped, so sections can fold back next to each other. The loop is
+    closed by adjusting straight lengths (least squares) and rejected if two
+    sections get closer than track width + 3 m.
+    """
+    tgt=target_len if target_len else rg.uniform(260,420)
+    r_hp=max(hw+2.0, 4.5-hw+0.3)          # inner border >= 2 m, outer diameter >= 9 m
+    d_req=2*hw+3.0                         # >= 3 m between borders of different sections
+    rad=math.radians
+    for _ in range(400):
+        # Features: lists of elements; arcs are ['A', theta, R, can_stretch]
+        feats=[]
+        n_feat=max(5,int(round(tgt/rg.uniform(32,45))))
+        for _f in range(n_feat):
+            kind=rg.choices(['hairpin','tight','sweeper','slalom'],weights=[4,4,3,2])[0]
+            if kind=='hairpin':
+                ft=[['A',rad(rg.uniform(150,200)),rg.uniform(r_hp,r_hp+3),False]]
+            elif kind=='tight':
+                ft=[['A',rad(rg.uniform(60,120)),rg.uniform(max(r_hp,6),12),True]]
+            elif kind=='sweeper':
+                ft=[['A',rad(rg.uniform(30,90)),rg.uniform(12,25),True]]
+            else:
+                ft=[]
+                for j in range(rg.randint(3,5)):
+                    if j: ft.append(['S',rg.uniform(1,4),False,0.0])
+                    ft.append(['A',(-1)**j*rad(rg.uniform(35,60)),rg.uniform(7,12),False])
+            if rg.random()<0.5:
+                for e in ft:
+                    if e[0]=='A': e[1]=-e[1]
+            feats.append(ft)
+
+        # Total turning must be +2pi (CCW in generation frame): flip whole features
+        # towards it, then spread the small residual over stretchable corners
+        def total(): return sum(e[1] for ft in feats for e in ft if e[0]=='A')
+        for _k in range(4*n_feat):
+            D=2*math.pi-total()
+            if abs(D)<rad(40): break
+            cands=[ft for ft in feats if abs(D+2*sum(e[1] for e in ft if e[0]=='A'))<abs(D)]
+            if not cands: break
+            for e in rg.choice(cands):
+                if e[0]=='A': e[1]=-e[1]
+        D=2*math.pi-total()
+        stretch=[e for ft in feats for e in ft if e[0]=='A' and e[3]]
+        tot=sum(abs(e[1]) for e in stretch)
+        if tot<1e-6 or abs(D)>0.6*tot: continue
+        for e in stretch: e[1]+=D*abs(e[1])/tot
+        if any(not (rad(15)<=abs(e[1])<=rad(150)) for e in stretch): continue
+
+        el=[['S',rg.uniform(8,20),True,10.0]]   # start straight (split at both ends of the loop)
+        for ft in feats:
+            el.extend(ft)
+            el.append(['S',rg.uniform(4,25),True,3.0])
+        el.append(['S',rg.uniform(8,20),True,10.0])
+
+        # Close the loop: adjust adjustable straights with min-norm least squares
+        def walk(lengths):
+            p=np.zeros(2); h=0.0; dirs=[]; k=0
+            for e in el:
+                if e[0]=='S':
+                    if e[2]: dirs.append((math.cos(h),math.sin(h))); L=lengths[k]; k+=1
+                    else: L=e[1]
+                    p=p+L*np.array([math.cos(h),math.sin(h)])
+                else:
+                    _,p,h=_arc_samples(p,h,e[1],e[2])
+            return p,np.array(dirs)
+        L0=np.array([e[1] for e in el if e[0]=='S' and e[2]])
+        mins=np.array([e[3] for e in el if e[0]=='S' and e[2]])
+        err,U=walk(L0); U=U.T
+        M=U@U.T
+        if abs(np.linalg.det(M))<1e-6: continue
+        L=L0-U.T@np.linalg.solve(M,err)
+        if np.any(L<mins) or np.any(L>80): continue
+
+        # Sample the closed centerline
+        pts=[np.zeros((1,2))]; p=np.zeros(2); h=0.0; k=0
+        for e in el:
+            if e[0]=='S':
+                Ls=L[k] if e[2] else e[1]
+                if e[2]: k+=1
+                m=max(1,int(math.ceil(Ls/0.5)))
+                t=np.linspace(0,Ls,m+1)[1:]
+                pts.append(p+np.outer(t,[math.cos(h),math.sin(h)])); p=pts[-1][-1].copy()
+            else:
+                a,p,h=_arc_samples(p,h,e[1],e[2]); pts.append(a)
+        P=np.vstack(pts)
+        if np.linalg.norm(P[-1]-P[0])>0.5: continue
+        P=P[:-1]
+        length=_arc_length(P)
+        if not (RULE_LENGTH_MIN+10<=length<=RULE_LENGTH_MAX-10): continue
+        if _min_clearance(P,max(3*d_req,20.0))<d_req: continue
+        P=P[::2]                               # ~1 m control points, spline follows them closely
+        return P[:,0],P[:,1]
+    raise RuntimeError("technical: no valid layout")
+
 _SHAPES = [
-    ('oval',        _shape_oval,         6),
-    ('hairpin',     _shape_hairpin,      16),
-    ('chicane',     _shape_chicane,      13),
-    ('lshape',      _shape_lshape,       11),
-    ('teardrop',    _shape_teardrop,     13),
-    ('sshape',      _shape_sshape,       13),
-    ('random_walk', _shape_random_walk,  14),
+    ('technical',   _shape_technical,    50),
+    ('oval',        _shape_oval,         2),
+    ('hairpin',     _shape_hairpin,      8),
+    ('chicane',     _shape_chicane,      10),
+    ('lshape',      _shape_lshape,       8),
+    ('teardrop',    _shape_teardrop,     3),
+    ('sshape',      _shape_sshape,       3),
+    ('random_walk', _shape_random_walk,  12),
     ('irregular',   _shape_irregular,    14),
 ]
 _SHAPE_NAMES   = [s[0] for s in _SHAPES]
@@ -328,7 +455,8 @@ def generate_circuit(seed, target_length=None, track_width=None,
         spacing = cone_spacing  if cone_spacing  else rg.uniform(2.8, 4.7)
 
         try:
-            cx,cy=fixed_fn(rg,nr,half_w)
+            if fixed_name=='technical': cx,cy=fixed_fn(rg,nr,half_w,target_length)
+            else:                       cx,cy=fixed_fn(rg,nr,half_w)
         except Exception:
             continue
         if len(cx)<4: continue
@@ -345,25 +473,29 @@ def generate_circuit(seed, target_length=None, track_width=None,
         center = np.column_stack([xs, ys])
         raw_l  = _arc_length(center)
         if raw_l < 1.0: continue
-        center *= tgt_len / raw_l
+        # technical layouts are built in metres; rescale only if a length was requested
+        if fixed_name!='technical' or target_length: center *= tgt_len / raw_l
 
         norms  = _outward_normals(center)
         outer  = _offset(center, norms,  half_w)
         inner  = _offset(center, norms, -half_w)
-        blue   = _place_cones(outer, spacing)
-        yellow = _place_cones(inner, spacing)
+        blue   = _place_cones_adaptive(outer, spacing)
+        yellow = _place_cones_adaptive(inner, spacing)
         if len(blue)<4 or len(yellow)<4: continue
 
         tl  = _arc_length(center)
         mw  = _min_width(blue, yellow)
-        mrd = 2.0 * _menger_min_r(blue)
+        mrd = 2.0 * (_center_min_r(center) + half_w)   # outer border of the tightest turn, either side
         cg  = max(_max_gap(blue), _max_gap(yellow))
+        clr_req = 2*half_w + 3.0
+        clr = _min_clearance(center, max(3*clr_req, 20.0))
 
         rules = {
             'length':   {'label':'Track length',    'req':'200 – 500 m','value':tl,  'fmt':f'{tl:.1f} m',  'pass':RULE_LENGTH_MIN<=tl<=RULE_LENGTH_MAX},
             'width':    {'label':'Min track width', 'req':'>= 3 m',     'value':mw,  'fmt':f'{mw:.2f} m',  'pass':mw>=RULE_WIDTH_MIN},
             'outer_d':  {'label':'Min outer diam.', 'req':'>= 9 m',     'value':mrd, 'fmt':f'{mrd:.2f} m', 'pass':mrd>=RULE_OUTER_D_MIN},
             'cone_gap': {'label':'Max cone gap',    'req':'<= 5 m',     'value':cg,  'fmt':f'{cg:.2f} m',  'pass':cg<=RULE_CONE_GAP_MAX},
+            'clearance':{'label':'Section clearance','req':f'>= {clr_req:.1f} m','value':clr,'fmt':f'{clr:.1f} m','pass':clr>=clr_req},
         }
         ok = all(r['pass'] for r in rules.values())
         res = {
