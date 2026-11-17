@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore  import Qt, QThread, pyqtSignal, QRectF, QPointF
 from PyQt5.QtGui   import (
-    QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QCursor,
+    QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QCursor, QPolygonF,
 )
 import numpy as np
 
@@ -40,10 +40,8 @@ _ARUSSIM_TRACKS = _find_arussim_tracks()
 
 # Track subcategories
 TRACK_CATEGORIES = {
-    "generated":   "Generated (auto)",
-    "competition": "Competition",
-    "test":        "Test",
-    "custom":      "Custom",
+    "generated": "Generated (auto)",
+    "recorded":  "Recorded (real tracks)",
 }
 
 C_BG       = QColor(235, 232, 225)
@@ -297,7 +295,7 @@ class DetailCanvas(QWidget):
             ang=math.atan2(b.y()-a.y(),b.x()-a.x())
             p.save(); p.translate(a); p.rotate(math.degrees(ang))
             p.setBrush(QBrush(QColor(30,25,20,70))); p.setPen(Qt.NoPen)
-            p.drawPolygon([QPointF(20,0),QPointF(-9,6),QPointF(-9,-6)]); p.restore()
+            p.drawPolygon(QPolygonF([QPointF(20,0),QPointF(-9,6),QPointF(-9,-6)])); p.restore()
         p.end()
 
 #  DETAIL DIALOG
@@ -307,7 +305,7 @@ class CircuitDetailDialog(QDialog):
         self.circuit=circuit
         self.setWindowTitle(
             f"Circuit — seed {circuit['seed']}  [{circuit.get('shape','?')}]")
-        self.setMinimumSize(980,640); self._build()
+        self.setMinimumSize(980,760); self._build()
 
     def _sep(self):
         f=QFrame(); f.setFrameShape(QFrame.HLine)
@@ -456,10 +454,8 @@ class CircuitDetailDialog(QDialog):
 
 
 TRACK_CATEGORIES = {
-    "generated":   "Generated (auto)",
-    "competition": "Competition",
-    "test":        "Test",
-    "custom":      "Custom",
+    "generated": "Generated (auto)",
+    "recorded":  "Recorded (real tracks)",
 }
 
 #  MAIN WINDOW
