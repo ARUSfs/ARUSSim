@@ -18,6 +18,7 @@ VehicleDynamics::VehicleDynamics(){
     delta_fl_ = 0;
     delta_fr_ = 0;
     delta_v_ = 0;
+    delta_acc_ = 0;
     dt_ = 0.001;
 
     struct {
