@@ -181,12 +181,11 @@ class VehicleDynamics
 
         // Steering dynamics
         double kCoefDelta = 556900.0;
-        double kCoefV = 69500.00;
-        double kCoefInput = 561700.00;
+        double kCoefV = 69500.0;
+        double kCoefInput = 561700.0;
         double kSteeringAMax = 3.0;
         double kSteeringVMax = 2.3;
-        double kSteeringMax = 0.30543;
-
+        double kSteeringMax = 0.366519;
         void calculate_dynamics();
         void integrate_dynamics();
 
