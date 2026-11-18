@@ -110,12 +110,12 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
     kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
 
-    kCoefDelta = 556900.0; 
-    kCoefV = 69500.0;
-    kCoefInput = 561700.0;
-    kSteeringAMax = 3.0;
-    kSteeringVMax = 2.3;
-
+    kCoefDelta = 4361.0;
+    kCoefV = 553.8;
+    kCoefInput = 4335.0;
+    kSteeringAMax = 150000000000000000000.0;
+    kSteeringVMax = 13000000000000000000000.0;
+    kSteeringMax = 0.366519;
 
     pac_param_.Fz0 = params["Fz0"];
 
