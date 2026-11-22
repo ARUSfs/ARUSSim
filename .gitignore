@@ -179,3 +179,7 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# Circuits generated with track_editor/circuit_generator.py (local only)
+src/arussim/resources/tracks/generated/*
+!src/arussim/resources/tracks/generated/.gitkeep
