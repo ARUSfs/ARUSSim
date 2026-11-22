@@ -379,7 +379,7 @@ class Simulator : public rclcpp::Node
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ax_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_ay_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_r_sub_;
-   rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ms_sub_;
+    rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_ms_sub_;
     rclcpp::Subscription<arussim_msgs::msg::FourWheelDrive>::SharedPtr noisy_torque_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vx_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr noisy_vy_sub_;   
@@ -416,6 +416,8 @@ class Simulator : public rclcpp::Node
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr lap_signal_pub_;
     rclcpp::Publisher<arussim_msgs::msg::PointXY>::SharedPtr hit_cones_pub_;
     rclcpp::Publisher<arussim_msgs::msg::Trajectory>::SharedPtr fixed_trajectory_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr delta_v_pub_;
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr delta_acc_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr reset_sub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr launch_sub_;

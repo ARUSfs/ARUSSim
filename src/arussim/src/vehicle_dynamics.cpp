@@ -18,6 +18,7 @@ VehicleDynamics::VehicleDynamics(){
     delta_fl_ = 0;
     delta_fr_ = 0;
     delta_v_ = 0;
+    delta_acc_ = 0;
     dt_ = 0.001;
 
     struct {
@@ -109,12 +110,12 @@ void VehicleDynamics::set_parameters(std::map<std::string, double>& params) {
     kStaticLoadFront = (1 - kMassDistributionRear) * kMass * kG / 2;
     kStaticLoadRear = kMassDistributionRear * kMass * kG / 2;
 
-    kCoefDelta = 306.3; 
-    kCoefV = 25.69;
-    kCoefInput = 307;
-    kSteeringAMax = 3.0;
-    kSteeringVMax = 2.3;
-
+    kCoefDelta = 4361.0;
+    kCoefV = 553.8;
+    kCoefInput = 4335.0;
+    kSteeringAMax = 150000000000000000000.0;
+    kSteeringVMax = 13000000000000000000000.0;
+    kSteeringMax = 0.366519;
 
     pac_param_.Fz0 = params["Fz0"];
 
@@ -214,9 +215,9 @@ void VehicleDynamics::calculate_dynamics(){
     w_rl_dot_ = alpha_w*(torque_cmd_.rl_ - force_rl.fx * kTireDynRadius) / kTireInertia_R + (1-alpha_w)*w_rl_dot_;
     w_rr_dot_ = alpha_w*(torque_cmd_.rr_ - force_rr.fx * kTireDynRadius) / kTireInertia_R + (1-alpha_w)*w_rr_dot_;
 
-    delta_dot_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
-    delta_v_dot_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
-    delta_v_dot_ = std::clamp(delta_v_dot_, -kSteeringAMax, kSteeringAMax);
+    delta_v_ = std::clamp(delta_v_, -kSteeringVMax, kSteeringVMax);
+    delta_acc_ = - kCoefDelta * delta_ - kCoefV * delta_v_ + kCoefInput * input_delta_;
+    delta_acc_ = std::clamp(delta_acc_, -kSteeringAMax, kSteeringAMax);
 
 }
 
@@ -237,9 +238,9 @@ void VehicleDynamics::integrate_dynamics(){
     wheel_speed_.rl_ += w_rl_dot_ * dt_;
     wheel_speed_.rr_ += w_rr_dot_ * dt_;
 
-    delta_ += delta_dot_ * dt_ + 0.5 * delta_v_dot_ * dt_ * dt_;
+    delta_ += delta_v_ * dt_ + 0.5 * delta_acc_ * dt_ * dt_;
     delta_ = std::clamp(delta_, -kSteeringMax, kSteeringMax);
-    delta_v_ += delta_v_dot_ * dt_;
+    delta_v_ += delta_acc_ * dt_;
 
     if(vx_ < 0){
         vx_ = 0;

@@ -139,6 +139,11 @@ Simulator::Simulator() : Node("simulator")
     ff_torque_pub_ = this->create_publisher<arussim_msgs::msg::FourWheelDrive>(
         "/arussim/ff_torque", 10);
 
+    delta_v_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/delta_v", 10);
+    delta_acc_pub_ = this->create_publisher<std_msgs::msg::Float32>(
+        "/arussim/delta_acc", 10);
+
     slow_timer_ = this->create_wall_timer(
         std::chrono::milliseconds((int)(1000 / kSensorRate)),
         std::bind(&Simulator::on_slow_timer, this));
@@ -902,6 +907,14 @@ void Simulator::on_fast_timer()
     tire_load_msg.rear_left = vehicle_dynamics_.tire_loads_.rl_;
     tire_load_msg.rear_right = vehicle_dynamics_.tire_loads_.rr_;
     tire_load_pub_->publish(tire_load_msg);
+
+    std_msgs::msg::Float32 delta_v_msg;
+    delta_v_msg.data = static_cast<float>(vehicle_dynamics_.delta_v_);
+    delta_v_pub_->publish(delta_v_msg);
+
+    std_msgs::msg::Float32 delta_acc_msg;
+    delta_acc_msg.data = static_cast<float>(vehicle_dynamics_.delta_acc_);
+    delta_acc_pub_->publish(delta_acc_msg);
 
     broadcast_transform();
 

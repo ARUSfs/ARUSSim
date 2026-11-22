@@ -21,7 +21,7 @@ class VehicleDynamics
         double delta_;
         double delta_fl_;
         double delta_fr_;
-        double delta_v_;
+        double delta_v_{0.0}, delta_acc_{0.0};
 
         struct {
             double fl_ = 0;
@@ -166,7 +166,6 @@ class VehicleDynamics
 
         double x_dot_{0.0}, y_dot_{0.0}, vx_dot_{0.0}, vy_dot_{0.0}, r_dot_{0.0};
         double w_fl_dot_{0.0}, w_fr_dot_{0.0}, w_rl_dot_{0.0}, w_rr_dot_{0.0};
-        double delta_dot_{0.0}, delta_v_dot_{0.0};
 
         double kG;
 
@@ -181,13 +180,12 @@ class VehicleDynamics
         Tire_force force;
 
         // Steering dynamics
-        double kCoefDelta = 149.9;
-        double kCoefV = 11.81;
-        double kCoefInput = 150.90;
-        double kSteeringAMax = 3.0;
-        double kSteeringVMax = 2.3;
-        double kSteeringMax = 0.30543;
-
+        double kCoefDelta;
+        double kCoefV;
+        double kCoefInput;
+        double kSteeringAMax;
+        double kSteeringVMax;
+        double kSteeringMax;
         void calculate_dynamics();
         void integrate_dynamics();
 
