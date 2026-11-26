@@ -91,6 +91,7 @@ class Simulator : public rclcpp::Node
 
     std::string kTrackName;
     std::string kSimulationCar;
+    double kDvSteeringRatio;       // DV steering motor angle / wheel angle, from ART-Parameters
     double kStateUpdateRate;
     double kControllerRate; 
     std::string kSimulationMode;

@@ -4,6 +4,7 @@
  */
 
 #include "arussim/arussim_node.hpp"
+#include "arussim/car_parameters.hpp"
 #include <cstdlib>
 #include <csignal>
 #include <filesystem>
@@ -56,6 +57,8 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("simulation_car", kSimulationCar);
+    kDvSteeringRatio = arussim::get_car_parameter(kSimulationCar, "dv_steering_ratio");
+    RCLCPP_INFO(this->get_logger(), "DV steering ratio %.4f (%s)", kDvSteeringRatio, kSimulationCar.c_str());
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("simulation_mode", kSimulationMode);
@@ -968,7 +971,7 @@ void Simulator::receive_can_0()
         else if ((frame_0_.can_id & CAN_EFF_MASK) == 0x401 || (frame_0_.can_id & CAN_EFF_MASK) == 0x601)
         {
             int32_t delta_scaled = static_cast<int32_t>((frame_0_.data[0] << 24) | (frame_0_.data[1] << 16) | (frame_0_.data[2] << 8) | frame_0_.data[3]);
-            can_delta_ = static_cast<float>(delta_scaled) / 10000.0f * M_PI / 180.0f / 4.6292f;
+            can_delta_ = static_cast<float>(delta_scaled) / 10000.0f * M_PI / 180.0f / static_cast<float>(kDvSteeringRatio);
         }
     }
 }

@@ -7,6 +7,7 @@
  * 
  */
 #include "arussim/sensors.hpp"
+#include "arussim/car_parameters.hpp"
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
@@ -56,7 +57,13 @@ Sensors::Sensors() : Node("sensors")
     // Declare AS PCB parameters
     this->declare_parameter<double>("as.as_frequency", 10.0);
 
+    // Simulated car, from simulator_config.yaml (the launch passes it to this node too)
+    this->declare_parameter<std::string>("simulation_car", "");
+
     // Get parameters
+    this->get_parameter("simulation_car", kSimulationCar);
+    kSteeringRatio = arussim::get_car_parameter(kSimulationCar, "dv_steering_ratio");
+    RCLCPP_INFO(this->get_logger(), "DV steering ratio %.4f (%s)", kSteeringRatio, kSimulationCar.c_str());
     this->get_parameter("gss.noise_gss_ax", kNoiseGssAx);
     this->get_parameter("gss.noise_gss_ay", kNoiseGssAy);
     this->get_parameter("gss.noise_gss_r", kNoiseGssR);

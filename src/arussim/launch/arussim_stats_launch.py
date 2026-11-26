@@ -27,7 +27,8 @@ def generate_launch_description():
                     params=[{'vehicle.torque_vectoring': True}]),
         create_node(pkg='arussim',
                     exec='sensors_exec',
-                    config='sensors_config.yaml'),
+                    config='sensors_config.yaml',
+                    params=[os.path.join(get_package_share_directory('arussim'), 'config', 'simulator_config.yaml')]),
         create_node(pkg='arussim',
                     exec='supervisor_exec',
                     config='supervisor_config.yaml')
