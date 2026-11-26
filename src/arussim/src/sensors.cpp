@@ -184,6 +184,16 @@ Sensors::Sensors() : Node("sensors")
             {"IMU/yaw_rate", {32, 47, true, 0.001, 0.0}}
             }, Sensors::CanBus::kCan2
         },
+        // IMU frames read by DRIVERLESS2 can_interface on can0 (see can.csv)
+        {0x542, 4, { // IMU accelerations (m/s^2 x0.01)
+            {"IMU/ax", {0, 15, true, 0.01, 0.0}},
+            {"IMU/ay", {16, 31, true, 0.01, 0.0}},
+            }, Sensors::CanBus::kCan0
+        },
+        {0x544, 6, { // IMU yaw rate (0.01 deg/s, decoded as rad/s)
+            {"IMU/yaw_rate", {32, 47, true, 0.01 * M_PI / 180, 0.0}}
+            }, Sensors::CanBus::kCan0
+        },
         {0x540, 8, { // Doppla GSS speeds (Control-RaspPi reads it on can2, m/s x0.01)
             {"Doppla/vx", {32, 47, true, 0.01, 0.0}},
             {"Doppla/vy", {48, 63, true, 0.01, 0.0}}
@@ -364,7 +374,8 @@ void Sensors::imu_timer()
     {"IMU/ay", msg_ay.data}, {"IMU/yaw_rate", msg_r.data} }; 
 
     for (auto &frame : frames) { 
-        if (frame.id == 0x1B0 || frame.id == 0x1B1)  { 
+        if (frame.id == 0x1B0 || frame.id == 0x1B1 ||
+            frame.id == 0x542 || frame.id == 0x544)  {
             send_can_frame(frame, values); 
         } 
         
