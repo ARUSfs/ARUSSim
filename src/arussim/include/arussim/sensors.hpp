@@ -117,7 +117,7 @@ private:
     double kNoiseTorqueRearRight;
     double kNoiseTorqueRearLeft;
     double kGearRatio = 11.7;
-    double kSteeringRatio = 4.279;
+    double kSteeringRatio;         // DV steering motor angle / wheel angle, from ART-Parameters
 
     double kExtensometerFrequency;
     double kNoiseExtensometer;

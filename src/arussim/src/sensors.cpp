@@ -7,6 +7,7 @@
  * 
  */
 #include "arussim/sensors.hpp"
+#include "arussim/car_parameters.hpp"
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
@@ -56,7 +57,15 @@ Sensors::Sensors() : Node("sensors")
     // Declare AS PCB parameters
     this->declare_parameter<double>("as.as_frequency", 10.0);
 
+    // Simulated car, from simulator_config.yaml (the launch passes it to this node too)
+    this->declare_parameter<std::string>("simulation_car", "");
+
     // Get parameters
+    const std::string simulation_car = this->get_parameter("simulation_car").as_string();
+    const std::string car_csv = simulation_car + ".csv";
+    kSteeringRatio = arussim::get_required_parameter(
+        arussim::load_car_parameters(arussim::get_csv_path(car_csv), this->get_logger()), "dv_steering_ratio", car_csv);
+    RCLCPP_INFO(this->get_logger(), "DV steering ratio %.4f (%s)", kSteeringRatio, simulation_car.c_str());
     this->get_parameter("gss.noise_gss_ax", kNoiseGssAx);
     this->get_parameter("gss.noise_gss_ay", kNoiseGssAy);
     this->get_parameter("gss.noise_gss_r", kNoiseGssR);
@@ -575,6 +584,15 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
     for (const auto &sig_pair : frame.signals) {
         const auto &topic = sig_pair.first;
         const auto &sig = sig_pair.second;
+
+        // A classic CAN frame only has 8 data bytes: skip signals that do not fit, otherwise they are
+        // written past canMsg_.data and corrupt the memory of the node
+        if (sig.bit_in < 0 || sig.bit_fin >= static_cast<int>(8 * sizeof(canMsg_.data))) {
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                "Signal '%s' of frame 0x%X (bits %d-%d) does not fit in 8 bytes, not sent",
+                topic.c_str(), frame.id, sig.bit_in, sig.bit_fin);
+            continue;
+        }
 
         int bit_len = sig.bit_fin - sig.bit_in + 1;
         int byte_len = (bit_len + 7) / 8;

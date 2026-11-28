@@ -91,6 +91,7 @@ class Simulator : public rclcpp::Node
 
     std::string kTrackName;
     std::string kSimulationCar;
+    double kDvSteeringRatio;       // DV steering motor angle / wheel angle, from ART-Parameters
     double kStateUpdateRate;
     double kControllerRate; 
     std::string kSimulationMode;
@@ -329,16 +330,6 @@ class Simulator : public rclcpp::Node
      * 
      */
     std::string select_csv(const std::string& kSimulationCar);
-
-    /**
-     * @brief Resolves the CSV file path based on the simulation_car 
-     */
-    std::string get_csv_path(const std::string& csv_filename);
-
-    /**
-     * @brief Load parameters from de according CSV file
-     */
-    std::map<std::string, double> load_car_parameters(const std::string &filepath);
 
     /**
      * @brief Loads control parameters from the CSV file to initializa the CarParameters 
