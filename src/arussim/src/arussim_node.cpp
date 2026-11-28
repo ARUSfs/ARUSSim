@@ -57,8 +57,6 @@ Simulator::Simulator() : Node("simulator")
 
     this->get_parameter("track", kTrackName);
     this->get_parameter("simulation_car", kSimulationCar);
-    kDvSteeringRatio = arussim::get_car_parameter(kSimulationCar, "dv_steering_ratio");
-    RCLCPP_INFO(this->get_logger(), "DV steering ratio %.4f (%s)", kDvSteeringRatio, kSimulationCar.c_str());
     this->get_parameter("state_update_rate", kStateUpdateRate);
     this->get_parameter("controller_rate", kControllerRate);
     this->get_parameter("simulation_mode", kSimulationMode);
@@ -204,6 +202,27 @@ Simulator::Simulator() : Node("simulator")
     marker_.color.a = 1.0;
     marker_.lifetime = rclcpp::Duration::from_seconds(0.0);
 
+    // Car parameters are loaded before the CAN threads start: receive_can_0 needs kDvSteeringRatio
+    // and receive_can_1 needs car_parameters_.gear_ratio, otherwise they could use them uninitialized
+    try
+    {
+        this->simulation_car_csv_ = kSimulationCar + ".csv";
+        std::string csv_path = arussim::get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = arussim::load_car_parameters(csv_path, this->get_logger());
+        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
+    }
+    catch (const std::exception &e)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
+    }
+
+    kDvSteeringRatio = arussim::get_required_parameter(this->parameters_map_, "dv_steering_ratio", this->simulation_car_csv_);
+    RCLCPP_INFO(this->get_logger(), "DV steering ratio %.4f (%s)", kDvSteeringRatio, kSimulationCar.c_str());
+
+    // Needed in every mode: raspi_sim/hil use car_parameters_.gear_ratio to convert
+    // the CAN torque command (motor side) to wheel torque
+    this->load_control_parameters();
+
     // Thread for CAN reception
     init_can_sockets();
 
@@ -233,22 +252,6 @@ Simulator::Simulator() : Node("simulator")
     // Initialize DV struct
     dv_.autonomous = 1; // 1 -> DV mode
     dv_.driving = 1;    // 1 -> Car is driving
-
-    try
-    {
-        this->simulation_car_csv_ = kSimulationCar + ".csv";
-        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
-        this->parameters_map_ = this->load_car_parameters(csv_path);
-        this->vehicle_dynamics_.set_parameters(this->parameters_map_);
-    }
-    catch (const std::exception &e)
-    {
-        RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
-    }
-
-    // Needed in every mode: raspi_sim/hil use car_parameters_.gear_ratio to convert
-    // the CAN torque command (motor side) to wheel torque
-    this->load_control_parameters();
 
     if (kSimulationMode == "default")
     {
@@ -1242,8 +1245,8 @@ void Simulator::reset_callback([[maybe_unused]] const std_msgs::msg::Bool::Share
 
     try {
         this->simulation_car_csv_ = kSimulationCar + ".csv";
-        std::string csv_path = this->get_csv_path(this->simulation_car_csv_);
-        this->parameters_map_ = this->load_car_parameters(csv_path);
+        std::string csv_path = arussim::get_csv_path(this->simulation_car_csv_);
+        this->parameters_map_ = arussim::load_car_parameters(csv_path, this->get_logger());
         this->vehicle_dynamics_.set_parameters(this->parameters_map_);
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed loading car parameters: %s", e.what());
@@ -1449,68 +1452,6 @@ void Simulator::load_track(const std_msgs::msg::String::SharedPtr track_msg)
             fixed_trajectory_msg_.acc_profile.push_back(traj_acc_profile[i]);
         }
     }
-}
-
-/**
- * @brief Get the path to the CSV file based on simulation_car
- */
-std::string Simulator::get_csv_path(const std::string &csv_filename)
-{
-    // Implementation for loading car parameters based on simulation_car
-    std::string parameters_directory = ament_index_cpp::get_package_share_directory("arussim") + "/resources/parameters/";
-    std::string parameters_path = parameters_directory + csv_filename;
-    return parameters_path;
-}
-
-/**
- * @brief Load car parameters from a CSV file and return them as a map.
- * @param filepath The path to the CSV file containing the car parameters.
- */
-std::map<std::string, double> Simulator::load_car_parameters(const std::string &filepath)
-{
-    std::map<std::string, double> parameters_map;
-    std::ifstream file(filepath);
-    if (!file.is_open())
-    {
-        RCLCPP_ERROR(
-            this->get_logger(),
-            "Could not open CSV parameter file: %s",
-            filepath.c_str());
-        return parameters_map;
-    }
-
-    std::string line;
-
-    // Skip the first line (header)
-    std::getline(file, line);
-
-    // Read the file line by line
-    while (std::getline(file, line))
-    {
-        std::stringstream ss(line);
-        std::string key;
-        std::string value_str;
-
-        // Separate the line by commas
-        if (std::getline(ss, key, ',') && std::getline(ss, value_str, ','))
-        {
-            try
-            {
-                double value = std::stod(value_str);
-                parameters_map[key] = value;
-            }
-            catch (const std::invalid_argument &e)
-            {
-                RCLCPP_WARN(
-                    this->get_logger(),
-                    "Warning: Parameter '%s' is not a number: '%s'",
-                    key.c_str(), value_str.c_str());
-            }
-        }
-    }
-
-    file.close();
-    return parameters_map;
 }
 
 void Simulator::load_control_parameters()
