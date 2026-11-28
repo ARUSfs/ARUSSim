@@ -574,6 +574,15 @@ void Sensors::send_can_frame(const CanFrame &frame, const std::map<std::string,d
         const auto &topic = sig_pair.first;
         const auto &sig = sig_pair.second;
 
+        // A classic CAN frame only has 8 data bytes: skip signals that do not fit, otherwise they are
+        // written past canMsg_.data and corrupt the memory of the node
+        if (sig.bit_in < 0 || sig.bit_fin >= static_cast<int>(8 * sizeof(canMsg_.data))) {
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                "Signal '%s' of frame 0x%X (bits %d-%d) does not fit in 8 bytes, not sent",
+                topic.c_str(), frame.id, sig.bit_in, sig.bit_fin);
+            continue;
+        }
+
         int bit_len = sig.bit_fin - sig.bit_in + 1;
         int byte_len = (bit_len + 7) / 8;
         uint64_t raw = encode_signal(values.at(topic),
